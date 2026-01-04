@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm/Japanese Food Site Theme */
+  --background: #faf9f6; /* Off-white, rice color */
+  --foreground: #433422; /* Dark brown, softer than black */
+  
+  /* Primary: Fresh Green (Vegetables, Health) */
+  --primary: #65a30d;
+  --primary-dark: #4d7c0f;
+  
+  /* Accent: Appetizing Orange */
+  --accent: #f97316;
+  --accent-light: #ffedd5;
+  
+  /* UI Elements */
+  --card-bg: #ffffff;
+  --border: #e7e5e4;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-card-bg: var(--card-bg);
+  --color-border: var(--border);
+  
+  --font-sans: var(--font-noto-sans);
+  --font-rounded: var(--font-zen-maru);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark mode adjustments - keeping it warm but dark */
+    --background: #1c1917;
+    --foreground: #fafaf9;
+    --primary: #84cc16;
+    --primary-dark: #65a30d;
+    --accent: #fb923c;
+    --accent-light: #431407;
+    --card-bg: #292524;
+    --border: #44403c;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-rounded), var(--font-sans), sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #57534e;
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Texture Pattern for Hero/Backgrounds */
+.bg-pattern-dots {
+  background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-pattern-dots {
+  background-image: radial-gradient(#44403c 1px, transparent 1px);
 }
