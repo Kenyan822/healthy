@@ -13,7 +13,9 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative flex items-center justify-center w-10 h-10 bg-primary rounded-2xl rotate-3 transition-transform group-hover:rotate-6 shadow-sm">
-              <span className="text-white font-rounded font-bold text-xl">H</span>
+              <span className="text-white font-rounded font-bold text-xl">
+                H
+              </span>
             </div>
             <div className="flex flex-col -space-y-1">
               <span className="font-rounded font-bold text-lg md:text-xl text-foreground tracking-tight">
@@ -34,16 +36,10 @@ export function Header() {
               チェーン店一覧
             </Link>
             <Link
-              href="/stations"
-              className="font-medium text-sm text-[#78716c] dark:text-[#a8a29e] hover:text-primary dark:hover:text-primary transition-colors py-2 border-b-2 border-transparent hover:border-primary"
-            >
-              駅から探す
-            </Link>
-            <Link
-              href="/combination"
+              href="/chains"
               className="px-5 py-2.5 bg-accent text-white font-bold rounded-full text-sm hover:bg-orange-600 transition-colors shadow-sm hover:shadow-md transform hover:-translate-y-0.5 duration-200"
             >
-              目的別検索
+              メニューを探す
             </Link>
           </nav>
 
@@ -90,18 +86,11 @@ export function Header() {
                 チェーン店一覧
               </Link>
               <Link
-                href="/stations"
-                className="px-4 py-3 rounded-xl font-medium text-[#78716c] dark:text-[#a8a29e] hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                駅から探す
-              </Link>
-              <Link
-                href="/combination"
+                href="/chains"
                 className="px-4 py-3 rounded-xl font-bold text-accent hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                目的別検索
+                メニューを探す
               </Link>
             </div>
           </nav>

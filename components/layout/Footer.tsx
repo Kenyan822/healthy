@@ -28,7 +28,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/ootoya/高タンパク"
+                  href="/chains/ootoya"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   大戸屋
@@ -36,7 +36,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/sukiya/ダイエット"
+                  href="/chains/sukiya"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   すき家
@@ -44,7 +44,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/yayoiken/高タンパク"
+                  href="/chains/yayoiken"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   やよい軒
@@ -52,7 +52,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/matsuya/ヘルシー"
+                  href="/chains/matsuya"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   松屋
@@ -69,26 +69,34 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/combination/protein/30g"
+                  href="/purpose/muscle"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
-                  高タンパクメニュー
+                  筋トレ・バルクアップ
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/combination/carb/50g以下"
+                  href="/purpose/diet"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
-                  低糖質メニュー
+                  ダイエット
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/combination/fat/20g以下"
+                  href="/purpose/health"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
-                  低脂質メニュー
+                  健康維持
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/purpose/protein"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  高タンパク
                 </Link>
               </li>
             </ul>
@@ -102,26 +110,10 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/about"
+                  href="/chains"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
-                  このサイトについて
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                >
-                  プライバシーポリシー
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                >
-                  お問い合わせ
+                  チェーン店一覧
                 </Link>
               </li>
             </ul>

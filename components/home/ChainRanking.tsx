@@ -39,7 +39,7 @@ export function ChainRanking({ chains }: ChainRankingProps) {
             return (
               <Link
                 key={chain.chainId}
-                href={`/${chain.chainNameEn}/高タンパク`}
+                href={`/chains/${chain.chainId}`}
                 className="block group relative"
               >
                 <div 
@@ -99,7 +99,7 @@ export function ChainRanking({ chains }: ChainRankingProps) {
           {others.map((chain) => (
             <Link
               key={chain.chainId}
-              href={`/${chain.chainNameEn}/高タンパク`}
+              href={`/chains/${chain.chainId}`}
               className="flex items-center gap-3 py-3 border-b border-dashed border-zinc-200 dark:border-zinc-700 last:border-0 hover:bg-white/80 dark:hover:bg-zinc-700/50 -mx-2 px-2 rounded-lg transition-colors group"
             >
               <span className="font-bold text-zinc-400 w-6 text-center group-hover:text-primary">{chain.rank}</span>

@@ -24,7 +24,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 1.0,
     },
+    {
+      url: `${BASE_URL}/chains`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
   ];
+
+  // チェーン店詳細ページ（5ページ）
+  const chainDetailPages: MetadataRoute.Sitemap = chains.map((chain) => ({
+    url: `${BASE_URL}/chains/${chain.chainId}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.85,
+  }));
+
+  // 目的別一覧ページ（5ページ）
+  const purposePages: MetadataRoute.Sitemap = purposeIds.map((purposeId) => ({
+    url: `${BASE_URL}/purpose/${purposeId}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.85,
+  }));
 
   // チェーン店×目的ページ（5チェーン × 5目的 = 25ページ）
   const chainPurposePages: MetadataRoute.Sitemap = chains.flatMap((chain) =>
@@ -44,5 +66,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...chainPurposePages, ...menuPages];
+  return [
+    ...staticPages,
+    ...chainDetailPages,
+    ...purposePages,
+    ...chainPurposePages,
+    ...menuPages,
+  ];
 }
