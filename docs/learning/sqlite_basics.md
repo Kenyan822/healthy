@@ -777,23 +777,123 @@ cursor.execute('''
 
 ---
 
-## 11. まとめ
+## 11. シードスクリプト（npm run seed）
 
-### 11.1 SQLite を選ぶべき場面
+このプロジェクトでは `scripts/seed.ts` を使ってデータを投入します。
+
+### 11.1 使い方
+
+```bash
+# データベースにデータを投入
+npm run seed
+```
+
+### 11.2 仕組み
+
+```typescript
+// package.json
+"scripts": {
+  "seed": "npx tsx scripts/seed.ts"
+}
+```
+
+| 部分 | 説明 |
+|-----|------|
+| `npx` | npm パッケージを一時的に実行 |
+| `tsx` | TypeScript を直接実行するツール |
+| `scripts/seed.ts` | データ投入スクリプト |
+
+### 11.3 seed.ts の主な処理
+
+```typescript
+import Database from "better-sqlite3";
+
+// 1. データベース接続
+const db = new Database("data/chain_restaurant.db");
+
+// 2. スコア計算（栄養素から自動計算）
+function calculateScores(calories, protein, fat, carb, fiber, sodium) {
+  // muscleScore: タンパク質重視（高タンパク・適正カロリー）
+  const muscleScore = (protein / calories * 100) * 3;
+
+  // dietScore: 低カロリー・低脂質重視
+  const dietScore = 100 - (calories / 15) - (fat * 1.5);
+
+  // healthScore: バランス重視
+  const healthScore = 50 + (protein * 1) + (fiber * 3) - (sodium * 5);
+
+  return { muscleScore, dietScore, healthScore };
+}
+
+// 3. データ挿入（INSERT OR REPLACE で重複時は上書き）
+const insertStmt = db.prepare(`
+  INSERT OR REPLACE INTO menus (...)
+  VALUES (?, ?, ?, ...)
+`);
+
+// 4. 実行
+insertStmt.run(menu_id, chain_id, menu_name, ...);
+```
+
+### 11.4 データを追加したい場合
+
+`scripts/seed.ts` にメニューデータを追加：
+
+```typescript
+const newMenus = [
+  {
+    menu_id: "chain-001",
+    menu_name: "新メニュー",
+    price: 500,
+    category: "定食",
+    calories: 600,
+    protein: 25,
+    fat: 20,
+    carb: 70,
+    fiber: 3,
+    sodium: 2.5
+  },
+  // ... 追加
+];
+
+// 挿入関数を呼び出し
+insertMenus(newMenus, "chain_id");
+```
+
+その後 `npm run seed` を実行。
+
+### 11.5 現在のデータ確認
+
+```bash
+# チェーン店ごとのメニュー数
+sqlite3 data/chain_restaurant.db "SELECT chain_id, COUNT(*) FROM menus GROUP BY chain_id;"
+
+# 全メニュー数
+sqlite3 data/chain_restaurant.db "SELECT COUNT(*) FROM menus;"
+
+# 高タンパクメニューTOP5
+sqlite3 data/chain_restaurant.db "SELECT menu_name, protein FROM menus ORDER BY protein DESC LIMIT 5;"
+```
+
+---
+
+## 12. まとめ
+
+### 12.1 SQLite を選ぶべき場面
 
 - MVP・プロトタイプ開発
 - 読み取り中心のワークロード
 - 単一サーバーでの運用
 - セットアップ時間を最小化したい場合
 
-### 11.2 PostgreSQL に移行すべき場面
+### 12.2 PostgreSQL に移行すべき場面
 
 - データ量が10万レコードを超える
 - 同時書き込みが多い
 - 複数サーバーからのアクセス
 - 高度な検索機能が必要（全文検索など）
 
-### 11.3 このプロジェクトでの推奨
+### 12.3 このプロジェクトでの推奨
 
 ```
 Phase 1-2: SQLite

@@ -475,16 +475,487 @@ export function getAffiliateRecommendation(
 
 | 施策 | 難易度 | 収益性 | 優先度 |
 |------|--------|--------|--------|
-| 有料会員（詳細データ） | 高 | 中 | 低 |
+| サブスクリプション | 中 | 高 | 高 |
 | 企業タイアップ記事 | 中 | 高 | 中 |
 | 自社商品販売 | 高 | 高 | 低 |
 | コンサルティング | 中 | 中 | 低 |
 
 ---
 
-## 5. 収益トラッキング
+## 5. サブスクリプション（プレミアム会員）
 
-### 5.1 KPI
+### 5.1 概要
+
+月額課金制のプレミアム会員サービスを提供し、無料ユーザーとの差別化された価値を提供する。
+
+#### 収益ポジション
+
+| 収益源 | 比率（目標・改定） | 特徴 |
+|--------|-------------------|------|
+| Google AdSense | 30% | 安定収入、PV比例 |
+| アフィリエイト | 40% | 高単価、CV依存 |
+| **サブスクリプション** | **25%** | **継続収入、LTV高** |
+| その他 | 5% | 将来的な拡張 |
+
+### 5.2 プラン設計
+
+#### 無料プラン vs プレミアムプラン
+
+| 機能 | 無料 | ベーシック | プロ |
+|------|------|-----------|------|
+| 月額料金 | ¥0 | ¥480 | ¥980 |
+| メニュー検索 | ○ | ○ | ○ |
+| 基本栄養情報（カロリー・P・F・C） | ○ | ○ | ○ |
+| **詳細栄養情報（ビタミン・ミネラル等）** | × | ○ | ○ |
+| **マイPFCバランス設定** | × | ○ | ○ |
+| **お気に入り保存（無制限）** | 5件まで | ○ | ○ |
+| **食事記録・カレンダー** | × | ○ | ○ |
+| **週間/月間レポート** | × | × | ○ |
+| **AI献立提案** | × | × | ○ |
+| **1日の組み合わせ最適化** | × | × | ○ |
+| **広告非表示** | × | ○ | ○ |
+| **新メニュー先行情報** | × | × | ○ |
+| **CSV/PDF出力** | × | × | ○ |
+
+### 5.3 機能詳細
+
+#### マイPFCバランス設定
+
+```typescript
+// types/subscription.ts
+
+interface UserPFCGoal {
+  userId: string;
+  dailyCalories: number;      // 目標カロリー
+  proteinRatio: number;       // タンパク質比率（%）
+  fatRatio: number;           // 脂質比率（%）
+  carbRatio: number;          // 炭水化物比率（%）
+  purpose: 'muscle' | 'diet' | 'maintain' | 'custom';
+}
+
+// プリセット例
+const PFC_PRESETS = {
+  muscle: { protein: 30, fat: 25, carb: 45 },      // 筋肥大
+  diet: { protein: 35, fat: 30, carb: 35 },        // ダイエット
+  keto: { protein: 25, fat: 60, carb: 15 },        // ケトジェニック
+  maintain: { protein: 20, fat: 25, carb: 55 },    // 維持
+};
+```
+
+**ユーザー価値:**
+- 自分の目標に合わせた検索結果のパーソナライズ
+- 目標達成度の可視化
+- 食事の過不足を一目で確認
+
+#### 食事記録・カレンダー
+
+```typescript
+// types/meal-log.ts
+
+interface MealLog {
+  id: string;
+  userId: string;
+  date: string;           // YYYY-MM-DD
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  menuId: string;
+  chainId: string;
+  customNote?: string;
+  timestamp: Date;
+}
+
+interface DailySummary {
+  date: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalFat: number;
+  totalCarb: number;
+  goalAchievement: {
+    calories: number;     // 達成率（%）
+    protein: number;
+    fat: number;
+    carb: number;
+  };
+}
+```
+
+**ユーザー価値:**
+- 外食の履歴を簡単に記録
+- 週単位・月単位での振り返り
+- 他の食事管理アプリとの差別化（外食特化）
+
+#### AI献立提案（プロプラン）
+
+```typescript
+// lib/ai-meal-planner.ts
+
+interface MealPlanRequest {
+  userId: string;
+  date: string;
+  remainingNutrition: {
+    calories: number;
+    protein: number;
+    fat: number;
+    carb: number;
+  };
+  preferences: {
+    excludeChains?: string[];      // 除外チェーン
+    maxBudget?: number;            // 予算上限
+    location?: string;             // 現在地/最寄り駅
+  };
+}
+
+interface MealSuggestion {
+  chainId: string;
+  chainName: string;
+  menuId: string;
+  menuName: string;
+  nutrition: Nutrition;
+  matchScore: number;             // マッチ度（0-100）
+  reason: string;                 // 提案理由
+}
+
+// 使用例
+const suggestion = await suggestMeal({
+  userId: 'user123',
+  date: '2026-01-13',
+  remainingNutrition: {
+    calories: 600,
+    protein: 35,
+    fat: 15,
+    carb: 60,
+  },
+  preferences: {
+    maxBudget: 1000,
+    location: '渋谷',
+  },
+});
+
+// 結果例
+// {
+//   chainName: "大戸屋",
+//   menuName: "しまほっけの炭火焼き定食",
+//   matchScore: 92,
+//   reason: "残りのタンパク質目標35gに対して、32.5gを効率よく摂取できます"
+// }
+```
+
+### 5.4 料金シミュレーション
+
+#### 収益予測
+
+| 月間アクティブユーザー | 無料 | ベーシック | プロ | 月間収益 |
+|----------------------|------|-----------|------|---------|
+| 10,000 | 9,700 | 200 (2%) | 100 (1%) | ¥194,000 |
+| 50,000 | 48,000 | 1,500 (3%) | 500 (1%) | ¥1,210,000 |
+| 100,000 | 95,000 | 3,500 (3.5%) | 1,500 (1.5%) | ¥3,150,000 |
+
+#### LTV（顧客生涯価値）計算
+
+```
+ベーシックプラン:
+  月額 ¥480 × 平均継続月数 8ヶ月 = LTV ¥3,840
+
+プロプラン:
+  月額 ¥980 × 平均継続月数 12ヶ月 = LTV ¥11,760
+```
+
+### 5.5 決済システム
+
+#### 推奨: Stripe
+
+```typescript
+// lib/stripe.ts
+
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-12-18.acacia',
+});
+
+// プラン定義
+const PLANS = {
+  basic: {
+    priceId: 'price_basic_monthly',
+    name: 'ベーシック',
+    price: 480,
+  },
+  pro: {
+    priceId: 'price_pro_monthly',
+    name: 'プロ',
+    price: 980,
+  },
+};
+
+// チェックアウトセッション作成
+export async function createCheckoutSession(
+  userId: string,
+  planType: 'basic' | 'pro'
+) {
+  const plan = PLANS[planType];
+  
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price: plan.priceId,
+        quantity: 1,
+      },
+    ],
+    success_url: `${process.env.NEXT_PUBLIC_URL}/subscription/success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_URL}/subscription/cancel`,
+    metadata: {
+      userId,
+      planType,
+    },
+  });
+
+  return session;
+}
+```
+
+#### Webhook処理
+
+```typescript
+// app/api/webhooks/stripe/route.ts
+
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const signature = request.headers.get('stripe-signature')!;
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (err) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  }
+
+  switch (event.type) {
+    case 'checkout.session.completed':
+      // サブスク開始処理
+      await handleSubscriptionCreated(event.data.object);
+      break;
+    case 'customer.subscription.updated':
+      // プラン変更処理
+      await handleSubscriptionUpdated(event.data.object);
+      break;
+    case 'customer.subscription.deleted':
+      // 解約処理
+      await handleSubscriptionCanceled(event.data.object);
+      break;
+  }
+
+  return NextResponse.json({ received: true });
+}
+```
+
+### 5.6 ユーザー認証
+
+#### 推奨: NextAuth.js + Prisma
+
+```typescript
+// lib/auth.ts
+
+import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from './prisma';
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+  callbacks: {
+    async session({ session, user }) {
+      // サブスク情報をセッションに追加
+      const subscription = await prisma.subscription.findUnique({
+        where: { userId: user.id },
+      });
+      
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+          plan: subscription?.plan ?? 'free',
+        },
+      };
+    },
+  },
+});
+```
+
+### 5.7 UI/UXデザイン
+
+#### 価格表コンポーネント
+
+```typescript
+// components/PricingTable.tsx
+
+'use client';
+
+import { useState } from 'react';
+
+interface PricingPlan {
+  name: string;
+  price: number;
+  features: string[];
+  highlighted?: boolean;
+  cta: string;
+}
+
+const plans: PricingPlan[] = [
+  {
+    name: '無料',
+    price: 0,
+    features: [
+      'メニュー検索',
+      '基本栄養情報',
+      'お気に入り5件まで',
+    ],
+    cta: '今すぐ始める',
+  },
+  {
+    name: 'ベーシック',
+    price: 480,
+    features: [
+      '無料プランの全機能',
+      '詳細栄養情報',
+      'マイPFCバランス設定',
+      'お気に入り無制限',
+      '食事記録・カレンダー',
+      '広告非表示',
+    ],
+    highlighted: true,
+    cta: '人気プランを始める',
+  },
+  {
+    name: 'プロ',
+    price: 980,
+    features: [
+      'ベーシックの全機能',
+      '週間/月間レポート',
+      'AI献立提案',
+      '1日の組み合わせ最適化',
+      '新メニュー先行情報',
+      'CSV/PDF出力',
+    ],
+    cta: 'プロを始める',
+  },
+];
+
+export const PricingTable = () => {
+  return (
+    <div className="pricing-grid">
+      {plans.map((plan) => (
+        <div
+          key={plan.name}
+          className={`pricing-card ${plan.highlighted ? 'pricing-card--highlighted' : ''}`}
+        >
+          <h3>{plan.name}</h3>
+          <p className="price">
+            <span className="price-amount">¥{plan.price.toLocaleString()}</span>
+            <span className="price-period">/月</span>
+          </p>
+          <ul>
+            {plan.features.map((feature) => (
+              <li key={feature}>✓ {feature}</li>
+            ))}
+          </ul>
+          <button className="cta-button">{plan.cta}</button>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+### 5.8 解約防止（チャーン対策）
+
+#### 解約理由調査
+
+```typescript
+// components/CancelSurvey.tsx
+
+const CANCEL_REASONS = [
+  { id: 'price', label: '料金が高い' },
+  { id: 'not_using', label: 'あまり使っていない' },
+  { id: 'missing_feature', label: '欲しい機能がない' },
+  { id: 'found_alternative', label: '他のサービスを使う' },
+  { id: 'temporary', label: '一時的に休止したい' },
+  { id: 'other', label: 'その他' },
+];
+```
+
+#### リテンション施策
+
+| 解約理由 | 対応策 |
+|---------|--------|
+| 料金が高い | 年額プラン提案（2ヶ月無料） |
+| あまり使っていない | 使い方ガイド送付、リマインド設定 |
+| 欲しい機能がない | 要望ヒアリング、開発ロードマップ共有 |
+| 一時的に休止 | 休止プラン提案（月額¥100で情報保持） |
+
+#### 年額プラン（割引）
+
+| プラン | 月額 | 年額 | 割引率 |
+|--------|------|------|--------|
+| ベーシック | ¥480 | ¥4,800 (¥400/月) | 17% OFF |
+| プロ | ¥980 | ¥9,800 (¥817/月) | 17% OFF |
+
+### 5.9 サブスク導入ロードマップ
+
+#### Phase 1: MVP（3-6ヶ月目）
+
+```
+□ NextAuth.js導入（Google認証）
+□ Stripe連携
+□ ベーシックプランのみ提供
+□ マイPFCバランス設定
+□ お気に入り無制限
+□ 広告非表示
+```
+
+**目標: 有料会員100人**
+
+#### Phase 2: 機能拡充（6-12ヶ月目）
+
+```
+□ 食事記録・カレンダー機能
+□ プロプラン追加
+□ 週間レポート機能
+□ 年額プラン追加
+```
+
+**目標: 有料会員500人**
+
+#### Phase 3: AI機能（12-18ヶ月目）
+
+```
+□ AI献立提案（OpenAI API連携）
+□ 1日の組み合わせ最適化
+□ パーソナライズレコメンド
+```
+
+**目標: 有料会員2,000人**
+
+---
+
+## 6. 収益トラッキング
+
+### 6.1 KPI
 
 | 指標 | 計測方法 | 目標 |
 |------|---------|------|
@@ -494,7 +965,7 @@ export function getAffiliateRecommendation(
 | CTR | AdSense | 2%以上 |
 | CVR | ASP | 1%以上 |
 
-### 5.2 トラッキング実装
+### 6.2 トラッキング実装
 
 ```typescript
 // lib/analytics.ts
@@ -533,7 +1004,7 @@ export const trackAffiliateClick = (
 </AffiliateLink>
 ```
 
-### 5.3 レポート
+### 6.3 レポート
 
 #### 週次レポート項目
 
@@ -558,9 +1029,9 @@ export const trackAffiliateClick = (
 
 ---
 
-## 6. 法的・規約対応
+## 7. 法的・規約対応
 
-### 6.1 必須ページ
+### 7.1 必須ページ
 
 #### プライバシーポリシー
 
@@ -597,7 +1068,7 @@ Cookie（クッキー）を使用することがあります。
 当サイトは責任を負いかねます。
 ```
 
-### 6.2 広告表記
+### 7.2 広告表記
 
 #### AdSense
 
@@ -615,7 +1086,7 @@ Cookie（クッキー）を使用することがあります。
 <a href="..." rel="sponsored">商品リンク</a>
 ```
 
-### 6.3 景品表示法対応
+### 7.3 景品表示法対応
 
 #### NG表現
 
@@ -636,7 +1107,7 @@ Cookie（クッキー）を使用することがあります。
 
 ---
 
-## 7. 収益化ロードマップ
+## 8. 収益化ロードマップ
 
 ### Phase 1: 基盤構築（0-3ヶ月）
 
@@ -699,9 +1170,9 @@ Cookie（クッキー）を使用することがあります。
 
 ---
 
-## 8. 収益シミュレーション
+## 9. 収益シミュレーション
 
-### 8.1 保守的シナリオ
+### 9.1 保守的シナリオ
 
 | 月 | PV | AdSense | アフィリエイト | 合計 |
 |----|-----|---------|--------------|------|
@@ -710,7 +1181,7 @@ Cookie（クッキー）を使用することがあります。
 | 18 | 50,000 | ¥30,000 | ¥50,000 | ¥80,000 |
 | 24 | 100,000 | ¥60,000 | ¥90,000 | ¥150,000 |
 
-### 8.2 楽観的シナリオ
+### 9.2 楽観的シナリオ
 
 | 月 | PV | AdSense | アフィリエイト | 合計 |
 |----|-----|---------|--------------|------|
@@ -719,7 +1190,7 @@ Cookie（クッキー）を使用することがあります。
 | 18 | 150,000 | ¥100,000 | ¥150,000 | ¥250,000 |
 | 24 | 300,000 | ¥200,000 | ¥300,000 | ¥500,000 |
 
-### 8.3 損益分岐点
+### 9.3 損益分岐点
 
 ```
 月間コスト（目安）:
