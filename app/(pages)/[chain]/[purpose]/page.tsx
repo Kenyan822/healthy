@@ -9,6 +9,7 @@ import {
   type PurposeId,
 } from "@/lib/db/queries";
 import { formatPrice } from "@/lib/utils";
+import { SortableMenuTable } from "@/components/menu/SortableMenuTable";
 
 type Props = {
   params: Promise<{ chain: string; purpose: string }>;
@@ -72,42 +73,77 @@ export default async function ChainPurposePage({ params }: Props) {
   const menus = getMenusByChainAndPurpose(chainId, purposeId as PurposeId, 20);
   const top3 = menus.slice(0, 3);
 
+  // 目的別のアイコンとカラー
+  const purposeStyles: Record<string, { icon: string; gradient: string; accent: string }> = {
+    high_protein: { icon: "💪", gradient: "from-orange-500/20 via-red-500/10 to-yellow-500/20", accent: "text-orange-500" },
+    low_fat: { icon: "🥗", gradient: "from-green-500/20 via-emerald-500/10 to-lime-500/20", accent: "text-green-500" },
+    low_carb: { icon: "⚡", gradient: "from-blue-500/20 via-indigo-500/10 to-cyan-500/20", accent: "text-blue-500" },
+    balanced: { icon: "🎯", gradient: "from-purple-500/20 via-pink-500/10 to-violet-500/20", accent: "text-purple-500" },
+    low_calorie: { icon: "🔥", gradient: "from-rose-500/20 via-pink-500/10 to-red-500/20", accent: "text-rose-500" },
+  };
+
+  const style = purposeStyles[purposeId] || { icon: "🍽️", gradient: "from-primary/20 to-accent/20", accent: "text-primary" };
+
   return (
     <main className="min-h-screen bg-background">
       {/* ヒーローセクション */}
-      <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
-        <div className="container mx-auto px-4">
+      <section className={`relative overflow-hidden bg-gradient-to-br ${style.gradient} py-8 md:py-10`}>
+        {/* 装飾背景 */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-[-30%] right-[-10%] w-[300px] h-[300px] bg-white/30 dark:bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-[-30%] left-[-10%] w-[200px] h-[200px] bg-white/20 dark:bg-white/5 rounded-full blur-3xl" />
+        </div>
+
+        {/* 浮遊するアイコン */}
+        <div className="absolute top-6 right-[10%] text-4xl opacity-15 animate-bounce" style={{ animationDuration: '3s' }}>
+          {style.icon}
+        </div>
+
+        <div className="container relative mx-auto px-4 z-10">
           {/* パンくずリスト */}
           <nav className="mb-4 text-sm">
             <ol className="flex items-center gap-2 text-foreground/60">
               <li>
-                <Link href="/" className="hover:text-primary">
+                <Link href="/" className="hover:text-primary transition-colors">
                   ホーム
                 </Link>
               </li>
-              <li>/</li>
+              <li className="text-foreground/40">/</li>
               <li>
                 <Link
-                  href={`/${chain.chainId}/health`}
-                  className="hover:text-primary"
+                  href={`/chains/${chain.chainId}`}
+                  className="hover:text-primary transition-colors"
                 >
                   {chain.chainName}
                 </Link>
               </li>
-              <li>/</li>
-              <li className="text-foreground">{purpose.name}</li>
+              <li className="text-foreground/40">/</li>
+              <li className="text-foreground font-medium">{purpose.name}</li>
             </ol>
           </nav>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {chain.chainName}の
-            <span className="text-primary">{purpose.name}</span>
-            メニュー
-          </h1>
-          <p className="text-lg text-foreground/70 max-w-2xl">
-            {purpose.description}。{chain.chainName}
-            のメニューを栄養成分とスコアでランキング。
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                {/* バッジ */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm rounded-full shadow-sm text-sm">
+                  <span className="text-lg">{style.icon}</span>
+                  <span className={`font-bold ${style.accent}`}>{purpose.name}</span>
+                </div>
+                <span className="text-sm text-foreground/50">{menus.length}件</span>
+              </div>
+
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 leading-tight">
+                <span className="text-foreground/80">{chain.chainName}の</span>
+                <span className={`${style.accent}`}>{purpose.name}</span>
+                <span className="text-foreground/80">メニュー</span>
+              </h1>
+
+              <p className="text-sm text-foreground/70 max-w-2xl">
+                {purpose.description}。栄養成分とスコアでランキング。
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -186,79 +222,12 @@ export default async function ChainPurposePage({ params }: Props) {
 
         {/* 全メニューテーブル */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">全メニューランキング</h2>
-          <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-background/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
-                      順位
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
-                      メニュー名
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70">
-                      スコア
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                      カロリー
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                      P
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                      F
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                      C
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                      価格
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {menus.map((menu, index) => {
-                    const score =
-                      menu[purpose.scoreField as keyof typeof menu] as number;
-                    return (
-                      <tr
-                        key={menu.menuId}
-                        className="hover:bg-background/30 transition-colors"
-                      >
-                        <td className="px-4 py-3 font-medium">{index + 1}</td>
-                        <td className="px-4 py-3">
-                          <Link
-                            href={`/menu/${menu.menuId}`}
-                            className="text-primary hover:underline font-medium"
-                          >
-                            {menu.menuName}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getScoreColor(score)}`}
-                          >
-                            {Math.round(score)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {menu.calories}kcal
-                        </td>
-                        <td className="px-4 py-3 text-right">{menu.protein}g</td>
-                        <td className="px-4 py-3 text-right">{menu.fat}g</td>
-                        <td className="px-4 py-3 text-right">{menu.carb}g</td>
-                        <td className="px-4 py-3 text-right font-medium">
-                          {menu.price ? formatPrice(menu.price) : "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold mb-6">全メニュー一覧</h2>
+          <SortableMenuTable
+            menus={menus}
+            scoreField={purpose.scoreField}
+            purposeName={purpose.name}
+          />
         </section>
 
         {/* 関連リンク */}

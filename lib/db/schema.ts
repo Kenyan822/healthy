@@ -43,6 +43,9 @@ export const menus = sqliteTable("menus", {
   isSeasonal: integer("is_seasonal", { mode: "boolean" }).default(false),
   isLimited: integer("is_limited", { mode: "boolean" }).default(false),
   isAvailable: integer("is_available", { mode: "boolean" }).default(true),
+  // 人気度追跡
+  viewCount: integer("view_count").default(0),
+  searchCount: integer("search_count").default(0),
   // その他
   imageUrl: text("image_url"),
   description: text("description"),

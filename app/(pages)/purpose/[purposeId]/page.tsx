@@ -186,10 +186,10 @@ export default async function PurposeDetailPage({ params }: Props) {
                       順位
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
-                      チェーン店
+                      メニュー名
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
-                      メニュー名
+                      チェーン店
                     </th>
                     <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70">
                       スコア
@@ -215,20 +215,20 @@ export default async function PurposeDetailPage({ params }: Props) {
                         className="hover:bg-background/30 transition-colors"
                       >
                         <td className="px-4 py-3 font-medium">{index + 1}</td>
-                        <td className="px-4 py-3 text-sm">
-                          <Link
-                            href={`/chains/${chain.chainId}`}
-                            className="hover:text-primary"
-                          >
-                            {chain.chainName}
-                          </Link>
-                        </td>
                         <td className="px-4 py-3">
                           <Link
                             href={`/menu/${menu.menuId}`}
                             className="text-primary hover:underline font-medium"
                           >
                             {menu.menuName}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <Link
+                            href={`/chains/${chain.chainId}`}
+                            className="hover:text-primary"
+                          >
+                            {chain.chainName}
                           </Link>
                         </td>
                         <td className="px-4 py-3 text-center">

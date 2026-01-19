@@ -187,3 +187,326 @@ export function getAllMenuIds() {
     .all()
     .map((m) => m.menuId);
 }
+
+// ===== PFC検索関連 =====
+
+import { presets, isValidPreset } from "@/lib/presets";
+import type { PresetId, SortBy, SearchResultMenu } from "@/types/search";
+
+/**
+ * PFC類似度を計算してメニューを検索
+ * ユークリッド距離で近いメニューを返す
+ */
+export function searchMenusByPFC(
+  targetP: number,
+  targetF: number,
+  targetC: number,
+  sortBy: SortBy = "pfcMatch",
+  limit = 20,
+  offset = 0,
+  chainId?: string
+): SearchResultMenu[] {
+  // SQLiteでユークリッド距離を計算
+  const pfcDeviation = sql<number>`
+    (${menus.protein} - ${targetP}) * (${menus.protein} - ${targetP}) +
+    (${menus.fat} - ${targetF}) * (${menus.fat} - ${targetF}) +
+    (${menus.carb} - ${targetC}) * (${menus.carb} - ${targetC})
+  `;
+
+  // ソート条件を決定
+  let orderByClause;
+  switch (sortBy) {
+    case "pfcMatch":
+      orderByClause = asc(pfcDeviation);
+      break;
+    case "popularity":
+      orderByClause = desc(menus.viewCount);
+      break;
+    case "costPerformance":
+      // コスパ = タンパク質 / 価格（高いほど良い）
+      orderByClause = desc(sql`CASE WHEN ${menus.price} > 0 THEN ${menus.protein} * 1.0 / ${menus.price} ELSE 0 END`);
+      break;
+    default:
+      orderByClause = asc(pfcDeviation);
+  }
+
+  const query = db
+    .select({
+      menu: menus,
+      chain: chains,
+      pfcDeviationSq: pfcDeviation,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId));
+
+  const results = (chainId
+    ? query.where(eq(menus.chainId, chainId))
+    : query
+  )
+    .orderBy(orderByClause)
+    .limit(limit)
+    .offset(offset)
+    .all();
+
+  // PFCマッチ率を計算して返す
+  return results.map((r) => {
+    const deviation = Math.sqrt(r.pfcDeviationSq);
+    const maxDeviation = 100;
+    const matchPercent = Math.max(0, Math.round(100 - (deviation / maxDeviation) * 100));
+    const costPerProtein = r.menu.price && r.menu.price > 0 && r.menu.protein > 0
+      ? Math.round(r.menu.price / r.menu.protein)
+      : undefined;
+
+    return {
+      menu: r.menu,
+      chain: r.chain,
+      pfcDeviation: Math.round(deviation * 10) / 10,
+      pfcMatchPercent: matchPercent,
+      costPerProtein,
+      popularityScore: r.menu.viewCount ?? 0,
+    };
+  });
+}
+
+/**
+ * プリセット条件でメニューを検索（単一プリセット）
+ */
+export function searchMenusByPreset(
+  presetId: PresetId,
+  sortBy: SortBy = "popularity",
+  limit = 20,
+  offset = 0
+): SearchResultMenu[] {
+  return searchMenusByMultiplePresets([presetId], sortBy, limit, offset);
+}
+
+/**
+ * 複数プリセット条件でメニューを検索（AND条件）
+ */
+export function searchMenusByMultiplePresets(
+  presetIds: PresetId[],
+  sortBy: SortBy = "popularity",
+  limit = 20,
+  offset = 0,
+  chainId?: string
+): SearchResultMenu[] {
+  const validPresetIds = presetIds.filter(isValidPreset);
+  if (validPresetIds.length === 0) {
+    return [];
+  }
+
+  const conditions = [];
+
+  // チェーン店フィルター
+  if (chainId) {
+    conditions.push(eq(menus.chainId, chainId));
+  }
+
+  // 各プリセットのフィルター条件を結合（AND条件）
+  for (const presetId of validPresetIds) {
+    const preset = presets[presetId];
+    if (preset.filter) {
+      if (preset.filter.minProtein !== undefined) {
+        conditions.push(gte(menus.protein, preset.filter.minProtein));
+      }
+      if (preset.filter.maxProtein !== undefined) {
+        conditions.push(lte(menus.protein, preset.filter.maxProtein));
+      }
+      if (preset.filter.minFat !== undefined) {
+        conditions.push(gte(menus.fat, preset.filter.minFat));
+      }
+      if (preset.filter.maxFat !== undefined) {
+        conditions.push(lte(menus.fat, preset.filter.maxFat));
+      }
+      if (preset.filter.minCarb !== undefined) {
+        conditions.push(gte(menus.carb, preset.filter.minCarb));
+      }
+      if (preset.filter.maxCarb !== undefined) {
+        conditions.push(lte(menus.carb, preset.filter.maxCarb));
+      }
+    }
+  }
+
+  // ソート条件を決定
+  let orderByClause;
+  switch (sortBy) {
+    case "popularity":
+      orderByClause = desc(menus.viewCount);
+      break;
+    case "costPerformance":
+      orderByClause = desc(sql`CASE WHEN ${menus.price} > 0 THEN ${menus.protein} * 1.0 / ${menus.price} ELSE 0 END`);
+      break;
+    case "pfcMatch":
+      // 複数プリセットの場合はhealthScoreでソート、単一の場合は特化ソート
+      if (validPresetIds.length === 1) {
+        const presetId = validPresetIds[0];
+        if (presetId === "high_protein") {
+          orderByClause = desc(menus.protein);
+        } else if (presetId === "low_fat") {
+          orderByClause = asc(menus.fat);
+        } else if (presetId === "low_carb") {
+          orderByClause = asc(menus.carb);
+        } else {
+          orderByClause = desc(menus.healthScore);
+        }
+      } else {
+        orderByClause = desc(menus.healthScore);
+      }
+      break;
+    default:
+      orderByClause = desc(menus.healthScore);
+  }
+
+  const query = db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId));
+
+  const results = (conditions.length > 0
+    ? query.where(and(...conditions))
+    : query
+  )
+    .orderBy(orderByClause)
+    .limit(limit)
+    .offset(offset)
+    .all();
+
+  return results.map((r) => {
+    const costPerProtein = r.menu.price && r.menu.price > 0 && r.menu.protein > 0
+      ? Math.round(r.menu.price / r.menu.protein)
+      : undefined;
+
+    return {
+      menu: r.menu,
+      chain: r.chain,
+      costPerProtein,
+      popularityScore: r.menu.viewCount ?? 0,
+    };
+  });
+}
+
+/**
+ * 複数プリセット検索の総件数を取得
+ */
+export function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: string): number {
+  const validPresetIds = presetIds.filter(isValidPreset);
+  if (validPresetIds.length === 0) {
+    return 0;
+  }
+
+  const conditions = [];
+
+  // チェーン店フィルター
+  if (chainId) {
+    conditions.push(eq(menus.chainId, chainId));
+  }
+
+  for (const presetId of validPresetIds) {
+    const preset = presets[presetId];
+    if (preset.filter) {
+      if (preset.filter.minProtein !== undefined) {
+        conditions.push(gte(menus.protein, preset.filter.minProtein));
+      }
+      if (preset.filter.maxProtein !== undefined) {
+        conditions.push(lte(menus.protein, preset.filter.maxProtein));
+      }
+      if (preset.filter.minFat !== undefined) {
+        conditions.push(gte(menus.fat, preset.filter.minFat));
+      }
+      if (preset.filter.maxFat !== undefined) {
+        conditions.push(lte(menus.fat, preset.filter.maxFat));
+      }
+      if (preset.filter.minCarb !== undefined) {
+        conditions.push(gte(menus.carb, preset.filter.minCarb));
+      }
+      if (preset.filter.maxCarb !== undefined) {
+        conditions.push(lte(menus.carb, preset.filter.maxCarb));
+      }
+    }
+  }
+
+  const query = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus);
+
+  const result = (conditions.length > 0
+    ? query.where(and(...conditions))
+    : query
+  ).get();
+
+  return result?.count ?? 0;
+}
+
+/**
+ * プリセット検索の総件数を取得
+ */
+export function countMenusByPreset(presetId: PresetId): number {
+  if (!isValidPreset(presetId)) {
+    return 0;
+  }
+
+  const preset = presets[presetId];
+  const conditions = [];
+
+  if (preset.filter) {
+    if (preset.filter.minProtein !== undefined) {
+      conditions.push(gte(menus.protein, preset.filter.minProtein));
+    }
+    if (preset.filter.maxProtein !== undefined) {
+      conditions.push(lte(menus.protein, preset.filter.maxProtein));
+    }
+    if (preset.filter.minFat !== undefined) {
+      conditions.push(gte(menus.fat, preset.filter.minFat));
+    }
+    if (preset.filter.maxFat !== undefined) {
+      conditions.push(lte(menus.fat, preset.filter.maxFat));
+    }
+    if (preset.filter.minCarb !== undefined) {
+      conditions.push(gte(menus.carb, preset.filter.minCarb));
+    }
+    if (preset.filter.maxCarb !== undefined) {
+      conditions.push(lte(menus.carb, preset.filter.maxCarb));
+    }
+  }
+
+  const query = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus);
+
+  const result = (conditions.length > 0
+    ? query.where(and(...conditions))
+    : query
+  ).get();
+
+  return result?.count ?? 0;
+}
+
+/**
+ * 全メニュー数を取得
+ */
+export function countAllMenus(chainId?: string): number {
+  const query = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus);
+
+  const result = (chainId
+    ? query.where(eq(menus.chainId, chainId))
+    : query
+  ).get();
+  return result?.count ?? 0;
+}
+
+/**
+ * メニューのビュー数をインクリメント
+ */
+export function incrementMenuViewCount(menuId: string): void {
+  db.update(menus)
+    .set({
+      viewCount: sql`COALESCE(${menus.viewCount}, 0) + 1`,
+    })
+    .where(eq(menus.menuId, menuId))
+    .run();
+}

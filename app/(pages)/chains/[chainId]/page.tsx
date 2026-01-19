@@ -5,9 +5,9 @@ import {
   getChainById,
   getMenusByChain,
   getAllChains,
-  purposes,
 } from "@/lib/db/queries";
 import { getCategoryLabel, getCategoryColor, formatPrice } from "@/lib/utils";
+import { ChainSearchBox } from "@/components/chain/ChainSearchBox";
 
 type Props = {
   params: Promise<{ chainId: string }>;
@@ -116,25 +116,9 @@ export default async function ChainDetailPage({ params }: Props) {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        {/* 目的別で探す */}
+        {/* メニュー検索 */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">目的別で探す</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {Object.values(purposes).map((purpose) => (
-              <Link
-                key={purpose.id}
-                href={`/${chainId}/${purpose.id}`}
-                className="bg-card-bg rounded-xl border border-border p-6 hover:border-primary hover:shadow-lg transition-all text-center group"
-              >
-                <p className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">
-                  {purpose.name}
-                </p>
-                <p className="text-xs text-foreground/60 mt-1">
-                  {purpose.description}
-                </p>
-              </Link>
-            ))}
-          </div>
+          <ChainSearchBox chainId={chainId} chainName={chain.chainName} />
         </section>
 
         {/* 人気メニュー */}

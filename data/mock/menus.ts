@@ -177,3 +177,11 @@ export const mockHighProteinMenus: Menu[] = [...mockMenus]
 export const mockLowCarbMenus: Menu[] = [...mockMenus]
   .sort((a, b) => a.nutrition.carb - b.nutrition.carb)
   .slice(0, 5);
+
+// 人気メニューランキング（healthScoreでソート）
+export const mockMenuRanking = [...mockMenus]
+  .sort((a, b) => b.scores.healthScore - a.scores.healthScore)
+  .map((menu, index) => ({
+    ...menu,
+    rank: index + 1,
+  }));

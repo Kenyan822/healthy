@@ -1,10 +1,10 @@
 import { HeroSection } from "@/components/home/HeroSection";
-import { ChainRanking } from "@/components/home/ChainRanking";
+import { MenuRanking } from "@/components/home/MenuRanking";
 import { PopularKeywords } from "@/components/home/PopularKeywords";
 import { LatestMenus } from "@/components/home/LatestMenus";
 import { QuickAccessGrid } from "@/components/home/QuickAccessGrid";
 import {
-  mockChainRanking,
+  mockMenuRanking,
   mockPopularKeywords,
   mockLatestMenus,
   mockSiteStats,
@@ -19,9 +19,9 @@ export default function Home() {
       {/* Main Content Area */}
       <section className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Chain Ranking */}
+          {/* Left Column - Menu Ranking */}
           <div className="lg:col-span-1">
-            <ChainRanking chains={mockChainRanking} />
+            <MenuRanking menus={mockMenuRanking} />
           </div>
 
           {/* Right Column - Keywords & Quick Access */}
