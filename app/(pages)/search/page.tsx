@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { PFCSearchForm } from "@/components/search/PFCSearchForm";
@@ -11,7 +11,7 @@ import type { PresetId, SortBy, SearchResultMenu, SearchResponse } from "@/types
 
 type SearchTab = "custom" | "preset";
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -250,5 +250,22 @@ export default function SearchPage() {
         )}
       </div>
     </main>
+  );
+}
+
+// Suspense境界でラップ
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-12 text-center">
+            <div className="animate-pulse">読み込み中...</div>
+          </div>
+        </main>
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 }

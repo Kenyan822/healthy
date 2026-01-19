@@ -29,7 +29,7 @@ export function LatestMenus({ menus }: LatestMenusProps) {
         {menus.map((menu, index) => (
           <Link
             key={menu.menuId}
-            href={`/menu/${menu.menuId}`}
+            href={`/${menu.chainId}/${menu.menuId}`}
             className={`
               block w-72 group relative
               transition-all duration-300 hover:-translate-y-2 hover:rotate-1
@@ -41,25 +41,14 @@ export function LatestMenus({ menus }: LatestMenusProps) {
             {/* Tape effect */}
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-white/30 backdrop-blur-sm border-l border-r border-white/40 shadow-sm rotate-1 z-20" />
 
-            <div className="bg-white dark:bg-zinc-800 p-3 pb-4 rounded-sm shadow-lg border border-zinc-100 dark:border-zinc-700 h-full flex flex-col">
-              {/* Image Placeholder - Polaroid Style */}
-              <div className="relative aspect-square mb-3 bg-zinc-100 dark:bg-zinc-900 border-4 border-white dark:border-zinc-700 shadow-inner overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center text-zinc-300 dark:text-zinc-600">
-                  <span className="text-4xl">🍽️</span>
-                </div>
-                {/* Update Badge */}
-                <div className="absolute top-2 left-2 z-10">
-                  {getUpdateBadge(menu.updateType)}
-                </div>
+            <div className="bg-white dark:bg-zinc-800 p-4 rounded-sm shadow-lg border border-zinc-100 dark:border-zinc-700 h-full flex flex-col">
+              {/* Header with Badge */}
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-xs font-bold text-zinc-500 border-b border-zinc-200 pb-0.5">
+                  {menu.chainName}
+                </span>
+                {getUpdateBadge(menu.updateType)}
               </div>
-
-              {/* Handwriting Note Style Content */}
-              <div className="flex-1 flex flex-col px-1">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-zinc-500 border-b border-zinc-200 pb-0.5">
-                    {menu.chainName}
-                  </span>
-                </div>
                 
                 <h3 className="font-bold text-lg text-foreground mb-2 leading-tight font-handwriting line-clamp-2 min-h-[3.5rem]">
                   {menu.menuName}
@@ -90,7 +79,6 @@ export function LatestMenus({ menus }: LatestMenusProps) {
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
           </Link>
         ))}

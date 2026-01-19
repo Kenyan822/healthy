@@ -46,12 +46,28 @@ export const menus = sqliteTable("menus", {
   // 人気度追跡
   viewCount: integer("view_count").default(0),
   searchCount: integer("search_count").default(0),
+  // 時間帯
+  timing: text("timing").default("anytime"), // breakfast | lunch | anytime
   // その他
   imageUrl: text("image_url"),
   description: text("description"),
   allergens: text("allergens"), // JSON配列として保存
+  menuSlug: text("menu_slug"), // URLスラッグ（例: gyudon, chicken-kaasan）
   createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
   updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
+});
+
+// 駅マスターテーブル
+export const stations = sqliteTable("stations", {
+  stationId: text("station_id").primaryKey(),
+  stationName: text("station_name").notNull(),
+  stationNameKana: text("station_name_kana"),
+  stationNameEn: text("station_name_en"),
+  prefecture: text("prefecture").notNull(),
+  line: text("line"),
+  lat: real("lat"),
+  lng: real("lng"),
+  createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
 });
 
 // 型エクスポート
@@ -59,3 +75,5 @@ export type ChainInsert = typeof chains.$inferInsert;
 export type ChainSelect = typeof chains.$inferSelect;
 export type MenuInsert = typeof menus.$inferInsert;
 export type MenuSelect = typeof menus.$inferSelect;
+export type StationInsert = typeof stations.$inferInsert;
+export type StationSelect = typeof stations.$inferSelect;

@@ -63,6 +63,7 @@ export interface SearchResponse {
     preset?: PresetId;
     targetPFC?: { protein: number; fat: number; carb: number };
     sortBy: SortBy;
+    chainId?: string;
   };
 }
 

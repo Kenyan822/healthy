@@ -1,0 +1,289 @@
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import {
+  getChainById,
+  getMenusByChain,
+  getAllChains,
+  countMenusByChain,
+} from "@/lib/db/queries";
+import { getCategoryLabel, getCategoryColor, formatPrice } from "@/lib/utils";
+import { purposes, allPurposeIds } from "@/lib/filters";
+
+type Props = {
+  params: Promise<{ store: string }>;
+};
+
+// 静的パス生成
+export async function generateStaticParams() {
+  const chains = getAllChains();
+  return chains.map((chain) => ({ store: chain.chainId }));
+}
+
+// メタデータ生成
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { store } = await params;
+  const chain = getChainById(store);
+
+  if (!chain) {
+    return { title: "チェーン店が見つかりません" };
+  }
+
+  const menuCount = countMenusByChain(store);
+  const title = `${chain.chainName}のヘルシーメニュー｜カロリー・栄養成分一覧`;
+  const description = `${chain.chainName}のメニュー${menuCount}件の栄養成分を掲載。ダイエット・筋トレ・健康維持など目的別にヘルシーメニューを探せます。`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
+    robots: menuCount >= 3 ? { index: true, follow: true } : { index: false, follow: true },
+  };
+}
+
+export default async function StoreTopPage({ params }: Props) {
+  const { store } = await params;
+  const chain = getChainById(store);
+
+  if (!chain) {
+    notFound();
+  }
+
+  const menus = getMenusByChain(store);
+
+  // 人気メニュー（ヘルシースコア順上位5件）
+  const popularMenus = [...menus]
+    .sort((a, b) => (b.healthScore || 0) - (a.healthScore || 0))
+    .slice(0, 5);
+
+  // 全メニュー（表示用：最大6件）
+  const displayMenus = menus.slice(0, 6);
+  const hasMoreMenus = menus.length > 6;
+
+  return (
+    <main className="min-h-screen bg-background">
+      {/* ヒーローセクション */}
+      <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
+        <div className="container mx-auto px-4">
+          {/* パンくずリスト */}
+          <nav className="mb-4 text-sm">
+            <ol className="flex items-center gap-2 text-foreground/60">
+              <li>
+                <Link href="/" className="hover:text-primary">
+                  ホーム
+                </Link>
+              </li>
+              <li>/</li>
+              <li className="text-foreground">{chain.chainName}</li>
+            </ol>
+          </nav>
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <span
+                className={`inline-block text-xs px-2 py-0.5 rounded mb-2 ${getCategoryColor(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}`}
+              >
+                {getCategoryLabel(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}
+              </span>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                {chain.chainName}のヘルシーメニュー
+              </h1>
+              {chain.description && (
+                <p className="text-lg text-foreground/70 mt-2">
+                  {chain.description}
+                </p>
+              )}
+            </div>
+            <div className="flex gap-4 text-sm">
+              {chain.storeCount && (
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">
+                    {chain.storeCount.toLocaleString()}
+                  </p>
+                  <p className="text-foreground/60">店舗</p>
+                </div>
+              )}
+              <div className="text-center">
+                <p className="text-2xl font-bold text-accent">{menus.length}</p>
+                <p className="text-foreground/60">メニュー</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* 目的別リンク */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">目的別に探す</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {allPurposeIds.map((purposeId) => {
+              const purpose = purposes[purposeId];
+              return (
+                <Link
+                  key={purposeId}
+                  href={`/${store}/${purposeId}`}
+                  className="bg-card-bg rounded-xl border border-border p-4 hover:border-primary transition-colors text-center"
+                >
+                  <p className="font-bold text-foreground">{purpose.name}</p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {purpose.description}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* クイックリンク */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">栄養成分で絞り込む</h2>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/${store}/protein-over-30g`}
+              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
+            >
+              タンパク質30g以上
+            </Link>
+            <Link
+              href={`/${store}/fat-under-20g`}
+              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
+            >
+              脂質20g以下
+            </Link>
+            <Link
+              href={`/${store}/carb-under-60g`}
+              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
+            >
+              糖質60g以下
+            </Link>
+            <Link
+              href={`/${store}/under-500yen`}
+              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
+            >
+              500円以下
+            </Link>
+            <Link
+              href={`/${store}/menu`}
+              className="px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors text-sm"
+            >
+              全メニューを見る →
+            </Link>
+          </div>
+        </section>
+
+        {/* 人気メニュー */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">おすすめメニュー</h2>
+            <Link
+              href={`/${store}/ranking`}
+              className="text-primary hover:underline text-sm"
+            >
+              ランキングを見る →
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {popularMenus.map((menu, index) => (
+              <Link
+                key={menu.menuId}
+                href={`/${store}/${menu.menuSlug || menu.menuId}`}
+                className="bg-card-bg rounded-xl border border-border p-4 hover:border-primary transition-colors flex gap-4"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-foreground">{menu.menuName}</p>
+                  <div className="flex gap-3 text-xs text-foreground/60 mt-1">
+                    <span>{menu.calories}kcal</span>
+                    <span>P{menu.protein}g</span>
+                    <span>F{menu.fat}g</span>
+                    <span>C{menu.carb}g</span>
+                  </div>
+                  {menu.price && (
+                    <p className="text-sm text-primary font-bold mt-1">
+                      {formatPrice(menu.price)}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* 全メニュー */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">全メニュー（{menus.length}件）</h2>
+            {hasMoreMenus && (
+              <Link
+                href={`/${store}/menu`}
+                className="text-primary hover:underline text-sm"
+              >
+                もっと見る →
+              </Link>
+            )}
+          </div>
+          <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
+            <div className="divide-y divide-border">
+              {displayMenus.map((menu) => (
+                <Link
+                  key={menu.menuId}
+                  href={`/menu/${menu.menuId}`}
+                  className="flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="font-bold text-foreground">{menu.menuName}</p>
+                    <div className="flex gap-3 text-xs text-foreground/60 mt-1">
+                      <span>{menu.calories}kcal</span>
+                      <span>P{menu.protein}g</span>
+                      <span>F{menu.fat}g</span>
+                      <span>C{menu.carb}g</span>
+                    </div>
+                  </div>
+                  {menu.price && (
+                    <p className="text-sm text-primary font-bold">
+                      {formatPrice(menu.price)}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+          {hasMoreMenus && (
+            <div className="text-center mt-4">
+              <Link
+                href={`/${store}/menu`}
+                className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
+              >
+                全{menus.length}件のメニューを見る
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* 公式サイトリンク */}
+        {chain.officialUrl && (
+          <div className="mt-8 p-6 bg-card-bg rounded-xl border border-border text-center">
+            <p className="text-foreground/70 mb-4">
+              栄養成分は{chain.chainName}公式サイトを参照しています。最新情報は公式サイトをご確認ください。
+            </p>
+            <a
+              href={chain.officialUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
+            >
+              {chain.chainName}公式サイト →
+            </a>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

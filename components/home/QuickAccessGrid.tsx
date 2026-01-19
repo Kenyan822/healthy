@@ -6,7 +6,7 @@ const quickAccessItems = [
     title: "高タンパク",
     description: "筋トレ民の味方",
     icon: "💪",
-    href: "/purpose/protein",
+    href: "/ranking/high-protein",
     className:
       "col-span-2 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 text-orange-900 dark:text-orange-100",
     iconSize: "text-4xl right-2 bottom-2",
@@ -16,7 +16,7 @@ const quickAccessItems = [
     title: "低糖質",
     description: "ロカボ生活",
     icon: "🥬",
-    href: "/purpose/lowcarb",
+    href: "/ranking/low-carb",
     className:
       "col-span-1 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-900 dark:text-green-100",
     iconSize: "text-3xl right-1 bottom-1",
@@ -26,7 +26,7 @@ const quickAccessItems = [
     title: "ダイエット",
     description: "カロリー控えめ",
     icon: "📉",
-    href: "/purpose/diet",
+    href: "/ranking/diet",
     className:
       "col-span-1 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-900 dark:text-blue-100",
     iconSize: "text-3xl right-1 bottom-1",
@@ -36,7 +36,7 @@ const quickAccessItems = [
     title: "ヘルシー",
     description: "バランス重視",
     icon: "🥗",
-    href: "/purpose/health",
+    href: "/ranking/health",
     className:
       "col-span-2 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-900 dark:text-yellow-100",
     iconSize: "text-4xl right-2 bottom-2",
@@ -52,7 +52,7 @@ export function QuickAccessGrid() {
           <span>目的から探す</span>
         </h2>
         <Link
-          href="/chains"
+          href="/ranking"
           className="text-xs font-bold text-zinc-400 hover:text-primary transition-colors"
         >
           すべて見る →

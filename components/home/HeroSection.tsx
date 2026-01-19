@@ -206,7 +206,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-xl p-6 mb-8 border border-zinc-100 dark:border-zinc-700">
             {/* Preset Buttons */}
             <div className="mb-6">
-              <p className="text-sm font-medium text-foreground/70 mb-3">プリセットで検索</p>
+              <p className="text-sm font-medium text-foreground/70 mb-3">目的で探す</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {presetCards.map((preset) => {
                   const isSelected = selectedPresets.includes(preset.id);

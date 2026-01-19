@@ -26,7 +26,7 @@ export function MenuRanking({ menus }: MenuRankingProps) {
           </span>
         </h2>
         <Link
-          href="/search"
+          href="/ranking/health"
           className="text-xs font-bold text-zinc-400 hover:text-primary transition-colors flex items-center gap-1 border-b border-dashed border-zinc-300 hover:border-primary"
         >
           すべて見る
@@ -41,7 +41,7 @@ export function MenuRanking({ menus }: MenuRankingProps) {
             return (
               <Link
                 key={menu.menuId}
-                href={`/menu/${menu.menuId}`}
+                href={`/${menu.chainId}/${menu.menuId}`}
                 className="block group relative"
               >
                 <div
@@ -105,7 +105,7 @@ export function MenuRanking({ menus }: MenuRankingProps) {
             {others.map((menu) => (
               <Link
                 key={menu.menuId}
-                href={`/menu/${menu.menuId}`}
+                href={`/${menu.chainId}/${menu.menuId}`}
                 className="flex items-center gap-3 py-3 border-b border-dashed border-zinc-200 dark:border-zinc-700 last:border-0 hover:bg-white/80 dark:hover:bg-zinc-700/50 -mx-2 px-2 rounded-lg transition-colors group"
               >
                 <span className="font-bold text-zinc-400 w-6 text-center group-hover:text-primary">{menu.rank}</span>

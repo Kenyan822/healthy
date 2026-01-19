@@ -510,3 +510,272 @@ export function incrementMenuViewCount(menuId: string): void {
     .where(eq(menus.menuId, menuId))
     .run();
 }
+
+// ===== 新SEOフィルター用クエリ =====
+
+import {
+  nutritionFilters,
+  priceFilters,
+  timingFilters,
+  purposes as seoFilterPurposes,
+  type NutritionFilterId,
+  type PriceFilterId,
+  type TimingFilterId,
+  type PurposeId as SeoPurposeId,
+} from "@/lib/filters";
+
+/**
+ * 栄養フィルターでメニューを取得
+ */
+export function getMenusByNutritionFilter(
+  chainId: string,
+  filterId: NutritionFilterId,
+  limit = 50
+) {
+  const filter = nutritionFilters[filterId];
+  const conditions = [eq(menus.chainId, chainId)];
+
+  if ("min" in filter) {
+    // protein-over-XXg
+    conditions.push(gte(menus[filter.type], filter.min));
+  } else {
+    // fat-under-XXg, carb-under-XXg
+    conditions.push(lte(menus[filter.type], filter.max));
+  }
+
+  return db
+    .select()
+    .from(menus)
+    .where(and(...conditions))
+    .orderBy(
+      "min" in filter ? desc(menus[filter.type]) : asc(menus[filter.type])
+    )
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 栄養フィルターでメニュー数を取得（品質チェック用）
+ */
+export function countMenusByNutritionFilter(
+  chainId: string,
+  filterId: NutritionFilterId
+): number {
+  const filter = nutritionFilters[filterId];
+  const conditions = [eq(menus.chainId, chainId)];
+
+  if ("min" in filter) {
+    conditions.push(gte(menus[filter.type], filter.min));
+  } else {
+    conditions.push(lte(menus[filter.type], filter.max));
+  }
+
+  const result = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus)
+    .where(and(...conditions))
+    .get();
+
+  return result?.count ?? 0;
+}
+
+/**
+ * 価格フィルターでメニューを取得
+ */
+export function getMenusByPriceFilter(
+  chainId: string,
+  filterId: PriceFilterId,
+  limit = 50
+) {
+  const filter = priceFilters[filterId];
+
+  return db
+    .select()
+    .from(menus)
+    .where(and(eq(menus.chainId, chainId), lte(menus.price, filter.max)))
+    .orderBy(asc(menus.price))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 価格フィルターでメニュー数を取得（品質チェック用）
+ */
+export function countMenusByPriceFilter(
+  chainId: string,
+  filterId: PriceFilterId
+): number {
+  const filter = priceFilters[filterId];
+
+  const result = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus)
+    .where(and(eq(menus.chainId, chainId), lte(menus.price, filter.max)))
+    .get();
+
+  return result?.count ?? 0;
+}
+
+/**
+ * 時間帯フィルターでメニューを取得
+ */
+export function getMenusByTiming(
+  chainId: string,
+  filterId: TimingFilterId,
+  limit = 50
+) {
+  const filter = timingFilters[filterId];
+
+  return db
+    .select()
+    .from(menus)
+    .where(
+      and(
+        eq(menus.chainId, chainId),
+        sql`(${menus.timing} = ${filter.value} OR ${menus.timing} = 'anytime')`
+      )
+    )
+    .orderBy(desc(menus.healthScore))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 時間帯フィルターでメニュー数を取得（品質チェック用）
+ */
+export function countMenusByTiming(
+  chainId: string,
+  filterId: TimingFilterId
+): number {
+  const filter = timingFilters[filterId];
+
+  const result = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus)
+    .where(
+      and(
+        eq(menus.chainId, chainId),
+        sql`(${menus.timing} = ${filter.value} OR ${menus.timing} = 'anytime')`
+      )
+    )
+    .get();
+
+  return result?.count ?? 0;
+}
+
+/**
+ * 目的（SEOフィルター版）でメニューを取得
+ */
+export function getMenusBySeoPurpose(
+  chainId: string,
+  purposeId: SeoPurposeId,
+  limit = 50
+) {
+  const purpose = seoFilterPurposes[purposeId];
+  const scoreField = menus[purpose.scoreField];
+
+  return db
+    .select()
+    .from(menus)
+    .where(eq(menus.chainId, chainId))
+    .orderBy(desc(scoreField))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * チェーン店のメニュー数を取得（品質チェック用）
+ */
+export function countMenusByChain(chainId: string): number {
+  const result = db
+    .select({ count: sql<number>`count(*)` })
+    .from(menus)
+    .where(eq(menus.chainId, chainId))
+    .get();
+
+  return result?.count ?? 0;
+}
+
+/**
+ * メニュースラッグで取得（チェーン店情報付き）
+ */
+export function getMenuBySlug(chainId: string, slug: string) {
+  // menuSlugがnullの場合はmenuIdで検索
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(
+      and(
+        eq(menus.chainId, chainId),
+        sql`(${menus.menuSlug} = ${slug} OR ${menus.menuId} = ${slug})`
+      )
+    )
+    .get();
+}
+
+/**
+ * 全メニュースラッグを取得（静的生成用）
+ */
+export function getAllMenuSlugs() {
+  // menuSlugがあればそれを、なければmenuIdを使用
+  return db
+    .select({
+      chainId: menus.chainId,
+      menuSlug: sql<string>`COALESCE(${menus.menuSlug}, ${menus.menuId})`.as("menu_slug"),
+    })
+    .from(menus)
+    .all();
+}
+
+/**
+ * チェーン店のランキング取得（healthScore順）
+ */
+export function getChainMenuRanking(chainId: string, limit = 10) {
+  return db
+    .select()
+    .from(menus)
+    .where(eq(menus.chainId, chainId))
+    .orderBy(desc(menus.healthScore))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 全チェーンランキング取得（目的別）
+ */
+export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
+  const purpose = seoFilterPurposes[purposeId];
+  const scoreField = menus[purpose.scoreField];
+
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .orderBy(desc(scoreField))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * チェーン店別ランキング取得
+ */
+export function getChainRankingGlobal(chainId: string, limit = 20) {
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(eq(menus.chainId, chainId))
+    .orderBy(desc(menus.healthScore))
+    .limit(limit)
+    .all();
+}
