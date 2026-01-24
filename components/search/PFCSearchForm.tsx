@@ -28,7 +28,7 @@ export function PFCSearchForm({
   const [protein, setProtein] = useState(initialValues?.protein?.toString() || "");
   const [fat, setFat] = useState(initialValues?.fat?.toString() || "");
   const [carb, setCarb] = useState(initialValues?.carb?.toString() || "");
-  const [sortBy, setSortBy] = useState<SortBy>(initialValues?.sortBy || "pfcMatch");
+  const [sortBy, setSortBy] = useState<SortBy>(initialValues?.sortBy || "proteinDensity");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +45,10 @@ export function PFCSearchForm({
   };
 
   const sortOptions: { value: SortBy; label: string; disabled?: boolean }[] = [
-    { value: "pfcMatch", label: "PFCマッチ度" },
-    { value: "popularity", label: "人気度" },
+    { value: "proteinDensity", label: "タンパク質密度" },
+    { value: "protein", label: "タンパク質量" },
+    { value: "calories", label: "カロリー" },
+    { value: "pfcBalance", label: "PFCバランス" },
     { value: "costPerformance", label: "コスパ" },
     { value: "distance", label: "近い順", disabled: !LOCATION_FEATURE_ENABLED },
   ];
@@ -118,6 +120,7 @@ export function PFCSearchForm({
         </div>
       </div>
 
+      {/* 表示順 - 一時的にコメントアウト
       <div>
         <label className="block text-sm font-medium text-foreground/70 mb-3">
           表示順
@@ -146,6 +149,7 @@ export function PFCSearchForm({
           ))}
         </div>
       </div>
+      */}
 
       <button
         type="submit"

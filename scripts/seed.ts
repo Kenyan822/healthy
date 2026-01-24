@@ -3,24 +3,6 @@ import path from "path";
 
 const db = new Database(path.join(process.cwd(), "data", "chain_restaurant.db"));
 
-// スコア計算関数
-function calculateScores(calories: number, protein: number, fat: number, carb: number, fiber: number = 3, sodium: number = 2.5) {
-  // muscleScore: タンパク質重視（高タンパク・適正カロリー）- 0-100
-  const muscleScore = Math.min(100, Math.max(0, (protein / calories * 100) * 3));
-
-  // dietScore: 低カロリー・低脂質重視 - 0-100
-  const dietScore = Math.min(100, Math.max(0, 100 - (calories / 15) - (fat * 1.5)));
-
-  // healthScore: バランス重視 - 0-100
-  const healthScore = Math.min(100, Math.max(0, 50 + (protein * 1) + (fiber * 3) - (sodium * 5) - (fat * 0.5)));
-
-  return {
-    muscleScore: Math.round(muscleScore * 10) / 10,
-    dietScore: Math.round(dietScore * 10) / 10,
-    healthScore: Math.round(healthScore * 10) / 10,
-  };
-}
-
 // ============================
 // チェーン店データ
 // ============================
@@ -588,28 +570,17 @@ function insertMenus(menus: typeof ootoyaMenus, chainId: string) {
     INSERT OR REPLACE INTO menus (
       menu_id, chain_id, menu_name, price, category,
       calories, protein, fat, carb, fiber, sodium,
-      muscle_score, diet_score, health_score,
       is_seasonal, is_limited, is_available,
       created_at, updated_at
     ) VALUES (
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?, ?, ?,
-      ?, ?, ?,
       0, 0, 1,
       datetime('now'), datetime('now')
     )
   `);
 
   for (const menu of menus) {
-    const scores = calculateScores(
-      menu.calories,
-      menu.protein,
-      menu.fat,
-      menu.carb,
-      menu.fiber,
-      menu.sodium
-    );
-
     insertStmt.run(
       menu.menu_id,
       chainId,
@@ -621,10 +592,7 @@ function insertMenus(menus: typeof ootoyaMenus, chainId: string) {
       menu.fat,
       menu.carb,
       menu.fiber,
-      menu.sodium,
-      scores.muscleScore,
-      scores.dietScore,
-      scores.healthScore
+      menu.sodium
     );
   }
 }

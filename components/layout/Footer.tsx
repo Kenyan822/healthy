@@ -28,7 +28,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/chains/ootoya"
+                  href="/ootoya"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   大戸屋
@@ -36,7 +36,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/chains/sukiya"
+                  href="/sukiya"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   すき家
@@ -44,7 +44,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/chains/yayoiken"
+                  href="/yayoiken"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   やよい軒
@@ -52,7 +52,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/chains/matsuya"
+                  href="/matsuya"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   松屋
@@ -69,34 +69,34 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/purpose/muscle"
-                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                >
-                  筋トレ・バルクアップ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/purpose/diet"
-                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                >
-                  ダイエット
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/purpose/health"
-                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
-                >
-                  健康維持
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/purpose/protein"
+                  href="/ranking/high-protein"
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   高タンパク
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ranking/low-calorie"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  低カロリー
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ranking/low-carb"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  低糖質
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ranking/cost-performance"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  タンパク質コスパ
                 </Link>
               </li>
             </ul>
@@ -114,6 +114,14 @@ export function Footer() {
                   className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                 >
                   チェーン店一覧
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  お問い合わせ・情報提供
                 </Link>
               </li>
             </ul>

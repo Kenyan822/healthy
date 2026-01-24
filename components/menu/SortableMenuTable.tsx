@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 type SortKey = "score" | "calories" | "protein" | "fat" | "carb" | "costCalories" | "costProtein" | "costFat" | "costCarb";
 type SortOrder = "asc" | "desc";
@@ -182,6 +183,8 @@ export function SortableMenuTable({ menus, scoreField, purposeName }: SortableMe
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
                   <SortButton label="P/¥" sortKeyValue="costProtein" />
                 </th>
+                <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70 w-12">
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -220,6 +223,9 @@ export function SortableMenuTable({ menus, scoreField, purposeName }: SortableMe
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-foreground/60">
                       {costProtein !== "-" ? `${costProtein}g/100円` : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <FavoriteButton menuId={menu.menuId} size="sm" />
                     </td>
                   </tr>
                 );

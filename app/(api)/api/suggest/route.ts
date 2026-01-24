@@ -68,32 +68,16 @@ function buildSuggestions(): SuggestItem[] {
   for (const purposeId of allPurposeIds) {
     const purpose = purposes[purposeId];
 
-    // dietの場合、ヘルシーとダイエットを別々のサジェストとして追加
-    if (purposeId === "diet") {
-      suggestions.push({
-        type: "ranking",
-        label: `ヘルシー ランキング`,
-        url: `/ranking/${purposeId}`,
-        keywords: ["ヘルシー", "ランキング"],
-      });
-      suggestions.push({
-        type: "ranking",
-        label: `ダイエット ランキング`,
-        url: `/ranking/${purposeId}`,
-        keywords: ["ダイエット", "低カロリー", "痩せる", "ランキング"],
-      });
-    } else {
-      suggestions.push({
-        type: "ranking",
-        label: `${purpose.name} ランキング`,
-        url: `/ranking/${purposeId}`,
-        keywords: [
-          purpose.name,
-          ...purpose.keywords,
-          "ランキング",
-        ],
-      });
-    }
+    suggestions.push({
+      type: "ranking",
+      label: `${purpose.name} ランキング`,
+      url: `/ranking/${purposeId}`,
+      keywords: [
+        purpose.name,
+        ...purpose.keywords,
+        "ランキング",
+      ],
+    });
   }
 
   // 4. チェーン店×目的の組み合わせ
@@ -104,43 +88,17 @@ function buildSuggestions(): SuggestItem[] {
     for (const purposeId of allPurposeIds) {
       const purpose = purposes[purposeId];
 
-      // dietの場合、ヘルシーとダイエットを別々のサジェストとして追加
-      if (purposeId === "diet") {
-        suggestions.push({
-          type: "chain_purpose",
-          label: `${chain.chainName} ヘルシー`,
-          url: `/${chain.chainId}/${purposeId}`,
-          keywords: [
-            chain.chainName,
-            chain.chainNameEn.toLowerCase(),
-            "ヘルシー",
-          ],
-        });
-        suggestions.push({
-          type: "chain_purpose",
-          label: `${chain.chainName} ダイエット`,
-          url: `/${chain.chainId}/${purposeId}`,
-          keywords: [
-            chain.chainName,
-            chain.chainNameEn.toLowerCase(),
-            "ダイエット",
-            "低カロリー",
-            "痩せる",
-          ],
-        });
-      } else {
-        suggestions.push({
-          type: "chain_purpose",
-          label: `${chain.chainName} ${purpose.name}`,
-          url: `/${chain.chainId}/${purposeId}`,
-          keywords: [
-            chain.chainName,
-            chain.chainNameEn.toLowerCase(),
-            purpose.name,
-            ...purpose.keywords,
-          ],
-        });
-      }
+      suggestions.push({
+        type: "chain_purpose",
+        label: `${chain.chainName} ${purpose.name}`,
+        url: `/${chain.chainId}/${purposeId}`,
+        keywords: [
+          chain.chainName,
+          chain.chainNameEn.toLowerCase(),
+          purpose.name,
+          ...purpose.keywords,
+        ],
+      });
     }
   }
 
@@ -201,7 +159,12 @@ function matchesQuery(item: SuggestItem, query: string): boolean {
   // 全ての入力単語がラベルまたはキーワードに含まれているかチェック
   for (const word of queryWords) {
     const inLabel = normalizedLabel.includes(word);
-    const inKeywords = item.keywords.some(k => k.toLowerCase().includes(word));
+
+    // 1文字のクエリはラベルのみでマッチ（キーワードマッチは2文字以上）
+    // これにより「お」→「お得」のような意図しないマッチを防ぐ
+    const inKeywords = word.length >= 2 &&
+      item.keywords.some(k => k.toLowerCase().includes(word));
+
     if (!inLabel && !inKeywords) {
       return false;
     }
@@ -247,36 +210,39 @@ function calculateMatchScore(item: SuggestItem, query: string): number {
 function buildDisplayLabel(item: SuggestItem, query: string): string {
   const queryWords = query.trim().split(/\s+/).filter(w => w.length > 0);
 
-  // 入力が1単語でラベルにそのまま含まれていればラベルをそのまま返す
+  // 入力が1単語の場合は常に元のラベルを返す
+  // （キーワードマッチでも元のラベルが最も分かりやすい）
   if (queryWords.length === 1) {
-    if (item.label.toLowerCase().includes(queryWords[0].toLowerCase())) {
-      return item.label;
-    }
+    return item.label;
   }
 
-  // 複数単語の場合、入力されたキーワードを使ってラベルを再構築
+  // 複数単語の場合のみ、ラベルの組み立てを行う
   const matchedParts: string[] = [];
+  const labelWords = item.label.split(/\s+/);
 
   for (const word of queryWords) {
     const wordLower = word.toLowerCase();
 
-    // ラベルに含まれていればそのまま使う
-    if (item.label.toLowerCase().includes(wordLower)) {
-      // ラベルから元の表記を取得
-      const labelWords = item.label.split(/\s+/);
-      for (const labelWord of labelWords) {
-        if (labelWord.toLowerCase().includes(wordLower) && !matchedParts.includes(labelWord)) {
-          matchedParts.push(labelWord);
-          break;
-        }
+    // ラベル内の単語と一致するものがあればそれを使う
+    let foundInLabel = false;
+    for (const labelWord of labelWords) {
+      if (labelWord.toLowerCase().includes(wordLower) && !matchedParts.includes(labelWord)) {
+        matchedParts.push(labelWord);
+        foundInLabel = true;
+        break;
       }
-    } else {
-      // キーワードにマッチした場合、入力をそのまま使う
+    }
+
+    // ラベルに見つからなかった場合、キーワードにマッチしても元のラベル単語を追加
+    if (!foundInLabel) {
       for (const keyword of item.keywords) {
         if (keyword.toLowerCase().includes(wordLower)) {
-          // 元のキーワードではなく入力されたワードを使う
-          if (!matchedParts.some(p => p.toLowerCase() === wordLower)) {
-            matchedParts.push(word);
+          // ラベルからまだ追加していない単語を追加
+          for (const lw of labelWords) {
+            if (!matchedParts.includes(lw)) {
+              matchedParts.push(lw);
+              break;
+            }
           }
           break;
         }

@@ -14,6 +14,42 @@ import {
   type PurposeId,
 } from "@/lib/filters";
 import { formatPrice } from "@/lib/utils";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import type { MenuSelect } from "@/lib/db/schema";
+
+// 事実ベース指標の表示値を計算
+function getDisplayValue(menu: MenuSelect, sortField: string): { value: string; label: string } {
+  switch (sortField) {
+    case "protein":
+      return { value: `${menu.protein}g`, label: "タンパク質" };
+    case "calories":
+      return { value: `${menu.calories}kcal`, label: "カロリー" };
+    case "proteinDensity":
+      return { value: ((menu.protein / menu.calories) * 100).toFixed(1), label: "P密度" };
+    case "carbRatio":
+      return { value: `${(((menu.carb * 4) / menu.calories) * 100).toFixed(1)}%`, label: "糖質比率" };
+    case "fatRatio":
+      return { value: `${(((menu.fat * 9) / menu.calories) * 100).toFixed(1)}%`, label: "脂質比率" };
+    case "pfcBalance": {
+      const totalCal = menu.protein * 4 + menu.fat * 9 + menu.carb * 4;
+      const pRatio = (menu.protein * 4) / totalCal;
+      const fRatio = (menu.fat * 9) / totalCal;
+      const cRatio = (menu.carb * 4) / totalCal;
+      const deviation = Math.abs(pRatio - 0.2) + Math.abs(fRatio - 0.25) + Math.abs(cRatio - 0.55);
+      const score = Math.max(0, 100 - deviation * 100);
+      return { value: score.toFixed(0), label: "バランス" };
+    }
+    case "costPerformance": {
+      if (menu.price && menu.price > 0 && menu.protein > 0) {
+        const costPerProtein = (menu.price / menu.protein).toFixed(1);
+        return { value: `${costPerProtein}円/gP`, label: "コスパ" };
+      }
+      return { value: "-", label: "コスパ" };
+    }
+    default:
+      return { value: `${menu.protein}g`, label: "タンパク質" };
+  }
+}
 
 type Props = {
   params: Promise<{ type: string }>;
@@ -139,48 +175,56 @@ function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
           <h2 className="text-2xl font-bold mb-6">ランキング（{menus.length}件）</h2>
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
             <div className="divide-y divide-border">
-              {menus.map(({ menu, chain }, index) => (
-                <Link
-                  key={menu.menuId}
-                  href={`/${chain.chainId}/${menu.menuSlug || menu.menuId}`}
-                  className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                      index === 0
-                        ? "bg-yellow-500 text-white"
-                        : index === 1
-                          ? "bg-gray-400 text-white"
-                          : index === 2
-                            ? "bg-amber-600 text-white"
-                            : "bg-primary/10 text-primary"
-                    }`}
+              {menus.map(({ menu, chain }, index) => {
+                const displayValue = getDisplayValue(menu, purpose.sortField);
+                return (
+                <div key={menu.menuId} className="relative flex items-center">
+                  <Link
+                    href={`/menu/${menu.menuId}`}
+                    className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors flex-1 pr-14"
                   >
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-foreground/60">{chain.chainName}</p>
-                    <p className="font-bold text-foreground">{menu.menuName}</p>
-                    <div className="flex gap-3 text-xs text-foreground/60 mt-1">
-                      <span>{menu.calories}kcal</span>
-                      <span>P{menu.protein}g</span>
-                      <span>F{menu.fat}g</span>
-                      <span>C{menu.carb}g</span>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        index === 0
+                          ? "bg-yellow-500 text-white"
+                          : index === 1
+                            ? "bg-gray-400 text-white"
+                            : index === 2
+                              ? "bg-amber-600 text-white"
+                              : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {index + 1}
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-primary">
-                      {menu[purpose.scoreField]?.toFixed(1)}
-                    </p>
-                    <p className="text-xs text-foreground/60">スコア</p>
-                  </div>
-                  {menu.price && (
+                    <div className="flex-1">
+                      <p className="text-xs text-foreground/60">{chain.chainName}</p>
+                      <p className="font-bold text-foreground">{menu.menuName}</p>
+                      <div className="flex gap-3 text-xs text-foreground/60 mt-1">
+                        <span>{menu.calories}kcal</span>
+                        <span>P{menu.protein}g</span>
+                        <span>F{menu.fat}g</span>
+                        <span>C{menu.carb}g</span>
+                      </div>
+                    </div>
                     <div className="text-right">
-                      <p className="font-bold">{formatPrice(menu.price)}</p>
+                      <p className="text-lg font-bold text-primary">
+                        {displayValue.value}
+                      </p>
+                      <p className="text-xs text-foreground/60">{displayValue.label}</p>
                     </div>
-                  )}
-                </Link>
-              ))}
+                    {menu.price && (
+                      <div className="text-right">
+                        <p className="font-bold">{formatPrice(menu.price)}</p>
+                      </div>
+                    )}
+                  </Link>
+                  <FavoriteButton
+                    menuId={menu.menuId}
+                    size="sm"
+                    className="absolute right-4"
+                  />
+                </div>
+              );})}
             </div>
           </div>
         </section>
@@ -256,45 +300,51 @@ function ChainRankingView({
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
             <div className="divide-y divide-border">
               {menus.map(({ menu }, index) => (
-                <Link
-                  key={menu.menuId}
-                  href={`/${chainId}/${menu.menuSlug || menu.menuId}`}
-                  className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                      index === 0
-                        ? "bg-yellow-500 text-white"
-                        : index === 1
-                          ? "bg-gray-400 text-white"
-                          : index === 2
-                            ? "bg-amber-600 text-white"
-                            : "bg-primary/10 text-primary"
-                    }`}
+                <div key={menu.menuId} className="relative flex items-center">
+                  <Link
+                    href={`/menu/${menu.menuId}`}
+                    className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors flex-1 pr-14"
                   >
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-foreground">{menu.menuName}</p>
-                    <div className="flex gap-3 text-xs text-foreground/60 mt-1">
-                      <span>{menu.calories}kcal</span>
-                      <span>P{menu.protein}g</span>
-                      <span>F{menu.fat}g</span>
-                      <span>C{menu.carb}g</span>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        index === 0
+                          ? "bg-yellow-500 text-white"
+                          : index === 1
+                            ? "bg-gray-400 text-white"
+                            : index === 2
+                              ? "bg-amber-600 text-white"
+                              : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {index + 1}
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-primary">
-                      {menu.healthScore?.toFixed(1)}
-                    </p>
-                    <p className="text-xs text-foreground/60">スコア</p>
-                  </div>
-                  {menu.price && (
+                    <div className="flex-1">
+                      <p className="font-bold text-foreground">{menu.menuName}</p>
+                      <div className="flex gap-3 text-xs text-foreground/60 mt-1">
+                        <span>{menu.calories}kcal</span>
+                        <span>P{menu.protein}g</span>
+                        <span>F{menu.fat}g</span>
+                        <span>C{menu.carb}g</span>
+                      </div>
+                    </div>
                     <div className="text-right">
-                      <p className="font-bold">{formatPrice(menu.price)}</p>
+                      <p className="text-lg font-bold text-primary">
+                        {((menu.protein / menu.calories) * 100).toFixed(1)}
+                      </p>
+                      <p className="text-xs text-foreground/60">P密度</p>
                     </div>
-                  )}
-                </Link>
+                    {menu.price && (
+                      <div className="text-right">
+                        <p className="font-bold">{formatPrice(menu.price)}</p>
+                      </div>
+                    )}
+                  </Link>
+                  <FavoriteButton
+                    menuId={menu.menuId}
+                    size="sm"
+                    className="absolute right-4"
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -334,11 +384,12 @@ function ChainRankingView({
 // ============================
 function getRankingIntroText(purposeId: PurposeId): string {
   const introText: Record<PurposeId, string> = {
-    "high-protein": "外食でも高タンパクな食事を摂りたい方へ。筋トレやボディメイク中の方におすすめのメニューを、タンパク質量とPFCバランスでランキングしました。",
-    "diet": "外食でもダイエットを続けたい方へ。カロリーと栄養バランスを考慮した、ダイエット中におすすめのメニューをランキング形式で紹介します。",
-    "health": "外食でも健康的な食事を心がけたい方へ。栄養バランスの良いメニューを、健康スコアでランキングしました。",
-    "low-carb": "外食でも糖質制限を続けたい方へ。炭水化物を抑えたメニューを、糖質量と栄養バランスでランキングしました。",
+    "high-protein": "外食でも高タンパクな食事を摂りたい方へ。筋トレやボディメイク中の方におすすめのメニューを、タンパク質量でランキングしました。",
+    "protein-dense": "カロリーあたりのタンパク質量を重視する方へ。効率的にタンパク質を摂取できるメニューをランキング形式で紹介します。",
+    "low-calorie": "外食でもダイエットを続けたい方へ。カロリーを抑えたメニューをランキング形式で紹介します。",
+    "low-carb": "外食でも糖質制限を続けたい方へ。炭水化物を抑えたメニューを、糖質比率でランキングしました。",
     "low-fat": "外食でも脂質を抑えた食事をしたい方へ。ローファットダイエット中でも安心して選べるメニューをランキング形式で紹介します。",
+    "balanced": "外食でも健康的な食事を心がけたい方へ。PFCバランスの良いメニューをランキングしました。",
   };
 
   return introText[purposeId];

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { NutritionLabel } from "@/components/ui/NutritionLabel";
 import { formatPrice } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 interface LatestMenusProps {
   menus: LatestMenu[];
@@ -27,28 +28,28 @@ export function LatestMenus({ menus }: LatestMenusProps) {
     <div className="overflow-x-auto pb-12 pt-4 -mx-4 px-4 scrollbar-hide">
       <div className="flex gap-6" style={{ minWidth: "max-content" }}>
         {menus.map((menu, index) => (
-          <Link
+          <div
             key={menu.menuId}
-            href={`/${menu.chainId}/${menu.menuId}`}
-            className={`
-              block w-72 group relative
-              transition-all duration-300 hover:-translate-y-2 hover:rotate-1
-            `}
+            className="relative w-72"
             style={{
               transform: `rotate(${index % 2 === 0 ? '-1deg' : '1deg'})`,
             }}
           >
-            {/* Tape effect */}
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-white/30 backdrop-blur-sm border-l border-r border-white/40 shadow-sm rotate-1 z-20" />
+            <Link
+              href={`/menu/${menu.menuId}`}
+              className="block group transition-all duration-300 hover:-translate-y-2 hover:rotate-1"
+            >
+              {/* Tape effect */}
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-24 h-6 bg-white/30 backdrop-blur-sm border-l border-r border-white/40 shadow-sm rotate-1 z-20" />
 
-            <div className="bg-white dark:bg-zinc-800 p-4 rounded-sm shadow-lg border border-zinc-100 dark:border-zinc-700 h-full flex flex-col">
-              {/* Header with Badge */}
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-xs font-bold text-zinc-500 border-b border-zinc-200 pb-0.5">
-                  {menu.chainName}
-                </span>
-                {getUpdateBadge(menu.updateType)}
-              </div>
+              <div className="bg-white dark:bg-zinc-800 p-4 rounded-sm shadow-lg border border-zinc-100 dark:border-zinc-700 h-full flex flex-col">
+                {/* Header with Badge */}
+                <div className="flex justify-between items-start mb-3 pr-8">
+                  <span className="text-xs font-bold text-zinc-500 border-b border-zinc-200 pb-0.5">
+                    {menu.chainName}
+                  </span>
+                  {getUpdateBadge(menu.updateType)}
+                </div>
                 
                 <h3 className="font-bold text-lg text-foreground mb-2 leading-tight font-handwriting line-clamp-2 min-h-[3.5rem]">
                   {menu.menuName}
@@ -79,8 +80,14 @@ export function LatestMenus({ menus }: LatestMenusProps) {
                     </div>
                   </div>
                 </div>
-            </div>
-          </Link>
+              </div>
+            </Link>
+            <FavoriteButton
+              menuId={menu.menuId}
+              size="sm"
+              className="absolute top-1 right-1 z-30"
+            />
+          </div>
         ))}
       </div>
     </div>

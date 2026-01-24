@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { KeywordSearchBox } from "@/components/search/KeywordSearchBox";
 
 export function Header() {
+  const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-[#faf9f6]/90 dark:bg-[#1c1917]/90 backdrop-blur-md border-b border-[#e7e5e4] dark:border-[#44403c]">
@@ -57,6 +61,67 @@ export function Header() {
             >
               ランキング
             </Link>
+
+            {/* ログイン状態による表示切り替え */}
+            {status === "loading" ? (
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+            ) : session ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  {session.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || "ユーザー"}
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {session.user?.name?.[0] || session.user?.email?.[0] || "U"}
+                    </div>
+                  )}
+                </button>
+                {isUserMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-medium text-[#433422] truncate">
+                          {session.user?.name || session.user?.email}
+                        </p>
+                      </div>
+                      <Link
+                        href="/favorites"
+                        className="block px-4 py-2 text-sm text-[#433422] hover:bg-gray-50"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        お気に入り
+                      </Link>
+                      <button
+                        onClick={() => signOut()}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                      >
+                        ログアウト
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                ログイン
+              </Link>
+            )}
           </nav>
 
           {/* Mobile Buttons */}
@@ -158,6 +223,41 @@ export function Header() {
               >
                 ランキング
               </Link>
+
+              {/* モバイル用ログイン */}
+              <div className="border-t border-[#e7e5e4] dark:border-[#44403c] mt-2 pt-2">
+                {session ? (
+                  <>
+                    <Link
+                      href="/favorites"
+                      className="px-4 py-3 rounded-xl font-medium text-[#78716c] dark:text-[#a8a29e] hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-primary transition-colors flex items-center gap-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      お気に入り
+                    </Link>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 rounded-xl font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
+                    >
+                      ログアウト
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/signin"
+                    className="px-4 py-3 rounded-xl font-medium bg-primary text-white hover:bg-primary/90 transition-colors block text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    ログイン
+                  </Link>
+                )}
+              </div>
             </div>
           </nav>
         )}

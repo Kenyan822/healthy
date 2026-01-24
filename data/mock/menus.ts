@@ -14,11 +14,6 @@ export const mockMenus: Menu[] = [
       fat: 18.3,
       carb: 29.9,
     },
-    scores: {
-      muscleScore: 54,
-      ketoScore: 0,
-      healthScore: 100,
-    },
     category: "ramen",
     isSeasonal: false,
     isLimited: false,
@@ -36,11 +31,6 @@ export const mockMenus: Menu[] = [
       protein: 22.1,
       fat: 12.4,
       carb: 82.7,
-    },
-    scores: {
-      muscleScore: 41,
-      ketoScore: 0,
-      healthScore: 95,
     },
     category: "teishoku",
     isSeasonal: false,
@@ -60,11 +50,6 @@ export const mockMenus: Menu[] = [
       fat: 15,
       carb: 87.8,
     },
-    scores: {
-      muscleScore: 34,
-      ketoScore: 0,
-      healthScore: 95,
-    },
     category: "teishoku",
     isSeasonal: false,
     isLimited: false,
@@ -82,11 +67,6 @@ export const mockMenus: Menu[] = [
       protein: 28.8,
       fat: 13.9,
       carb: 92.3,
-    },
-    scores: {
-      muscleScore: 47,
-      ketoScore: 0,
-      healthScore: 95,
     },
     category: "teishoku",
     isSeasonal: false,
@@ -106,11 +86,6 @@ export const mockMenus: Menu[] = [
       fat: 18.4,
       carb: 62.2,
     },
-    scores: {
-      muscleScore: 71,
-      ketoScore: 0,
-      healthScore: 87.7,
-    },
     category: "teishoku",
     isSeasonal: false,
     isLimited: false,
@@ -128,11 +103,6 @@ export const mockMenus: Menu[] = [
       protein: 27.3,
       fat: 16.9,
       carb: 91.5,
-    },
-    scores: {
-      muscleScore: 43,
-      ketoScore: 0,
-      healthScore: 85,
     },
     category: "teishoku",
     isSeasonal: false,
@@ -177,9 +147,12 @@ export const mockLowCarbMenus: Menu[] = [...mockMenus]
   .sort((a, b) => a.nutrition.carb - b.nutrition.carb)
   .slice(0, 5);
 
-// 人気メニューランキング（healthScoreでソート）
+// タンパク質密度でソート（protein / calories）
+const calcProteinDensity = (menu: Menu) =>
+  (menu.nutrition.protein / menu.nutrition.calories) * 100;
+
 export const mockMenuRanking = [...mockMenus]
-  .sort((a, b) => b.scores.healthScore - a.scores.healthScore)
+  .sort((a, b) => calcProteinDensity(b) - calcProteinDensity(a))
   .map((menu, index) => ({
     ...menu,
     rank: index + 1,

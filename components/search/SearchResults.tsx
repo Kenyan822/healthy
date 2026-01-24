@@ -7,7 +7,6 @@ interface SearchResultsProps {
   results: SearchResultMenu[];
   isLoading: boolean;
   totalCount: number;
-  showPFCMatch?: boolean;
   onLoadMore?: () => void;
   hasMore?: boolean;
 }
@@ -16,7 +15,6 @@ export function SearchResults({
   results,
   isLoading,
   totalCount,
-  showPFCMatch = false,
   onLoadMore,
   hasMore = false,
 }: SearchResultsProps) {
@@ -64,7 +62,6 @@ export function SearchResults({
           <MenuResultCard
             key={result.menu.menuId}
             result={result}
-            showPFCMatch={showPFCMatch}
           />
         ))}
       </div>

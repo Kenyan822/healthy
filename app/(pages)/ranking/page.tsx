@@ -94,7 +94,7 @@ export default function RankingTopPage() {
               {menus.map(({ menu, chain }, index) => (
                 <Link
                   key={menu.menuId}
-                  href={`/${chain.chainId}/${menu.menuSlug || menu.menuId}`}
+                  href={`/menu/${menu.menuId}`}
                   className="bg-card-bg rounded-xl border border-border p-4 hover:border-primary transition-colors"
                 >
                   <div className="flex items-start gap-3">
@@ -115,6 +115,8 @@ export default function RankingTopPage() {
                       <div className="flex gap-2 text-xs text-foreground/60 mt-1">
                         <span>{menu.calories}kcal</span>
                         <span>P{menu.protein}g</span>
+                        <span>F{menu.fat}g</span>
+                        <span>C{menu.carb}g</span>
                       </div>
                       {menu.price && (
                         <p className="text-sm text-primary font-bold mt-1">

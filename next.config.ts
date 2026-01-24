@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+        pathname: "/**",
+      },
+    ],
+  },
   async redirects() {
     return [
       // 旧URL → 新URL リダイレクト
@@ -13,11 +27,6 @@ const nextConfig: NextConfig = {
         source: "/purpose/:purposeId",
         destination: "/ranking/:purposeId",
         permanent: true,
-      },
-      {
-        source: "/menu/:menuId",
-        destination: "/:menuId", // メニュー詳細は /[store]/[menuSlug] に移行
-        permanent: false, // メニュースラッグが確定するまで一時リダイレクト
       },
     ];
   },

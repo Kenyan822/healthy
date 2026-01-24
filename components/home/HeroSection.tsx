@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { SiteStats } from "@/types";
 import { formatNumber, formatPrice } from "@/lib/utils";
-import { presets } from "@/lib/presets";
 import { getCurrentPosition, formatDistance } from "@/lib/location";
-import type { PresetId, SortBy, SearchResultMenu, SearchResponse, UserLocation } from "@/types/search";
+import type { SortBy, SearchResultMenu, SearchResponse, UserLocation } from "@/types/search";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 interface HeroSectionProps {
   stats: SiteStats;
@@ -27,14 +27,24 @@ interface NearbyStore {
   category: string;
 }
 
+// 6項目の栄養指標
+const nutritionIndicators: { value: SortBy; label: string; description: string }[] = [
+  { value: "proteinDensity", label: "タンパク質密度", description: "100kcalあたりのタンパク質量" },
+  { value: "calories", label: "カロリー", description: "カロリーが低い順" },
+  { value: "carbRatio", label: "糖質比率", description: "糖質比率が低い順" },
+  { value: "fatRatio", label: "脂質比率", description: "脂質比率が低い順" },
+  { value: "pfcBalance", label: "PFCバランス", description: "理想的なPFC比率に近い順" },
+  { value: "costPerformance", label: "タンパク質コスパ", description: "タンパク質1gあたりの価格が安い順" },
+];
+
 export function HeroSection({ stats }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>("preset");
-  const [selectedPresets, setSelectedPresets] = useState<PresetId[]>([]);
+  const [purposeSortBy, setPurposeSortBy] = useState<SortBy>("proteinDensity");
   const [protein, setProtein] = useState("");
   const [fat, setFat] = useState("");
   const [carb, setCarb] = useState("");
-  const [sortBy, setSortBy] = useState<SortBy>("pfcMatch");
+  const [sortBy, setSortBy] = useState<SortBy>("proteinDensity");
   const [results, setResults] = useState<SearchResultMenu[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -103,27 +113,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
     }
   }, []);
 
-  const handlePresetClick = (presetId: PresetId) => {
-    // トグル方式: 選択済みなら解除、未選択なら追加
-    const newSelectedPresets = selectedPresets.includes(presetId)
-      ? selectedPresets.filter(id => id !== presetId)
-      : [...selectedPresets, presetId];
-
-    setSelectedPresets(newSelectedPresets);
+  const handlePurposeSearch = () => {
     setSearchMode("preset");
-
-    // 選択されたプリセットがある場合のみ検索
-    if (newSelectedPresets.length > 0) {
-      const params = new URLSearchParams();
-      params.set("preset", newSelectedPresets.join(","));
-      params.set("sortBy", sortBy);
-      params.set("limit", "6");
-      executeSearch(params);
-    } else {
-      // 全て解除された場合は結果をクリア
-      setResults([]);
-      setHasSearched(false);
-    }
+    const params = new URLSearchParams();
+    params.set("sortBy", purposeSortBy);
+    params.set("limit", "6");
+    executeSearch(params);
   };
 
   const handlePFCSearch = () => {
@@ -133,7 +128,6 @@ export function HeroSection({ stats }: HeroSectionProps) {
     if (p === 0 && f === 0 && c === 0) return;
 
     setSearchMode("pfc");
-    setSelectedPresets([]);
     const params = new URLSearchParams();
     if (p > 0) params.set("protein", p.toString());
     if (f > 0) params.set("fat", f.toString());
@@ -152,12 +146,6 @@ export function HeroSection({ stats }: HeroSectionProps) {
     { icon: "🥚", delay: "5s", left: "90%", top: "85%", rotate: "-30deg", size: "text-3xl" },
   ];
 
-  const presetCards = [
-    { id: "high_protein" as PresetId, icon: "🍗", label: "高タンパク", bg: "bg-orange-50 dark:bg-orange-900/20", text: "text-orange-800 dark:text-orange-200", hover: "hover:bg-orange-100 dark:hover:bg-orange-900/30" },
-    { id: "low_fat" as PresetId, icon: "🥗", label: "低脂質", bg: "bg-yellow-50 dark:bg-yellow-900/20", text: "text-yellow-800 dark:text-yellow-200", hover: "hover:bg-yellow-100 dark:hover:bg-yellow-900/30" },
-    { id: "low_carb" as PresetId, icon: "⚖️", label: "低糖質", bg: "bg-blue-50 dark:bg-blue-900/20", text: "text-blue-800 dark:text-blue-200", hover: "hover:bg-blue-100 dark:hover:bg-blue-900/30" },
-    { id: "balanced" as PresetId, icon: "🎯", label: "バランス", bg: "bg-green-50 dark:bg-green-900/20", text: "text-green-800 dark:text-green-200", hover: "hover:bg-green-100 dark:hover:bg-green-900/30" },
-  ];
 
   return (
     <section className="relative overflow-hidden bg-[#faf9f6] dark:bg-[#1c1917] pt-12 pb-12 md:pt-16 md:pb-16">
@@ -198,36 +186,39 @@ export function HeroSection({ stats }: HeroSectionProps) {
               に。
             </h1>
             <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-              チェーン店{formatNumber(stats.totalMenus)}件のメニューから、あなたの体づくりに最適な一皿を見つけます。
+              チェーン店{formatNumber(stats.totalMenus)}件のメニューから、あなたの体づくりに最適な食事を見つけます。
             </p>
           </div>
 
           {/* Search Box */}
           <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-xl p-6 mb-8 border border-zinc-100 dark:border-zinc-700">
-            {/* Preset Buttons */}
+            {/* 目的で探す */}
             <div className="mb-6">
               <p className="text-sm font-medium text-foreground/70 mb-3">目的で探す</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {presetCards.map((preset) => {
-                  const isSelected = selectedPresets.includes(preset.id);
-                  return (
-                    <button
-                      key={preset.id}
-                      onClick={() => handlePresetClick(preset.id)}
-                      className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${preset.bg} ${preset.hover} ${
-                        isSelected
-                          ? "border-primary shadow-md"
-                          : "border-transparent"
-                      }`}
-                    >
-                      <span className="text-2xl">{preset.icon}</span>
-                      <span className={`font-bold ${preset.text}`}>{preset.label}</span>
-                      {isSelected && (
-                        <span className="ml-auto text-primary">✓</span>
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <select
+                    value={purposeSortBy}
+                    onChange={(e) => setPurposeSortBy(e.target.value as SortBy)}
+                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  >
+                    {nutritionIndicators.map((indicator) => (
+                      <option key={indicator.value} value={indicator.value}>
+                        {indicator.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-2 text-sm text-foreground/60">
+                    {nutritionIndicators.find(i => i.value === purposeSortBy)?.description}
+                  </p>
+                </div>
+                <button
+                  onClick={handlePurposeSearch}
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {isLoading ? "検索中..." : "検索"}
+                </button>
               </div>
             </div>
 
@@ -293,14 +284,14 @@ export function HeroSection({ stats }: HeroSectionProps) {
               </div>
             </div>
 
-            {/* Sort Options */}
+            {/* Sort Options - 一時的にコメントアウト
             <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-700">
               <div className="flex items-center gap-3 text-sm flex-wrap">
                 <span className="text-foreground/50">並び替え:</span>
                 {[
-                  { value: "pfcMatch", label: "マッチ度" },
+                  { value: "proteinDensity", label: "タンパク質密度" },
+                  { value: "protein", label: "タンパク質量" },
                   { value: "costPerformance", label: "コスパ" },
-                  { value: "popularity", label: "人気" },
                   { value: "distance", label: "近く", requiresLocation: true },
                 ].map((option) => {
                   const needsLocation = option.requiresLocation && !userLocation;
@@ -347,9 +338,8 @@ export function HeroSection({ stats }: HeroSectionProps) {
 
                         // distance以外のソートは通常の検索API
                         if (option.value !== "distance") {
-                          if (selectedPresets.length > 0) {
+                          if (searchMode === "preset") {
                             const params = new URLSearchParams();
-                            params.set("preset", selectedPresets.join(","));
                             params.set("sortBy", option.value);
                             params.set("limit", "6");
                             executeSearch(params);
@@ -380,6 +370,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 })}
               </div>
             </div>
+            */}
           </div>
 
           {/* Results */}
@@ -393,12 +384,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-foreground">
-                  {selectedPresets.length > 0
-                    ? selectedPresets.map(id => presets[id].name).join(" + ")
+                  {searchMode === "preset"
+                    ? nutritionIndicators.find(i => i.value === purposeSortBy)?.label
                     : "PFC検索"}の結果
                 </h2>
                 <Link
-                  href={`/search?${selectedPresets.length > 0 ? `preset=${selectedPresets.join(",")}` : `protein=${protein}&fat=${fat}&carb=${carb}`}&sortBy=${sortBy}`}
+                  href={`/search?${searchMode === "preset" ? `sortBy=${purposeSortBy}` : `protein=${protein}&fat=${fat}&carb=${carb}&sortBy=${sortBy}`}`}
                   className="text-sm text-primary hover:underline"
                 >
                   すべて見る →
@@ -426,66 +417,93 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   }
                   return results;
                 })().map((result, index) => (
-                  <Link
-                    key={result.menu.menuId}
-                    href={`/menu/${result.menu.menuId}`}
-                    className={`bg-white dark:bg-zinc-800 rounded-xl p-4 border border-zinc-100 dark:border-zinc-700 hover:border-primary transition-all hover:shadow-md relative ${
-                      index < 3 ? "ring-2 ring-offset-2 " + (
-                        index === 0 ? "ring-yellow-400" :
-                        index === 1 ? "ring-gray-400" :
-                        "ring-amber-600"
-                      ) : ""
-                    }`}
-                  >
-                    {index < 3 && (
-                      <div className={`absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
-                        index === 0 ? "bg-yellow-400 text-yellow-900" :
-                        index === 1 ? "bg-gray-300 text-gray-700" :
-                        "bg-amber-600 text-white"
-                      }`}>
-                        {index + 1}
-                      </div>
-                    )}
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-foreground truncate">{result.menu.menuName}</h3>
-                        <p className="text-xs text-primary">
-                          {result.chain.chainName}
-                          {sortBy === "distance" && nearbyStores.length > 0 && (() => {
-                            const nearestStore = nearbyStores.find(s => s.chainId === result.chain.chainId);
-                            return nearestStore ? (
-                              <span className="ml-2 text-foreground/50">
-                                📍{formatDistance(nearestStore.distance)}
-                              </span>
-                            ) : null;
-                          })()}
-                        </p>
-                      </div>
-                      {result.pfcMatchPercent !== undefined && (
-                        <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
-                          result.pfcMatchPercent >= 80 ? "bg-green-100 text-green-700" :
-                          result.pfcMatchPercent >= 60 ? "bg-lime-100 text-lime-700" :
-                          "bg-yellow-100 text-yellow-700"
+                  <div key={result.menu.menuId} className="relative">
+                    <Link
+                      href={`/menu/${result.menu.menuId}`}
+                      className={`block bg-white dark:bg-zinc-800 rounded-xl p-4 pb-12 border border-zinc-100 dark:border-zinc-700 hover:border-primary transition-all hover:shadow-md relative ${
+                        index < 3 ? "ring-2 ring-offset-2 " + (
+                          index === 0 ? "ring-yellow-400" :
+                          index === 1 ? "ring-gray-400" :
+                          "ring-amber-600"
+                        ) : ""
+                      }`}
+                    >
+                      {index < 3 && (
+                        <div className={`absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
+                          index === 0 ? "bg-yellow-400 text-yellow-900" :
+                          index === 1 ? "bg-gray-300 text-gray-700" :
+                          "bg-amber-600 text-white"
                         }`}>
-                          {result.pfcMatchPercent}%
-                        </span>
+                          {index + 1}
+                        </div>
                       )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-foreground/60">
-                      <span>P {result.menu.protein}g</span>
-                      <span>F {result.menu.fat}g</span>
-                      <span>C {result.menu.carb}g</span>
-                      <span className="ml-auto">{result.menu.calories}kcal</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-2 text-xs">
-                      {result.costPerProtein && (
-                        <span className="text-foreground/50">{result.costPerProtein}円/gP</span>
-                      )}
-                      {result.menu.price && (
-                        <span className="font-bold text-primary">{formatPrice(result.menu.price)}</span>
-                      )}
-                    </div>
-                  </Link>
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground truncate">{result.menu.menuName}</h3>
+                          <p className="text-xs text-primary">
+                            {result.chain.chainName}
+                            {sortBy === "distance" && nearbyStores.length > 0 && (() => {
+                              const nearestStore = nearbyStores.find(s => s.chainId === result.chain.chainId);
+                              return nearestStore ? (
+                                <span className="ml-2 text-foreground/50">
+                                  📍{formatDistance(nearestStore.distance)}
+                                </span>
+                              ) : null;
+                            })()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-foreground/60">
+                        <span>P {result.menu.protein}g</span>
+                        <span>F {result.menu.fat}g</span>
+                        <span>C {result.menu.carb}g</span>
+                        <span className="ml-auto">{result.menu.calories}kcal</span>
+                      </div>
+                      {/* 栄養指標 */}
+                      <div className="grid grid-cols-2 gap-1 text-xs mt-2">
+                        {result.carbRatio !== undefined && (
+                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
+                            <span className="text-foreground/60">糖質</span>
+                            <span className="font-medium">{result.carbRatio.toFixed(0)}%</span>
+                          </div>
+                        )}
+                        {result.fatRatio !== undefined && (
+                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
+                            <span className="text-foreground/60">脂質</span>
+                            <span className="font-medium">{result.fatRatio.toFixed(0)}%</span>
+                          </div>
+                        )}
+                        {result.pfcBalanceScore !== undefined && (
+                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
+                            <span className="text-foreground/60">PFC</span>
+                            <span className="font-medium">{result.pfcBalanceScore}</span>
+                          </div>
+                        )}
+                        {result.proteinDensity !== undefined && (
+                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
+                            <span className="text-foreground/60">P密度</span>
+                            <span className="font-medium">{result.proteinDensity.toFixed(1)}g/100kcal</span>
+                          </div>
+                        )}
+                        {result.costPerProtein !== undefined && (
+                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
+                            <span className="text-foreground/60">Pコスパ</span>
+                            <span className="font-medium">{result.costPerProtein}円/gP</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-end mt-2 text-xs">
+                        {result.menu.price && (
+                          <span className="font-bold text-primary">{formatPrice(result.menu.price)}</span>
+                        )}
+                      </div>
+                    </Link>
+                    <FavoriteButton
+                      menuId={result.menu.menuId}
+                      size="sm"
+                      className="absolute bottom-3 right-3 z-10"
+                    />
+                  </div>
                 ))}
               </div>
             </div>

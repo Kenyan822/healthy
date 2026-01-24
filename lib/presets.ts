@@ -9,7 +9,7 @@ export const presets: Record<PresetId, PresetDefinition> = {
     filter: {
       minProtein: 30,
     },
-    defaultSort: "pfcMatch",
+    defaultSort: "protein",
     sortOrder: "desc",
   },
   low_fat: {
@@ -20,7 +20,7 @@ export const presets: Record<PresetId, PresetDefinition> = {
     filter: {
       maxFat: 15,
     },
-    defaultSort: "pfcMatch",
+    defaultSort: "fatRatio",
     sortOrder: "asc",
   },
   low_carb: {
@@ -31,7 +31,7 @@ export const presets: Record<PresetId, PresetDefinition> = {
     filter: {
       maxCarb: 40,
     },
-    defaultSort: "pfcMatch",
+    defaultSort: "carbRatio",
     sortOrder: "asc",
   },
   balanced: {
@@ -45,7 +45,8 @@ export const presets: Record<PresetId, PresetDefinition> = {
       fat: 0.2,
       carb: 0.6,
     },
-    defaultSort: "pfcMatch",
+    defaultSort: "pfcBalance",
+    sortOrder: "desc",
   },
 };
 

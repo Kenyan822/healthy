@@ -8,6 +8,7 @@ import {
   countMenusByChain,
 } from "@/lib/db/queries";
 import { formatPrice } from "@/lib/utils";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 type Props = {
   params: Promise<{ store: string }>;
@@ -121,7 +122,16 @@ export default async function StoreMenuListPage({ params }: Props) {
             <h2 className="text-2xl font-bold mb-4">{category}</h2>
             <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[600px] table-fixed">
+                  <colgroup>
+                    <col />
+                    <col className="w-[120px]" />
+                    <col className="w-[90px]" />
+                    <col className="w-[90px]" />
+                    <col className="w-[90px]" />
+                    <col className="w-[120px]" />
+                    <col className="w-[50px]" />
+                  </colgroup>
                   <thead className="bg-background/50">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
@@ -142,6 +152,7 @@ export default async function StoreMenuListPage({ params }: Props) {
                       <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
                         価格
                       </th>
+                      <th className="px-2 py-3"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -152,20 +163,23 @@ export default async function StoreMenuListPage({ params }: Props) {
                       >
                         <td className="px-4 py-3">
                           <Link
-                            href={`/${store}/${menu.menuSlug || menu.menuId}`}
+                            href={`/menu/${menu.menuId}`}
                             className="text-primary hover:underline font-medium"
                           >
                             {menu.menuName}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3 text-right tabular-nums">
                           {menu.calories}kcal
                         </td>
-                        <td className="px-4 py-3 text-right">{menu.protein}g</td>
-                        <td className="px-4 py-3 text-right">{menu.fat}g</td>
-                        <td className="px-4 py-3 text-right">{menu.carb}g</td>
-                        <td className="px-4 py-3 text-right font-medium">
+                        <td className="px-4 py-3 text-right tabular-nums">{menu.protein}g</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{menu.fat}g</td>
+                        <td className="px-4 py-3 text-right tabular-nums">{menu.carb}g</td>
+                        <td className="px-4 py-3 text-right font-medium tabular-nums">
                           {menu.price ? formatPrice(menu.price) : "-"}
+                        </td>
+                        <td className="px-2 py-3">
+                          <FavoriteButton menuId={menu.menuId} size="sm" />
                         </td>
                       </tr>
                     ))}

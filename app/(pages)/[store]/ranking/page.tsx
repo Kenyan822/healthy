@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   getChainById,
   getAllChains,
-  getChainMenuRanking,
+  getChainFavoriteRanking,
   getMenusBySeoPurpose,
   countMenusByChain,
 } from "@/lib/db/queries";
@@ -48,8 +48,8 @@ export default async function StoreRankingPage({ params }: Props) {
     notFound();
   }
 
-  // 総合ランキング（healthScore順）
-  const overallRanking = getChainMenuRanking(store, 10);
+  // お気に入り登録数ランキング（お気に入り数が増えるまで一時的にコメントアウト）
+  // const favoriteRanking = getChainFavoriteRanking(store, 10);
 
   // 目的別ランキング
   const purposeRankings = allPurposeIds.map((purposeId) => ({
@@ -91,15 +91,15 @@ export default async function StoreRankingPage({ params }: Props) {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        {/* 総合ランキング */}
+        {/* お気に入り登録数ランキング（お気に入り数が増えるまで一時的にコメントアウト）
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">総合ヘルシーランキング</h2>
+          <h2 className="text-2xl font-bold mb-6">お気に入り登録数ランキング</h2>
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
             <div className="divide-y divide-border">
-              {overallRanking.map((menu, index) => (
+              {favoriteRanking.map(({ menu, favoriteCount }, index) => (
                 <Link
                   key={menu.menuId}
-                  href={`/${store}/${menu.menuSlug || menu.menuId}`}
+                  href={`/menu/${menu.menuId}`}
                   className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors"
                 >
                   <div
@@ -125,10 +125,13 @@ export default async function StoreRankingPage({ params }: Props) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-primary">
-                      {menu.healthScore?.toFixed(1)}
+                    <p className="text-lg font-bold text-primary flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      {favoriteCount}
                     </p>
-                    <p className="text-xs text-foreground/60">スコア</p>
+                    <p className="text-xs text-foreground/60">お気に入り</p>
                   </div>
                   {menu.price && (
                     <div className="text-right">
@@ -140,6 +143,7 @@ export default async function StoreRankingPage({ params }: Props) {
             </div>
           </div>
         </section>
+        */}
 
         {/* 目的別ランキング */}
         {purposeRankings.map(({ purpose, menus }) => (
@@ -162,7 +166,7 @@ export default async function StoreRankingPage({ params }: Props) {
               {menus.slice(0, 3).map((menu, index) => (
                 <Link
                   key={menu.menuId}
-                  href={`/${store}/${menu.menuSlug || menu.menuId}`}
+                  href={`/menu/${menu.menuId}`}
                   className="bg-card-bg rounded-xl border border-border p-4 hover:border-primary transition-colors"
                 >
                   <div className="flex items-start gap-3">
@@ -182,6 +186,8 @@ export default async function StoreRankingPage({ params }: Props) {
                       <div className="flex gap-2 text-xs text-foreground/60 mt-1">
                         <span>{menu.calories}kcal</span>
                         <span>P{menu.protein}g</span>
+                        <span>F{menu.fat}g</span>
+                        <span>C{menu.carb}g</span>
                       </div>
                       {menu.price && (
                         <p className="text-sm text-primary font-bold mt-1">

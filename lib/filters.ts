@@ -1,41 +1,62 @@
 // ============================
-// 目的（Purpose）フィルター
+// 目的（Purpose）フィルター - 事実ベース指標
 // ============================
 export const purposes = {
   "high-protein": {
     id: "high-protein",
     name: "高タンパク",
     description: "タンパク質が豊富なメニュー",
-    scoreField: "muscleScore" as const,
+    sortField: "protein" as const,
+    sortOrder: "desc" as const,
     keywords: ["高タンパク", "タンパク質", "筋トレ", "プロテイン"],
   },
-  diet: {
-    id: "diet",
-    name: "ヘルシー・ダイエット",
-    description: "低カロリーでダイエット向きのメニュー",
-    scoreField: "dietScore" as const,
-    keywords: ["ダイエット", "低カロリー", "ヘルシー", "痩せる"],
+  "protein-dense": {
+    id: "protein-dense",
+    name: "タンパク質効率",
+    description: "カロリーあたりのタンパク質が多いメニュー",
+    sortField: "proteinDensity" as const,
+    sortOrder: "desc" as const,
+    keywords: ["タンパク質効率", "高タンパク低カロリー", "効率"],
   },
-  health: {
-    id: "health",
-    name: "健康維持",
-    description: "バランスの良い健康的なメニュー",
-    scoreField: "healthScore" as const,
-    keywords: ["健康", "バランス", "栄養"],
+  "low-calorie": {
+    id: "low-calorie",
+    name: "低カロリー",
+    description: "カロリーを抑えたメニュー",
+    sortField: "calories" as const,
+    sortOrder: "asc" as const,
+    keywords: ["低カロリー", "ダイエット", "カロリー制限"],
   },
   "low-carb": {
     id: "low-carb",
     name: "低糖質",
-    description: "糖質を抑えたメニュー",
-    scoreField: "dietScore" as const,
+    description: "糖質比率が低いメニュー",
+    sortField: "carbRatio" as const,
+    sortOrder: "asc" as const,
     keywords: ["低糖質", "糖質制限", "ローカーボ", "ケトジェニック"],
   },
   "low-fat": {
     id: "low-fat",
     name: "低脂質",
-    description: "脂質を抑えたメニュー",
-    scoreField: "dietScore" as const,
+    description: "脂質比率が低いメニュー",
+    sortField: "fatRatio" as const,
+    sortOrder: "asc" as const,
     keywords: ["低脂質", "脂質制限", "ローファット"],
+  },
+  balanced: {
+    id: "balanced",
+    name: "バランス重視",
+    description: "PFCバランスの良いメニュー",
+    sortField: "pfcBalance" as const,
+    sortOrder: "desc" as const,
+    keywords: ["バランス", "健康", "栄養バランス"],
+  },
+  "cost-performance": {
+    id: "cost-performance",
+    name: "タンパク質コスパ",
+    description: "タンパク質1gあたりの価格が安いメニュー",
+    sortField: "costPerformance" as const,
+    sortOrder: "asc" as const,
+    keywords: ["コスパ", "コストパフォーマンス", "安い", "お得"],
   },
 } as const;
 

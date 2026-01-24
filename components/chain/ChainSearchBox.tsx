@@ -16,7 +16,7 @@ export function ChainSearchBox({ chainId, chainName }: ChainSearchBoxProps) {
   const [protein, setProtein] = useState("");
   const [fat, setFat] = useState("");
   const [carb, setCarb] = useState("");
-  const [sortBy, setSortBy] = useState<SortBy>("pfcMatch");
+  const [sortBy, setSortBy] = useState<SortBy>("proteinDensity");
   const [results, setResults] = useState<SearchResultMenu[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -180,14 +180,14 @@ export function ChainSearchBox({ chainId, chainName }: ChainSearchBoxProps) {
           </div>
         </div>
 
-        {/* Sort Options */}
+        {/* Sort Options - 一時的にコメントアウト
         <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-700">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-foreground/50">並び替え:</span>
             {[
-              { value: "pfcMatch", label: "マッチ度" },
+              { value: "proteinDensity", label: "タンパク質密度" },
+              { value: "protein", label: "タンパク質量" },
               { value: "costPerformance", label: "コスパ" },
-              { value: "popularity", label: "人気" },
             ].map((option) => (
               <button
                 key={option.value}
@@ -221,6 +221,7 @@ export function ChainSearchBox({ chainId, chainName }: ChainSearchBoxProps) {
             ))}
           </div>
         </div>
+        */}
       </div>
 
       {/* Results */}
@@ -265,15 +266,6 @@ export function ChainSearchBox({ chainId, chainName }: ChainSearchBoxProps) {
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-foreground truncate">{result.menu.menuName}</h4>
                   </div>
-                  {result.pfcMatchPercent !== undefined && (
-                    <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
-                      result.pfcMatchPercent >= 80 ? "bg-green-100 text-green-700" :
-                      result.pfcMatchPercent >= 60 ? "bg-lime-100 text-lime-700" :
-                      "bg-yellow-100 text-yellow-700"
-                    }`}>
-                      {result.pfcMatchPercent}%
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-foreground/60">
                   <span>P {result.menu.protein}g</span>
@@ -282,9 +274,14 @@ export function ChainSearchBox({ chainId, chainName }: ChainSearchBoxProps) {
                   <span className="ml-auto">{result.menu.calories}kcal</span>
                 </div>
                 <div className="flex items-center justify-between mt-2 text-xs">
-                  {result.costPerProtein && (
-                    <span className="text-foreground/50">{result.costPerProtein}円/gP</span>
-                  )}
+                  <div className="flex items-center gap-3 text-foreground/50">
+                    {result.costPerProtein && (
+                      <span>{result.costPerProtein}円/gP</span>
+                    )}
+                    {result.proteinDensity !== undefined && (
+                      <span>{result.proteinDensity.toFixed(1)}g/100kcal</span>
+                    )}
+                  </div>
                   {result.menu.price && (
                     <span className="font-bold text-primary">{formatPrice(result.menu.price)}</span>
                   )}

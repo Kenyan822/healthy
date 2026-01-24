@@ -8,12 +8,6 @@ export interface NutritionInfo {
   sugar?: number; // g
 }
 
-export interface MenuScores {
-  muscleScore: number; // タンパク質効率スコア
-  ketoScore: number; // ケトジェニックスコア
-  healthScore: number; // 総合ヘルシースコア
-}
-
 export interface Menu {
   menuId: string;
   chainId: string;
@@ -22,7 +16,6 @@ export interface Menu {
   menuNameKana?: string;
   price?: number;
   nutrition: NutritionInfo;
-  scores: MenuScores;
   category?: string;
   subcategory?: string;
   isSeasonal: boolean;

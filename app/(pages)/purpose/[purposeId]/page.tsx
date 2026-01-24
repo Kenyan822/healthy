@@ -8,6 +8,34 @@ import {
   type PurposeId,
 } from "@/lib/db/queries";
 import { formatPrice } from "@/lib/utils";
+import type { MenuSelect } from "@/lib/db/schema";
+
+// 事実ベース指標の表示値を計算
+function getDisplayValue(menu: MenuSelect, sortField: string): { value: string; label: string } {
+  switch (sortField) {
+    case "protein":
+      return { value: `${menu.protein}g`, label: "タンパク質" };
+    case "calories":
+      return { value: `${menu.calories}kcal`, label: "カロリー" };
+    case "proteinDensity":
+      return { value: ((menu.protein / menu.calories) * 100).toFixed(1), label: "P密度" };
+    case "carbRatio":
+      return { value: `${(((menu.carb * 4) / menu.calories) * 100).toFixed(1)}%`, label: "糖質比率" };
+    case "fatRatio":
+      return { value: `${(((menu.fat * 9) / menu.calories) * 100).toFixed(1)}%`, label: "脂質比率" };
+    case "pfcBalance": {
+      const totalCal = menu.protein * 4 + menu.fat * 9 + menu.carb * 4;
+      const pRatio = (menu.protein * 4) / totalCal;
+      const fRatio = (menu.fat * 9) / totalCal;
+      const cRatio = (menu.carb * 4) / totalCal;
+      const deviation = Math.abs(pRatio - 0.2) + Math.abs(fRatio - 0.25) + Math.abs(cRatio - 0.55);
+      const score = Math.max(0, 100 - deviation * 100);
+      return { value: score.toFixed(0), label: "バランス" };
+    }
+    default:
+      return { value: `${menu.protein}g`, label: "タンパク質" };
+  }
+}
 
 type Props = {
   params: Promise<{ purposeId: string }>;
@@ -85,7 +113,7 @@ export default async function PurposeDetailPage({ params }: Props) {
           </h1>
           <p className="text-lg text-foreground/70 max-w-2xl">
             {purpose.description}
-            。全{chains.length}チェーン店のメニューをスコア順にランキング。
+            。全{chains.length}チェーン店のメニューをランキング。
           </p>
         </div>
       </section>
@@ -98,8 +126,7 @@ export default async function PurposeDetailPage({ params }: Props) {
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {top3.map(({ menu, chain }, index) => {
-              const score =
-                menu[purpose.scoreField as keyof typeof menu] as number;
+              const displayValue = getDisplayValue(menu, purpose.sortField);
               return (
                 <Link
                   key={menu.menuId}
@@ -124,11 +151,9 @@ export default async function PurposeDetailPage({ params }: Props) {
                     {menu.menuName}
                   </h3>
 
-                  {/* スコアバッジ */}
-                  <div
-                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 ${getScoreColor(score)}`}
-                  >
-                    スコア: {Math.round(score)}点
+                  {/* 指標バッジ */}
+                  <div className="inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary">
+                    {displayValue.label}: {displayValue.value}
                   </div>
 
                   {/* 栄養成分 */}
@@ -207,8 +232,7 @@ export default async function PurposeDetailPage({ params }: Props) {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {rankings.map(({ menu, chain }, index) => {
-                    const score =
-                      menu[purpose.scoreField as keyof typeof menu] as number;
+                    const displayValue = getDisplayValue(menu, purpose.sortField);
                     return (
                       <tr
                         key={menu.menuId}
@@ -232,10 +256,8 @@ export default async function PurposeDetailPage({ params }: Props) {
                           </Link>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getScoreColor(score)}`}
-                          >
-                            {Math.round(score)}
+                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                            {displayValue.value}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">

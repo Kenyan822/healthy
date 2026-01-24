@@ -5,41 +5,49 @@ const quickAccessItems = [
     id: "high-protein",
     title: "高タンパク",
     description: "筋トレ民の味方",
-    icon: "💪",
     href: "/ranking/high-protein",
     className:
-      "col-span-2 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 text-orange-900 dark:text-orange-100",
-    iconSize: "text-4xl right-2 bottom-2",
+      "bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 text-orange-900 dark:text-orange-100",
   },
   {
     id: "low-carb",
     title: "低糖質",
     description: "ロカボ生活",
-    icon: "🥬",
     href: "/ranking/low-carb",
     className:
-      "col-span-1 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-900 dark:text-green-100",
-    iconSize: "text-3xl right-1 bottom-1",
+      "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-900 dark:text-green-100",
   },
   {
-    id: "diet",
-    title: "ダイエット",
+    id: "low-fat",
+    title: "低脂質",
+    description: "ローファット派",
+    href: "/ranking/low-fat",
+    className:
+      "bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 text-teal-900 dark:text-teal-100",
+  },
+  {
+    id: "low-calorie",
+    title: "低カロリー",
     description: "カロリー控えめ",
-    icon: "📉",
-    href: "/ranking/diet",
+    href: "/ranking/low-calorie",
     className:
-      "col-span-1 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-900 dark:text-blue-100",
-    iconSize: "text-3xl right-1 bottom-1",
+      "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-900 dark:text-blue-100",
   },
   {
-    id: "healthy",
-    title: "ヘルシー",
-    description: "バランス重視",
-    icon: "🥗",
-    href: "/ranking/health",
+    id: "balanced",
+    title: "バランス重視",
+    description: "PFCバランス◎",
+    href: "/ranking/balanced",
     className:
-      "col-span-2 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-900 dark:text-yellow-100",
-    iconSize: "text-4xl right-2 bottom-2",
+      "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 text-yellow-900 dark:text-yellow-100",
+  },
+  {
+    id: "cost-performance",
+    title: "コスパ最強",
+    description: "タンパク質/円",
+    href: "/ranking/cost-performance",
+    className:
+      "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 text-purple-900 dark:text-purple-100",
   },
 ];
 
@@ -47,9 +55,8 @@ export function QuickAccessGrid() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold font-rounded flex items-center gap-2">
-          <span className="text-2xl">🎯</span>
-          <span>目的から探す</span>
+        <h2 className="text-xl font-bold font-rounded">
+          目的から探す
         </h2>
         <Link
           href="/ranking"
@@ -59,7 +66,7 @@ export function QuickAccessGrid() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {quickAccessItems.map((item) => (
           <Link
             key={item.id}
@@ -72,22 +79,12 @@ export function QuickAccessGrid() {
             `}
           >
             <div className="relative z-10">
-              <div className="font-bold text-lg leading-tight mb-1">
+              <div className="font-bold text-base leading-tight mb-1">
                 {item.title}
               </div>
               <div className="text-xs font-medium opacity-70">
                 {item.description}
               </div>
-            </div>
-
-            {/* Background Icon */}
-            <div
-              className={`
-                absolute ${item.iconSize} transform transition-transform duration-500
-                group-hover:scale-125 group-hover:rotate-12 opacity-80 filter grayscale-[0.2] group-hover:grayscale-0
-              `}
-            >
-              {item.icon}
             </div>
 
             {/* Shiny effect on hover */}

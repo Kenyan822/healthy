@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const chainId = searchParams.get("chainId");
     const minProtein = searchParams.get("minProtein");
     const maxCalories = searchParams.get("maxCalories");
-    const sortBy = searchParams.get("sortBy") || "healthScore";
+    const sortBy = searchParams.get("sortBy") || "proteinDensity";
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       conditions.push(lte(menus.calories, parseFloat(maxCalories)));
     }
 
-    // ソート関数を取得
+    // ソート関数を取得（事実ベース指標）
     const getOrderBy = () => {
       const orderFn = sortOrder === "asc" ? asc : desc;
       switch (sortBy) {
@@ -36,13 +36,29 @@ export async function GET(request: NextRequest) {
           return orderFn(menus.protein);
         case "calories":
           return orderFn(menus.calories);
-        case "muscleScore":
-          return orderFn(menus.muscleScore);
-        case "dietScore":
-          return orderFn(menus.dietScore);
-        case "healthScore":
+        case "carb":
+          return orderFn(menus.carb);
+        case "fat":
+          return orderFn(menus.fat);
+        case "proteinDensity":
+          // タンパク質密度: protein / calories * 100
+          return orderFn(sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`);
+        case "carbRatio":
+          // 糖質比率: (carb * 4) / calories
+          return orderFn(sql`(${menus.carb} * 4.0) / NULLIF(${menus.calories}, 0)`);
+        case "fatRatio":
+          // 脂質比率: (fat * 9) / calories
+          return orderFn(sql`(${menus.fat} * 9.0) / NULLIF(${menus.calories}, 0)`);
+        case "pfcBalance":
         default:
-          return orderFn(menus.healthScore);
+          // PFCバランス
+          return orderFn(sql`
+            100 - (
+              ABS((${menus.protein} * 4.0 / NULLIF(${menus.calories}, 0)) - 0.20) * 100 +
+              ABS((${menus.fat} * 9.0 / NULLIF(${menus.calories}, 0)) - 0.25) * 100 +
+              ABS((${menus.carb} * 4.0 / NULLIF(${menus.calories}, 0)) - 0.55) * 100
+            )
+          `);
       }
     };
 

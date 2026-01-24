@@ -1,42 +1,56 @@
-import { db, chains, menus } from "./index";
-import { eq, desc, asc, sql, and, gte, lte } from "drizzle-orm";
+import { db, chains, menus, stations, stationChains, userFavorites } from "./index";
+import { eq, desc, asc, sql, and, gte, lte, inArray } from "drizzle-orm";
 
-// 目的（purpose）の定義
+// 目的（purpose）の定義 - 事実ベースの指標
 export const purposes = {
-  muscle: {
-    id: "muscle",
-    name: "筋トレ・バルクアップ",
-    description: "高タンパクメニューで筋肉づくりをサポート",
-    scoreField: "muscleScore" as const,
-    sortOrder: "desc" as const,
-  },
-  diet: {
-    id: "diet",
-    name: "ダイエット",
-    description: "低カロリー・低糖質で健康的に減量",
-    scoreField: "dietScore" as const,
-    sortOrder: "desc" as const,
-  },
-  health: {
-    id: "health",
-    name: "健康維持",
-    description: "バランスの良い栄養で健康をキープ",
-    scoreField: "healthScore" as const,
-    sortOrder: "desc" as const,
-  },
-  lowcarb: {
-    id: "lowcarb",
-    name: "低糖質",
-    description: "糖質を抑えたメニューでケトジェニック",
-    scoreField: "dietScore" as const,
-    sortOrder: "desc" as const,
-  },
-  protein: {
-    id: "protein",
+  "high-protein": {
+    id: "high-protein",
     name: "高タンパク",
-    description: "タンパク質重視のメニューを厳選",
-    scoreField: "muscleScore" as const,
+    description: "タンパク質が豊富なメニュー",
+    sortField: "protein" as const,
     sortOrder: "desc" as const,
+  },
+  "protein-dense": {
+    id: "protein-dense",
+    name: "タンパク質効率",
+    description: "カロリーあたりのタンパク質が多いメニュー",
+    sortField: "proteinDensity" as const, // protein / calories * 100
+    sortOrder: "desc" as const,
+  },
+  "low-calorie": {
+    id: "low-calorie",
+    name: "低カロリー",
+    description: "カロリーを抑えたメニュー",
+    sortField: "calories" as const,
+    sortOrder: "asc" as const,
+  },
+  "low-carb": {
+    id: "low-carb",
+    name: "低糖質",
+    description: "糖質比率が低いメニュー",
+    sortField: "carbRatio" as const, // (carb * 4) / calories
+    sortOrder: "asc" as const,
+  },
+  "low-fat": {
+    id: "low-fat",
+    name: "低脂質",
+    description: "脂質比率が低いメニュー",
+    sortField: "fatRatio" as const, // (fat * 9) / calories
+    sortOrder: "asc" as const,
+  },
+  balanced: {
+    id: "balanced",
+    name: "バランス重視",
+    description: "PFCバランスの良いメニュー",
+    sortField: "pfcBalance" as const,
+    sortOrder: "desc" as const,
+  },
+  "cost-performance": {
+    id: "cost-performance",
+    name: "タンパク質コスパ",
+    description: "タンパク質1gあたりの価格が安いメニュー",
+    sortField: "costPerformance" as const,
+    sortOrder: "asc" as const,
   },
 } as const;
 
@@ -57,20 +71,57 @@ export function getMenusByChain(chainId: string) {
   return db.select().from(menus).where(eq(menus.chainId, chainId)).all();
 }
 
-// チェーン店×目的でメニューを取得（スコア順）
+// 事実ベース指標のSQL式を取得
+function getSortExpression(sortField: string) {
+  switch (sortField) {
+    case "protein":
+      return menus.protein;
+    case "calories":
+      return menus.calories;
+    case "proteinDensity":
+      // タンパク質密度: protein / calories * 100
+      return sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
+    case "carbRatio":
+      // 糖質比率: (carb * 4) / calories
+      return sql`(${menus.carb} * 4.0) / NULLIF(${menus.calories}, 0)`;
+    case "fatRatio":
+      // 脂質比率: (fat * 9) / calories
+      return sql`(${menus.fat} * 9.0) / NULLIF(${menus.calories}, 0)`;
+    case "pfcBalance":
+      // PFCバランス: 理想比率(P:20%, F:25%, C:55%)との乖離度を計算
+      // 乖離が少ないほど高スコア
+      // PFCから算出したカロリー（totalCal = P*4 + F*9 + C*4）を使用
+      return sql`
+        100 - (
+          ABS((${menus.protein} * 4.0 / NULLIF(${menus.protein} * 4.0 + ${menus.fat} * 9.0 + ${menus.carb} * 4.0, 0)) - 0.20) * 100 +
+          ABS((${menus.fat} * 9.0 / NULLIF(${menus.protein} * 4.0 + ${menus.fat} * 9.0 + ${menus.carb} * 4.0, 0)) - 0.25) * 100 +
+          ABS((${menus.carb} * 4.0 / NULLIF(${menus.protein} * 4.0 + ${menus.fat} * 9.0 + ${menus.carb} * 4.0, 0)) - 0.55) * 100
+        )
+      `;
+    case "costPerformance":
+      // タンパク質コスパ: price / protein（低いほど良い）
+      // 価格がないメニューは除外されるようにNULLを返す
+      return sql`CASE WHEN ${menus.price} > 0 AND ${menus.protein} > 0 THEN ${menus.price} * 1.0 / ${menus.protein} ELSE NULL END`;
+    default:
+      return menus.protein;
+  }
+}
+
+// チェーン店×目的でメニューを取得（事実ベース指標順）
 export function getMenusByChainAndPurpose(
   chainId: string,
   purposeId: PurposeId,
   limit = 20
 ) {
   const purpose = purposes[purposeId];
-  const scoreField = menus[purpose.scoreField];
+  const sortExpr = getSortExpression(purpose.sortField);
+  const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   return db
     .select()
     .from(menus)
     .where(eq(menus.chainId, chainId))
-    .orderBy(desc(scoreField))
+    .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
 }
@@ -98,31 +149,34 @@ export function getMenuById(menuId: string) {
   return db.select().from(menus).where(eq(menus.menuId, menuId)).get();
 }
 
-// 類似メニューを取得（同チェーン店、同価格帯）
+// 類似メニューを取得（同チェーン店、タンパク質効率順）
 export function getSimilarMenus(
   chainId: string,
   currentMenuId: string,
   limit = 5
 ) {
+  const proteinDensity = sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
   return db
     .select()
     .from(menus)
     .where(and(eq(menus.chainId, chainId), sql`${menus.menuId} != ${currentMenuId}`))
-    .orderBy(desc(menus.healthScore))
+    .orderBy(desc(proteinDensity))
     .limit(limit)
     .all();
 }
 
-// 他チェーンの類似スコアメニューを取得
+// 他チェーンの類似栄養素メニューを取得
 export function getSimilarMenusFromOtherChains(
   currentChainId: string,
-  targetScore: number,
-  scoreType: "muscleScore" | "dietScore" | "healthScore",
+  targetProtein: number,
+  targetCalories: number,
   limit = 5
 ) {
-  const scoreField = menus[scoreType];
-  const minScore = Math.max(0, targetScore - 15);
-  const maxScore = Math.min(100, targetScore + 15);
+  // タンパク質とカロリーが近いメニューを取得
+  const minProtein = Math.max(0, targetProtein - 10);
+  const maxProtein = targetProtein + 10;
+  const minCalories = Math.max(0, targetCalories - 150);
+  const maxCalories = targetCalories + 150;
 
   return db
     .select({
@@ -134,19 +188,22 @@ export function getSimilarMenusFromOtherChains(
     .where(
       and(
         sql`${menus.chainId} != ${currentChainId}`,
-        gte(scoreField, minScore),
-        lte(scoreField, maxScore)
+        gte(menus.protein, minProtein),
+        lte(menus.protein, maxProtein),
+        gte(menus.calories, minCalories),
+        lte(menus.calories, maxCalories)
       )
     )
-    .orderBy(desc(scoreField))
+    .orderBy(desc(menus.protein))
     .limit(limit)
     .all();
 }
 
-// ランキング取得（目的別）
+// ランキング取得（目的別・事実ベース指標）
 export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
   const purpose = purposes[purposeId];
-  const scoreField = menus[purpose.scoreField];
+  const sortExpr = getSortExpression(purpose.sortField);
+  const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   return db
     .select({
@@ -155,7 +212,7 @@ export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
-    .orderBy(desc(scoreField))
+    .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
 }
@@ -195,75 +252,88 @@ import type { PresetId, SortBy, SearchResultMenu } from "@/types/search";
 
 /**
  * PFC類似度を計算してメニューを検索
- * ユークリッド距離で近いメニューを返す
+ * ユークリッド距離で近いメニューを返す（入力PFC値に近い順）
+ * 未入力(0)の項目は距離計算に含めない
  */
 export function searchMenusByPFC(
   targetP: number,
   targetF: number,
   targetC: number,
-  sortBy: SortBy = "pfcMatch",
+  _sortBy: SortBy = "proteinDensity", // 互換性のため残すが使用しない
   limit = 20,
   offset = 0,
   chainId?: string
 ): SearchResultMenu[] {
-  // SQLiteでユークリッド距離を計算
-  const pfcDeviation = sql<number>`
-    (${menus.protein} - ${targetP}) * (${menus.protein} - ${targetP}) +
-    (${menus.fat} - ${targetF}) * (${menus.fat} - ${targetF}) +
-    (${menus.carb} - ${targetC}) * (${menus.carb} - ${targetC})
-  `;
-
-  // ソート条件を決定
-  let orderByClause;
-  switch (sortBy) {
-    case "pfcMatch":
-      orderByClause = asc(pfcDeviation);
-      break;
-    case "popularity":
-      orderByClause = desc(menus.viewCount);
-      break;
-    case "costPerformance":
-      // コスパ = タンパク質 / 価格（高いほど良い）
-      orderByClause = desc(sql`CASE WHEN ${menus.price} > 0 THEN ${menus.protein} * 1.0 / ${menus.price} ELSE 0 END`);
-      break;
-    default:
-      orderByClause = asc(pfcDeviation);
+  // 入力された項目のみで距離を計算（未入力=0の項目は除外）
+  const deviationTerms: ReturnType<typeof sql>[] = [];
+  if (targetP > 0) {
+    deviationTerms.push(sql`(${menus.protein} - ${targetP}) * (${menus.protein} - ${targetP})`);
   }
+  if (targetF > 0) {
+    deviationTerms.push(sql`(${menus.fat} - ${targetF}) * (${menus.fat} - ${targetF})`);
+  }
+  if (targetC > 0) {
+    deviationTerms.push(sql`(${menus.carb} - ${targetC}) * (${menus.carb} - ${targetC})`);
+  }
+
+  // 距離計算式を組み立て
+  let pfcDeviation;
+  if (deviationTerms.length === 1) {
+    pfcDeviation = deviationTerms[0];
+  } else if (deviationTerms.length === 2) {
+    pfcDeviation = sql<number>`${deviationTerms[0]} + ${deviationTerms[1]}`;
+  } else {
+    pfcDeviation = sql<number>`${deviationTerms[0]} + ${deviationTerms[1]} + ${deviationTerms[2]}`;
+  }
+
+  // 各指標の計算式
+  const proteinDensityExpr = sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
+  const carbRatioExpr = sql`(${menus.carb} * 4.0) / NULLIF(${menus.calories}, 0) * 100`;
+  const fatRatioExpr = sql`(${menus.fat} * 9.0) / NULLIF(${menus.calories}, 0) * 100`;
 
   const query = db
     .select({
       menu: menus,
       chain: chains,
       pfcDeviationSq: pfcDeviation,
+      proteinDensity: proteinDensityExpr,
+      carbRatio: carbRatioExpr,
+      fatRatio: fatRatioExpr,
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId));
 
+  // PFC入力値との距離が近い順にソート
   const results = (chainId
     ? query.where(eq(menus.chainId, chainId))
     : query
   )
-    .orderBy(orderByClause)
+    .orderBy(asc(pfcDeviation))
     .limit(limit)
     .offset(offset)
     .all();
 
-  // PFCマッチ率を計算して返す
+  // 事実ベース指標を計算して返す
   return results.map((r) => {
-    const deviation = Math.sqrt(r.pfcDeviationSq);
-    const maxDeviation = 100;
-    const matchPercent = Math.max(0, Math.round(100 - (deviation / maxDeviation) * 100));
     const costPerProtein = r.menu.price && r.menu.price > 0 && r.menu.protein > 0
       ? Math.round(r.menu.price / r.menu.protein)
       : undefined;
 
+    // PFCバランス計算（理想比率P:20%, F:25%, C:55%との乖離）
+    const proteinRatio = (r.menu.protein * 4 / r.menu.calories) * 100;
+    const pDev = Math.abs(proteinRatio - 20) / 20;
+    const fDev = Math.abs((r.fatRatio as number) - 25) / 25;
+    const cDev = Math.abs((r.carbRatio as number) - 55) / 55;
+    const pfcBalance = Math.max(0, Math.round(100 * (1 - (pDev + fDev + cDev) / 3)));
+
     return {
       menu: r.menu,
       chain: r.chain,
-      pfcDeviation: Math.round(deviation * 10) / 10,
-      pfcMatchPercent: matchPercent,
+      proteinDensity: r.proteinDensity as number,
+      carbRatio: r.carbRatio as number,
+      fatRatio: r.fatRatio as number,
+      pfcBalanceScore: pfcBalance,
       costPerProtein,
-      popularityScore: r.menu.viewCount ?? 0,
     };
   });
 }
@@ -273,7 +343,7 @@ export function searchMenusByPFC(
  */
 export function searchMenusByPreset(
   presetId: PresetId,
-  sortBy: SortBy = "popularity",
+  sortBy: SortBy = "proteinDensity",
   limit = 20,
   offset = 0
 ): SearchResultMenu[] {
@@ -285,7 +355,7 @@ export function searchMenusByPreset(
  */
 export function searchMenusByMultiplePresets(
   presetIds: PresetId[],
-  sortBy: SortBy = "popularity",
+  sortBy: SortBy = "proteinDensity",
   limit = 20,
   offset = 0,
   chainId?: string
@@ -327,40 +397,42 @@ export function searchMenusByMultiplePresets(
     }
   }
 
+  // タンパク質密度計算
+  const proteinDensityExpr = sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
+
   // ソート条件を決定
   let orderByClause;
   switch (sortBy) {
-    case "popularity":
-      orderByClause = desc(menus.viewCount);
+    case "protein":
+      orderByClause = desc(menus.protein);
+      break;
+    case "calories":
+      orderByClause = asc(menus.calories);
+      break;
+    case "proteinDensity":
+      orderByClause = desc(proteinDensityExpr);
+      break;
+    case "carbRatio":
+      orderByClause = asc(getSortExpression("carbRatio"));
+      break;
+    case "fatRatio":
+      orderByClause = asc(getSortExpression("fatRatio"));
+      break;
+    case "pfcBalance":
+      orderByClause = desc(getSortExpression("pfcBalance"));
       break;
     case "costPerformance":
       orderByClause = desc(sql`CASE WHEN ${menus.price} > 0 THEN ${menus.protein} * 1.0 / ${menus.price} ELSE 0 END`);
       break;
-    case "pfcMatch":
-      // 複数プリセットの場合はhealthScoreでソート、単一の場合は特化ソート
-      if (validPresetIds.length === 1) {
-        const presetId = validPresetIds[0];
-        if (presetId === "high_protein") {
-          orderByClause = desc(menus.protein);
-        } else if (presetId === "low_fat") {
-          orderByClause = asc(menus.fat);
-        } else if (presetId === "low_carb") {
-          orderByClause = asc(menus.carb);
-        } else {
-          orderByClause = desc(menus.healthScore);
-        }
-      } else {
-        orderByClause = desc(menus.healthScore);
-      }
-      break;
     default:
-      orderByClause = desc(menus.healthScore);
+      orderByClause = desc(proteinDensityExpr);
   }
 
   const query = db
     .select({
       menu: menus,
       chain: chains,
+      proteinDensity: proteinDensityExpr,
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId));
@@ -382,8 +454,8 @@ export function searchMenusByMultiplePresets(
     return {
       menu: r.menu,
       chain: r.chain,
+      proteinDensity: r.proteinDensity as number,
       costPerProtein,
-      popularityScore: r.menu.viewCount ?? 0,
     };
   });
 }
@@ -497,6 +569,93 @@ export function countAllMenus(chainId?: string): number {
     : query
   ).get();
   return result?.count ?? 0;
+}
+
+/**
+ * 全メニューを指定のソート順で検索（目的別検索用）
+ */
+export function searchAllMenus(
+  sortBy: SortBy = "proteinDensity",
+  limit = 20,
+  offset = 0,
+  chainId?: string
+): SearchResultMenu[] {
+  // 各指標の計算式
+  const proteinDensityExpr = sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
+  const carbRatioExpr = sql`(${menus.carb} * 4.0) / NULLIF(${menus.calories}, 0) * 100`;
+  const fatRatioExpr = sql`(${menus.fat} * 9.0) / NULLIF(${menus.calories}, 0) * 100`;
+
+  // ソート条件を決定
+  let orderByClause;
+  switch (sortBy) {
+    case "protein":
+      orderByClause = desc(menus.protein);
+      break;
+    case "calories":
+      orderByClause = asc(menus.calories);
+      break;
+    case "proteinDensity":
+      orderByClause = desc(proteinDensityExpr);
+      break;
+    case "carbRatio":
+      orderByClause = asc(getSortExpression("carbRatio"));
+      break;
+    case "fatRatio":
+      orderByClause = asc(getSortExpression("fatRatio"));
+      break;
+    case "pfcBalance":
+      orderByClause = desc(getSortExpression("pfcBalance"));
+      break;
+    case "costPerformance":
+      orderByClause = asc(sql`CASE WHEN ${menus.price} > 0 AND ${menus.protein} > 0 THEN ${menus.price} * 1.0 / ${menus.protein} ELSE 999999 END`);
+      break;
+    default:
+      orderByClause = desc(proteinDensityExpr);
+  }
+
+  const query = db
+    .select({
+      menu: menus,
+      chain: chains,
+      proteinDensity: proteinDensityExpr,
+      carbRatio: carbRatioExpr,
+      fatRatio: fatRatioExpr,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId));
+
+  const results = (chainId
+    ? query.where(eq(menus.chainId, chainId))
+    : query
+  )
+    .orderBy(orderByClause)
+    .limit(limit)
+    .offset(offset)
+    .all();
+
+  // 事実ベース指標を計算して返す
+  return results.map((r) => {
+    const costPerProtein = r.menu.price && r.menu.price > 0 && r.menu.protein > 0
+      ? Math.round(r.menu.price / r.menu.protein)
+      : undefined;
+
+    // PFCバランス計算（理想比率P:20%, F:25%, C:55%との乖離）
+    const proteinRatio = (r.menu.protein * 4 / r.menu.calories) * 100;
+    const pDev = Math.abs(proteinRatio - 20) / 20;
+    const fDev = Math.abs((r.fatRatio as number) - 25) / 25;
+    const cDev = Math.abs((r.carbRatio as number) - 55) / 55;
+    const pfcBalance = Math.max(0, Math.round(100 * (1 - (pDev + fDev + cDev) / 3)));
+
+    return {
+      menu: r.menu,
+      chain: r.chain,
+      proteinDensity: r.proteinDensity as number,
+      carbRatio: r.carbRatio as number,
+      fatRatio: r.fatRatio as number,
+      pfcBalanceScore: pfcBalance,
+      costPerProtein,
+    };
+  });
 }
 
 /**
@@ -626,6 +785,7 @@ export function getMenusByTiming(
 ) {
   const filter = timingFilters[filterId];
 
+  const proteinDensity = getSortExpression("proteinDensity");
   return db
     .select()
     .from(menus)
@@ -635,7 +795,7 @@ export function getMenusByTiming(
         sql`(${menus.timing} = ${filter.value} OR ${menus.timing} = 'anytime')`
       )
     )
-    .orderBy(desc(menus.healthScore))
+    .orderBy(desc(proteinDensity))
     .limit(limit)
     .all();
 }
@@ -672,13 +832,14 @@ export function getMenusBySeoPurpose(
   limit = 50
 ) {
   const purpose = seoFilterPurposes[purposeId];
-  const scoreField = menus[purpose.scoreField];
+  const sortExpr = getSortExpression(purpose.sortField);
+  const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   return db
     .select()
     .from(menus)
     .where(eq(menus.chainId, chainId))
-    .orderBy(desc(scoreField))
+    .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
 }
@@ -732,14 +893,15 @@ export function getAllMenuSlugs() {
 }
 
 /**
- * チェーン店のランキング取得（healthScore順）
+ * チェーン店のランキング取得（タンパク質効率順）
  */
 export function getChainMenuRanking(chainId: string, limit = 10) {
+  const proteinDensity = getSortExpression("proteinDensity");
   return db
     .select()
     .from(menus)
     .where(eq(menus.chainId, chainId))
-    .orderBy(desc(menus.healthScore))
+    .orderBy(desc(proteinDensity))
     .limit(limit)
     .all();
 }
@@ -749,7 +911,8 @@ export function getChainMenuRanking(chainId: string, limit = 10) {
  */
 export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
   const purpose = seoFilterPurposes[purposeId];
-  const scoreField = menus[purpose.scoreField];
+  const sortExpr = getSortExpression(purpose.sortField);
+  const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   return db
     .select({
@@ -758,15 +921,16 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
-    .orderBy(desc(scoreField))
+    .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
 }
 
 /**
- * チェーン店別ランキング取得
+ * チェーン店別ランキング取得（タンパク質効率順）
  */
 export function getChainRankingGlobal(chainId: string, limit = 20) {
+  const proteinDensity = getSortExpression("proteinDensity");
   return db
     .select({
       menu: menus,
@@ -775,7 +939,233 @@ export function getChainRankingGlobal(chainId: string, limit = 20) {
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
     .where(eq(menus.chainId, chainId))
-    .orderBy(desc(menus.healthScore))
+    .orderBy(desc(proteinDensity))
+    .limit(limit)
+    .all();
+}
+
+// ===== 駅関連クエリ =====
+
+/**
+ * 駅IDで駅情報を取得
+ */
+export function getStationById(stationId: string) {
+  return db.select().from(stations).where(eq(stations.stationId, stationId)).get();
+}
+
+/**
+ * 全駅を取得（乗降客数順）
+ */
+export function getAllStations(limit = 200) {
+  return db
+    .select()
+    .from(stations)
+    .orderBy(asc(stations.passengerRank))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 都道府県で駅を検索
+ */
+export function getStationsByPrefecture(prefecture: string) {
+  return db
+    .select()
+    .from(stations)
+    .where(eq(stations.prefecture, prefecture))
+    .orderBy(asc(stations.passengerRank))
+    .all();
+}
+
+/**
+ * 駅周辺のチェーン店を取得
+ */
+export function getChainsByStation(stationId: string) {
+  return db
+    .select({
+      stationChain: stationChains,
+      chain: chains,
+    })
+    .from(stationChains)
+    .innerJoin(chains, eq(stationChains.chainId, chains.chainId))
+    .where(eq(stationChains.stationId, stationId))
+    .orderBy(asc(stationChains.distanceMeters))
+    .all();
+}
+
+/**
+ * チェーン店がある駅一覧を取得
+ */
+export function getStationsByChain(chainId: string) {
+  return db
+    .select({
+      stationChain: stationChains,
+      station: stations,
+    })
+    .from(stationChains)
+    .innerJoin(stations, eq(stationChains.stationId, stations.stationId))
+    .where(eq(stationChains.chainId, chainId))
+    .orderBy(asc(stations.passengerRank))
+    .all();
+}
+
+/**
+ * 静的生成用：全駅IDを取得
+ */
+export function getAllStationIds() {
+  return db
+    .select({ stationId: stations.stationId })
+    .from(stations)
+    .all()
+    .map((s) => s.stationId);
+}
+
+/**
+ * 駅×チェーン店の詳細情報を取得
+ */
+export function getStationChainDetail(stationId: string, chainId: string) {
+  return db
+    .select({
+      stationChain: stationChains,
+      station: stations,
+      chain: chains,
+    })
+    .from(stationChains)
+    .innerJoin(stations, eq(stationChains.stationId, stations.stationId))
+    .innerJoin(chains, eq(stationChains.chainId, chains.chainId))
+    .where(
+      and(
+        eq(stationChains.stationId, stationId),
+        eq(stationChains.chainId, chainId)
+      )
+    )
+    .get();
+}
+
+/**
+ * 駅の統計情報を取得
+ */
+export function getStationStats(stationId: string) {
+  const result = db
+    .select({
+      totalChains: sql<number>`count(*)`,
+      avgDistance: sql<number>`avg(${stationChains.distanceMeters})`,
+      minDistance: sql<number>`min(${stationChains.distanceMeters})`,
+      maxDistance: sql<number>`max(${stationChains.distanceMeters})`,
+    })
+    .from(stationChains)
+    .where(eq(stationChains.stationId, stationId))
+    .get();
+
+  return {
+    totalChains: result?.totalChains ?? 0,
+    avgDistance: result?.avgDistance ? Math.round(result.avgDistance) : 0,
+    minDistance: result?.minDistance ?? 0,
+    maxDistance: result?.maxDistance ?? 0,
+  };
+}
+
+/**
+ * 駅名で検索（部分一致）
+ */
+export function searchStationsByName(query: string, limit = 20) {
+  return db
+    .select()
+    .from(stations)
+    .where(sql`${stations.stationName} LIKE ${'%' + query + '%'}`)
+    .orderBy(asc(stations.passengerRank))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 駅周辺のチェーン店メニューを取得（目的別・事実ベース指標）
+ */
+export function getStationMenusByPurpose(
+  stationId: string,
+  purposeId: PurposeId,
+  limit = 20
+) {
+  const purpose = purposes[purposeId];
+  const sortExpr = getSortExpression(purpose.sortField);
+  const orderFn = purpose.sortOrder === "desc" ? desc : asc;
+
+  // まず駅周辺のチェーン店IDを取得
+  const stationChainIds = db
+    .select({ chainId: stationChains.chainId })
+    .from(stationChains)
+    .where(eq(stationChains.stationId, stationId))
+    .all()
+    .map((sc) => sc.chainId);
+
+  if (stationChainIds.length === 0) {
+    return [];
+  }
+
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(inArray(menus.chainId, stationChainIds))
+    .orderBy(orderFn(sortExpr))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 全都道府県リストを取得
+ */
+export function getAllPrefectures() {
+  return db
+    .selectDistinct({ prefecture: stations.prefecture })
+    .from(stations)
+    .orderBy(asc(stations.prefCode))
+    .all()
+    .map((p) => p.prefecture);
+}
+
+/**
+ * 全駅の統計情報を一括取得（店舗数、最短距離）
+ */
+export function getAllStationStats() {
+  const results = db
+    .select({
+      stationId: stationChains.stationId,
+      totalChains: sql<number>`count(*)`,
+      minDistance: sql<number>`min(${stationChains.distanceMeters})`,
+    })
+    .from(stationChains)
+    .groupBy(stationChains.stationId)
+    .all();
+
+  // Map形式で返す
+  const statsMap: Record<string, { totalChains: number; minDistance: number }> = {};
+  for (const row of results) {
+    statsMap[row.stationId] = {
+      totalChains: row.totalChains ?? 0,
+      minDistance: row.minDistance ?? 0,
+    };
+  }
+  return statsMap;
+}
+
+/**
+ * チェーン店のお気に入り数ランキングを取得
+ */
+export function getChainFavoriteRanking(chainId: string, limit = 10) {
+  return db
+    .select({
+      menu: menus,
+      favoriteCount: sql<number>`count(${userFavorites.id})`.as("favorite_count"),
+    })
+    .from(menus)
+    .leftJoin(userFavorites, eq(menus.menuId, userFavorites.menuId))
+    .where(eq(menus.chainId, chainId))
+    .groupBy(menus.menuId)
+    .orderBy(desc(sql`favorite_count`))
     .limit(limit)
     .all();
 }

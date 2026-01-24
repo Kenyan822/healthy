@@ -26,6 +26,7 @@ export function KeywordSearchBox({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isComposing, setIsComposing] = useState(false); // IME入力中フラグ
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>(undefined);
@@ -54,8 +55,10 @@ export function KeywordSearchBox({
     }
   }, []);
 
-  // デバウンス付き検索
+  // デバウンス付き検索（IME入力中は検索しない）
   useEffect(() => {
+    if (isComposing) return; // IME入力中は検索をスキップ
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -69,7 +72,7 @@ export function KeywordSearchBox({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [query, fetchSuggestions]);
+  }, [query, fetchSuggestions, isComposing]);
 
   // クリックアウトサイドでドロップダウンを閉じる
   useEffect(() => {
@@ -129,6 +132,8 @@ export function KeywordSearchBox({
             if (suggestions.length > 0) setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={() => setIsComposing(false)}
           placeholder={placeholder}
           autoFocus={autoFocus}
           className="w-full px-4 py-3 pl-11 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-foreground placeholder:text-foreground/40"

@@ -1,42 +1,103 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { tokyoStations, Station } from "@/lib/db/stations-data";
+import {
+  getAllStations,
+  getAllStationStats,
+} from "@/lib/db/queries";
+import type { StationSelect } from "@/lib/db/schema";
 
 export const metadata: Metadata = {
   title: "駅から探す｜ヘルシー検索",
   description:
-    "東京の主要駅周辺でヘルシーなチェーン店を探せます。渋谷、新宿、池袋など人気エリアの健康的な外食スポットをチェック。",
+    "全国199駅の主要駅周辺でヘルシーなチェーン店を探せます。渋谷、新宿、梅田、名古屋など人気エリアの健康的な外食スポットをチェック。",
 };
 
-// 路線ごとにグループ化
-function groupByLine(stations: readonly Station[]): Record<string, Station[]> {
-  const grouped: Record<string, Station[]> = {};
+// 都道府県ごとにグループ化
+function groupByPrefecture(
+  stations: StationSelect[]
+): Record<string, StationSelect[]> {
+  const grouped: Record<string, StationSelect[]> = {};
 
   for (const station of stations) {
-    if (!grouped[station.line]) {
-      grouped[station.line] = [];
+    if (!grouped[station.prefecture]) {
+      grouped[station.prefecture] = [];
     }
-    grouped[station.line].push(station);
+    grouped[station.prefecture].push(station);
   }
 
   return grouped;
 }
 
-export default function AreaPage() {
-  const stationsByLine = groupByLine(tokyoStations);
-  const lines = Object.keys(stationsByLine);
+// 距離をフォーマット
+function formatDistance(meters: number | null): string {
+  if (!meters) return "-";
+  if (meters < 1000) {
+    return `${meters}m`;
+  }
+  return `${(meters / 1000).toFixed(1)}km`;
+}
 
-  // 人気駅（上位表示）
-  const popularStationIds = [
-    "shibuya",
-    "shinjuku",
-    "ikebukuro",
-    "tokyo",
-    "shinagawa",
-    "ueno",
-  ];
-  const popularStations = tokyoStations.filter((s) =>
-    popularStationIds.includes(s.stationId)
+export default function AreaPage() {
+  const allStations = getAllStations(200);
+  const stationsByPrefecture = groupByPrefecture(allStations);
+  const stationStats = getAllStationStats();
+
+  // 人気駅（乗降客数トップ10）
+  const popularStations = allStations.slice(0, 10);
+
+  // 地方ごとの並び順
+  const regionOrder: Record<string, number> = {
+    北海道: 1,
+    青森県: 2,
+    岩手県: 3,
+    宮城県: 4,
+    秋田県: 5,
+    山形県: 6,
+    福島県: 7,
+    茨城県: 8,
+    栃木県: 9,
+    群馬県: 10,
+    埼玉県: 11,
+    千葉県: 12,
+    東京都: 13,
+    神奈川県: 14,
+    新潟県: 15,
+    富山県: 16,
+    石川県: 17,
+    福井県: 18,
+    山梨県: 19,
+    長野県: 20,
+    岐阜県: 21,
+    静岡県: 22,
+    愛知県: 23,
+    三重県: 24,
+    滋賀県: 25,
+    京都府: 26,
+    大阪府: 27,
+    兵庫県: 28,
+    奈良県: 29,
+    和歌山県: 30,
+    鳥取県: 31,
+    島根県: 32,
+    岡山県: 33,
+    広島県: 34,
+    山口県: 35,
+    徳島県: 36,
+    香川県: 37,
+    愛媛県: 38,
+    高知県: 39,
+    福岡県: 40,
+    佐賀県: 41,
+    長崎県: 42,
+    熊本県: 43,
+    大分県: 44,
+    宮崎県: 45,
+    鹿児島県: 46,
+    沖縄県: 47,
+  };
+
+  const sortedPrefectures = Object.keys(stationsByPrefecture).sort(
+    (a, b) => (regionOrder[a] || 99) - (regionOrder[b] || 99)
   );
 
   return (
@@ -45,10 +106,10 @@ export default function AreaPage() {
       <section className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            🚃 駅から探す
+            駅から探す
           </h1>
           <p className="text-lg text-foreground/70">
-            東京の主要駅周辺でヘルシーなチェーン店を探せます
+            全国199の主要駅周辺でヘルシーなチェーン店を探せます
           </p>
         </div>
       </section>
@@ -57,67 +118,80 @@ export default function AreaPage() {
         {/* 人気の駅 */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <span className="text-3xl">⭐</span>
-            人気の駅
+            人気の駅（乗降客数トップ10）
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {popularStations.map((station) => (
-              <Link
-                key={station.stationId}
-                href={`/area/${station.stationId}`}
-                className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50 dark:from-zinc-800 dark:to-blue-950/30 rounded-2xl p-6 border border-blue-100 dark:border-blue-900/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-              >
-                <div className="text-center">
-                  <p className="font-bold text-xl text-foreground group-hover:text-primary transition-colors">
-                    {station.stationName}
-                  </p>
-                  <p className="text-xs text-foreground/50 mt-1">
-                    {station.stationNameEn}
-                  </p>
-                </div>
-                <div className="absolute -bottom-2 -right-2 text-6xl opacity-10 group-hover:opacity-20 transition-opacity">
-                  🚉
-                </div>
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {popularStations.map((station, index) => {
+              const stats = stationStats[station.stationId];
+              return (
+                <Link
+                  key={station.stationId}
+                  href={`/area/${station.stationId}`}
+                  className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50 dark:from-zinc-800 dark:to-blue-950/30 rounded-2xl p-6 border border-blue-100 dark:border-blue-900/50 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="absolute top-2 left-2 text-xs font-bold text-primary/60">
+                    #{index + 1}
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-xl text-foreground group-hover:text-primary transition-colors">
+                      {station.stationName}
+                    </p>
+                    <p className="text-xs text-foreground/50 mt-1">
+                      {station.prefecture}
+                    </p>
+                    {stats && stats.totalChains > 0 ? (
+                      <p className="text-xs text-primary/80 mt-2 font-medium">
+                        {stats.totalChains}店舗 / 最短{formatDistance(stats.minDistance)}
+                      </p>
+                    ) : station.passengerCount ? (
+                      <p className="text-xs text-foreground/40 mt-2">
+                        約{(station.passengerCount / 10000).toFixed(0)}万人/日
+                      </p>
+                    ) : null}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
-        {/* 路線別 */}
+        {/* 都道府県別 */}
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <span className="text-3xl">🚃</span>
-            路線から探す
+            都道府県から探す
           </h2>
 
           <div className="space-y-8">
-            {lines.map((line) => (
+            {sortedPrefectures.map((prefecture) => (
               <div
-                key={line}
+                key={prefecture}
                 className="bg-card-bg rounded-2xl border border-border p-6"
               >
                 <h3 className="font-bold text-lg mb-4 text-foreground flex items-center gap-2">
-                  <span
-                    className={`w-3 h-3 rounded-full ${
-                      line.includes("山手")
-                        ? "bg-green-500"
-                        : line.includes("メトロ")
-                          ? "bg-yellow-500"
-                          : "bg-blue-500"
-                    }`}
-                  />
-                  {line}
+                  <span className="w-3 h-3 rounded-full bg-primary" />
+                  {prefecture}
+                  <span className="text-sm font-normal text-foreground/50">
+                    ({stationsByPrefecture[prefecture].length}駅)
+                  </span>
                 </h3>
                 <div className="flex flex-wrap gap-3">
-                  {stationsByLine[line].map((station) => (
-                    <Link
-                      key={station.stationId}
-                      href={`/area/${station.stationId}`}
-                      className="px-4 py-2 bg-background rounded-lg border border-border hover:border-primary hover:text-primary transition-colors text-sm font-medium"
-                    >
-                      {station.stationName}
-                    </Link>
-                  ))}
+                  {stationsByPrefecture[prefecture].map((station) => {
+                    const stats = stationStats[station.stationId];
+                    return (
+                      <Link
+                        key={station.stationId}
+                        href={`/area/${station.stationId}`}
+                        className="px-4 py-2 bg-background rounded-lg border border-border hover:border-primary hover:text-primary transition-colors text-sm font-medium"
+                      >
+                        {station.stationName}
+                        {stats && stats.totalChains > 0 && (
+                          <span className="ml-1 text-xs text-foreground/50">
+                            ({stats.totalChains}店・{formatDistance(stats.minDistance)})
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -129,7 +203,7 @@ export default function AreaPage() {
           <h2 className="font-bold text-lg mb-3">駅から探すとは？</h2>
           <p className="text-foreground/70 text-sm leading-relaxed">
             お出かけ先や通勤・通学の途中で、ヘルシーな食事ができるチェーン店を探せます。
-            各駅のページでは、周辺のチェーン店と、そのお店で食べられる健康的なメニューをまとめて紹介しています。
+            各駅のページでは、駅から徒歩2km圏内のチェーン店と距離を表示しています。
             高タンパク、低糖質、ダイエット向けなど、目的に合わせたメニュー選びにお役立てください。
           </p>
         </section>

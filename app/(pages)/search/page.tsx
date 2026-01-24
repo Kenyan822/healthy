@@ -6,8 +6,7 @@ import Link from "next/link";
 import { PFCSearchForm } from "@/components/search/PFCSearchForm";
 import { PresetButtons } from "@/components/search/PresetButtons";
 import { SearchResults } from "@/components/search/SearchResults";
-import { presets, isValidPreset } from "@/lib/presets";
-import type { PresetId, SortBy, SearchResultMenu, SearchResponse } from "@/types/search";
+import type { SortBy, SearchResultMenu, SearchResponse } from "@/types/search";
 
 type SearchTab = "custom" | "preset";
 
@@ -16,27 +15,20 @@ function SearchPageContent() {
   const searchParams = useSearchParams();
 
   // 初期値をURLパラメータから取得
-  const initialTab: SearchTab = searchParams.get("preset") ? "preset" : "custom";
-  const initialPreset = searchParams.get("preset") as PresetId | null;
-  const initialSortBy = (searchParams.get("sortBy") as SortBy) || "pfcMatch";
+  const initialTab: SearchTab = searchParams.get("sortBy") && !searchParams.get("protein") ? "preset" : "custom";
+  const initialSortBy = (searchParams.get("sortBy") as SortBy) || "proteinDensity";
   const initialProtein = parseFloat(searchParams.get("protein") || "") || undefined;
   const initialFat = parseFloat(searchParams.get("fat") || "") || undefined;
   const initialCarb = parseFloat(searchParams.get("carb") || "") || undefined;
 
   // State
   const [activeTab, setActiveTab] = useState<SearchTab>(initialTab);
-  const [selectedPreset, setSelectedPreset] = useState<PresetId | null>(
-    initialPreset && isValidPreset(initialPreset) ? initialPreset : null
-  );
-  const [presetSortBy, setPresetSortBy] = useState<SortBy>(
-    initialTab === "preset" ? initialSortBy : "popularity"
-  );
+  const [presetSortBy, setPresetSortBy] = useState<SortBy>(initialSortBy);
   const [results, setResults] = useState<SearchResultMenu[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [showPFCMatch, setShowPFCMatch] = useState(false);
   const [currentSearchParams, setCurrentSearchParams] = useState<URLSearchParams | null>(null);
 
   // 検索実行
@@ -78,18 +70,14 @@ function SearchPageContent() {
       router.push(`/search?${urlParams.toString()}`, { scroll: false });
 
       setCurrentPage(1);
-      setShowPFCMatch(params.sortBy === "pfcMatch");
       executeSearch(urlParams);
     },
     [router, executeSearch]
   );
 
-  // プリセット検索
+  // 目的別検索（ソート順で全メニュー検索）
   const handlePresetSearch = useCallback(() => {
-    if (!selectedPreset) return;
-
     const urlParams = new URLSearchParams();
-    urlParams.set("preset", selectedPreset);
     urlParams.set("sortBy", presetSortBy);
     urlParams.set("page", "1");
     urlParams.set("limit", "20");
@@ -98,9 +86,8 @@ function SearchPageContent() {
     router.push(`/search?${urlParams.toString()}`, { scroll: false });
 
     setCurrentPage(1);
-    setShowPFCMatch(false);
     executeSearch(urlParams);
-  }, [selectedPreset, presetSortBy, router, executeSearch]);
+  }, [presetSortBy, router, executeSearch]);
 
   // もっと見る
   const handleLoadMore = useCallback(() => {
@@ -117,7 +104,7 @@ function SearchPageContent() {
   // 初回読み込み時に検索実行
   useEffect(() => {
     const hasSearchParams =
-      searchParams.has("preset") ||
+      searchParams.has("sortBy") ||
       searchParams.has("protein") ||
       searchParams.has("fat") ||
       searchParams.has("carb");
@@ -127,9 +114,6 @@ function SearchPageContent() {
       if (!params.has("page")) params.set("page", "1");
       if (!params.has("limit")) params.set("limit", "20");
 
-      setShowPFCMatch(
-        !searchParams.has("preset") && searchParams.get("sortBy") === "pfcMatch"
-      );
       executeSearch(params);
     }
   }, [searchParams, executeSearch]);
@@ -155,7 +139,7 @@ function SearchPageContent() {
             メニュー検索
           </h1>
           <p className="text-foreground/70">
-            PFC値やプリセットから、あなたにぴったりのメニューを探しましょう
+            PFC値や目的から、あなたにぴったりのメニューを探しましょう
           </p>
         </div>
       </section>
@@ -186,7 +170,7 @@ function SearchPageContent() {
                   : "text-foreground/60 hover:text-foreground"
               }`}
             >
-              プリセット
+              目的で探す
               {activeTab === "preset" && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
@@ -202,14 +186,12 @@ function SearchPageContent() {
                 protein: initialProtein,
                 fat: initialFat,
                 carb: initialCarb,
-                sortBy: initialTab === "custom" ? initialSortBy : "pfcMatch",
+                sortBy: initialTab === "custom" ? initialSortBy : "proteinDensity",
               }}
             />
           ) : (
             <PresetButtons
-              selectedPreset={selectedPreset}
               sortBy={presetSortBy}
-              onPresetSelect={setSelectedPreset}
               onSortByChange={setPresetSortBy}
               onSearch={handlePresetSearch}
               isLoading={isLoading}
@@ -220,16 +202,11 @@ function SearchPageContent() {
         {/* 検索結果 */}
         {(results.length > 0 || isLoading) && (
           <section>
-            <h2 className="text-xl font-bold mb-4">
-              {selectedPreset && activeTab === "preset"
-                ? `${presets[selectedPreset].name}メニュー`
-                : "検索結果"}
-            </h2>
+            <h2 className="text-xl font-bold mb-4">検索結果</h2>
             <SearchResults
               results={results}
               isLoading={isLoading}
               totalCount={totalCount}
-              showPFCMatch={showPFCMatch}
               onLoadMore={handleLoadMore}
               hasMore={hasMore}
             />
@@ -244,7 +221,7 @@ function SearchPageContent() {
               上の検索フォームからメニューを検索できます
             </p>
             <p className="text-sm text-foreground/50">
-              PFC値を入力するか、プリセットを選択してください
+              PFC値を入力するか、目的を選択してください
             </p>
           </div>
         )}

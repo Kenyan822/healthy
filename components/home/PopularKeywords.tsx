@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { PopularKeyword } from "@/types";
-import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 
 interface PopularKeywordsProps {
@@ -30,9 +29,8 @@ export function PopularKeywords({ keywords }: PopularKeywordsProps) {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-bold font-rounded text-foreground flex items-center gap-2">
-          <span className="text-2xl">🔍</span> 
-          <span>注目のキーワード</span>
+        <h2 className="text-xl font-bold font-rounded text-foreground">
+          注目のキーワード
         </h2>
         <span className="text-xs text-zinc-400 font-medium bg-white px-2 py-1 rounded-full border border-zinc-100">Hot!</span>
       </div>

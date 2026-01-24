@@ -9,6 +9,7 @@ import {
   purposes,
 } from "@/lib/db/queries";
 import { formatPrice } from "@/lib/utils";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 type Props = {
   params: Promise<{ menuId: string }>;
@@ -44,69 +45,50 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// スコアに応じた色
-function getScoreColor(score: number): string {
-  if (score >= 80) return "bg-green-500";
-  if (score >= 60) return "bg-lime-500";
-  if (score >= 40) return "bg-yellow-500";
-  return "bg-orange-500";
-}
-
-// スコアバーコンポーネント
-function ScoreBar({
-  label,
-  score,
-  description,
-}: {
-  label: string;
-  score: number;
-  description: string;
-}) {
-  return (
-    <div className="bg-card-bg rounded-lg p-4 border border-border">
-      <div className="flex justify-between items-center mb-2">
-        <span className="font-medium">{label}</span>
-        <span className="text-2xl font-bold">{Math.round(score)}</span>
-      </div>
-      <div className="w-full bg-background/50 rounded-full h-3 mb-2">
-        <div
-          className={`h-3 rounded-full ${getScoreColor(score)}`}
-          style={{ width: `${score}%` }}
-        />
-      </div>
-      <p className="text-sm text-foreground/60">{description}</p>
-    </div>
-  );
-}
-
-// おすすめポイント生成
+// おすすめポイント生成（事実ベース指標）
 function getRecommendations(menu: {
-  muscleScore: number | null;
-  dietScore: number | null;
-  healthScore: number | null;
   protein: number;
   calories: number;
   carb: number;
+  fat: number;
 }): string[] {
   const recommendations: string[] = [];
 
-  if (menu.muscleScore && menu.muscleScore >= 70) {
-    recommendations.push("筋トレ・バルクアップに最適な高タンパクメニュー");
+  // タンパク質密度（高効率）
+  const proteinDensity = (menu.protein / menu.calories) * 100;
+  if (proteinDensity >= 5) {
+    recommendations.push("タンパク質効率が高く、効率的にタンパク質を摂取可能");
   }
-  if (menu.dietScore && menu.dietScore >= 70) {
-    recommendations.push("ダイエット中の方におすすめの低カロリーメニュー");
-  }
-  if (menu.healthScore && menu.healthScore >= 70) {
-    recommendations.push("栄養バランスが良く健康維持に最適");
-  }
+
+  // 高タンパク
   if (menu.protein >= 30) {
     recommendations.push("1食で30g以上のタンパク質を摂取可能");
   }
+
+  // 低カロリー
   if (menu.calories <= 500) {
     recommendations.push("500kcal以下でカロリーコントロールに最適");
   }
+
+  // 低糖質
   if (menu.carb <= 50) {
-    recommendations.push("糖質控えめで低糖質ダイエットに対応");
+    recommendations.push("糖質控えめで低糖質ダイエットに最適");
+  }
+
+  // 低脂質
+  if (menu.fat <= 15) {
+    recommendations.push("脂質が控えめでローファットダイエットに最適");
+  }
+
+  // PFCバランス
+  const totalCal = menu.protein * 4 + menu.fat * 9 + menu.carb * 4;
+  if (totalCal > 0) {
+    const pRatio = (menu.protein * 4) / totalCal;
+    const fRatio = (menu.fat * 9) / totalCal;
+    const cRatio = (menu.carb * 4) / totalCal;
+    if (pRatio >= 0.15 && pRatio <= 0.25 && fRatio >= 0.2 && fRatio <= 0.3 && cRatio >= 0.45 && cRatio <= 0.65) {
+      recommendations.push("PFCバランスが良く栄養バランスに優れている");
+    }
   }
 
   return recommendations.length > 0
@@ -128,8 +110,8 @@ export default async function MenuDetailPage({ params }: Props) {
   const similarMenus = getSimilarMenus(chain.chainId, menuId, 4);
   const otherChainMenus = getSimilarMenusFromOtherChains(
     chain.chainId,
-    menu.healthScore || 50,
-    "healthScore",
+    menu.protein,
+    menu.calories,
     4
   );
 
@@ -165,9 +147,12 @@ export default async function MenuDetailPage({ params }: Props) {
           <div className="flex flex-col md:flex-row md:items-start gap-6">
             <div className="flex-1">
               <p className="text-primary font-medium mb-2">{chain.chainName}</p>
-              <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-4">
-                {menu.menuName}
-              </h1>
+              <div className="flex items-start gap-3 mb-4">
+                <h1 className="text-2xl md:text-4xl font-bold text-foreground">
+                  {menu.menuName}
+                </h1>
+                <FavoriteButton menuId={menu.menuId} size="lg" />
+              </div>
               {menu.category && (
                 <span className="inline-block px-3 py-1 bg-background/50 rounded-full text-sm">
                   {menu.category}
@@ -253,26 +238,111 @@ export default async function MenuDetailPage({ params }: Props) {
               </div>
             </section>
 
-            {/* スコア */}
+            {/* 栄養指標 */}
             <section>
-              <h2 className="text-xl font-bold mb-4">目的別スコア</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <ScoreBar
-                  label="筋トレスコア"
-                  score={menu.muscleScore || 0}
-                  description="タンパク質効率を評価"
-                />
-                <ScoreBar
-                  label="ダイエットスコア"
-                  score={menu.dietScore || 0}
-                  description="低カロリー・低糖質を評価"
-                />
-                <ScoreBar
-                  label="ヘルシースコア"
-                  score={menu.healthScore || 0}
-                  description="栄養バランスを総合評価"
-                />
-              </div>
+              <h2 className="text-xl font-bold mb-4">栄養指標</h2>
+              {(() => {
+                // 各指標を計算
+                const proteinDensity = (menu.protein / menu.calories) * 100;
+                const carbRatio = ((menu.carb * 4) / menu.calories) * 100;
+                const fatRatio = ((menu.fat * 9) / menu.calories) * 100;
+                const proteinRatio = ((menu.protein * 4) / menu.calories) * 100;
+                // PFCバランス: 理想比率(P:20%, F:25%, C:55%)との乖離（各指標を正規化）
+                const pDev = Math.abs(proteinRatio - 20) / 20;
+                const fDev = Math.abs(fatRatio - 25) / 25;
+                const cDev = Math.abs(carbRatio - 55) / 55;
+                const pfcBalance = Math.max(0, Math.round(100 * (1 - (pDev + fDev + cDev) / 3)));
+                const costPerProtein = menu.price && menu.protein > 0
+                  ? Math.round(menu.price / menu.protein)
+                  : null;
+
+                // 色分け判定
+                const getProteinDensityColor = (val: number) => {
+                  if (val >= 5) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+                  if (val >= 3) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+                  return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+                };
+                const getCaloriesColor = (val: number) => {
+                  if (val <= 500) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+                  if (val <= 700) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+                  return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+                };
+                const getCarbRatioColor = (val: number) => {
+                  if (val <= 40) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+                  if (val <= 55) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+                  return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+                };
+                const getFatRatioColor = (val: number) => {
+                  if (val <= 25) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+                  if (val <= 35) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+                  return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+                };
+                const getPfcBalanceColor = (val: number) => {
+                  if (val >= 70) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+                  if (val >= 40) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+                  return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+                };
+                const getCostPerProteinColor = (val: number | null) => {
+                  if (val === null) return "bg-card-bg border-border";
+                  if (val <= 30) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
+                  if (val <= 50) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+                  return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
+                };
+
+                const baseCardStyle = "rounded-xl border p-4";
+
+                return (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className={`${baseCardStyle} ${getProteinDensityColor(proteinDensity)}`}>
+                      <div className="text-sm text-foreground/60 mb-1">タンパク質密度</div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {proteinDensity.toFixed(1)}
+                      </div>
+                      <div className="text-xs text-foreground/50 mt-1">g/100kcal</div>
+                    </div>
+
+                    <div className={`${baseCardStyle} ${getCaloriesColor(menu.calories)}`}>
+                      <div className="text-sm text-foreground/60 mb-1">カロリー</div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {menu.calories}
+                      </div>
+                      <div className="text-xs text-foreground/50 mt-1">kcal</div>
+                    </div>
+
+                    <div className={`${baseCardStyle} ${getCarbRatioColor(carbRatio)}`}>
+                      <div className="text-sm text-foreground/60 mb-1">糖質比率</div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {carbRatio.toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-foreground/50 mt-1">低いほど低糖質</div>
+                    </div>
+
+                    <div className={`${baseCardStyle} ${getFatRatioColor(fatRatio)}`}>
+                      <div className="text-sm text-foreground/60 mb-1">脂質比率</div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {fatRatio.toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-foreground/50 mt-1">低いほど低脂質</div>
+                    </div>
+
+                    <div className={`${baseCardStyle} ${getPfcBalanceColor(pfcBalance)}`}>
+                      <div className="text-sm text-foreground/60 mb-1">PFCバランス</div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {pfcBalance}
+                      </div>
+                      <div className="text-xs text-foreground/50 mt-1">理想比率との近さ</div>
+                    </div>
+
+                    <div className={`${baseCardStyle} ${getCostPerProteinColor(costPerProtein)}`}>
+                      <div className="text-sm text-foreground/60 mb-1">タンパク質コスパ</div>
+                      <div className="text-3xl font-bold text-foreground">
+                        {costPerProtein !== null ? costPerProtein : "-"}
+                      </div>
+                      <div className="text-xs text-foreground/50 mt-1">円/gP</div>
+                    </div>
+                  </div>
+                );
+              })()}
             </section>
 
             {/* こんな人におすすめ */}

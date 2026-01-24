@@ -7,11 +7,15 @@ export type PresetId =
   | "low_carb"
   | "balanced";
 
-// ソート種別
+// ソート種別（事実ベース指標）
 export type SortBy =
-  | "popularity"    // 人気度
-  | "distance"      // 現在地からの近さ
-  | "pfcMatch"      // PFCマッチ度
+  | "protein"         // タンパク質量
+  | "calories"        // カロリー
+  | "proteinDensity"  // タンパク質密度 (protein / calories)
+  | "carbRatio"       // 糖質比率 (carb × 4 / calories)
+  | "fatRatio"        // 脂質比率 (fat × 9 / calories)
+  | "pfcBalance"      // PFCバランス（理想比率との乖離）
+  | "distance"        // 現在地からの近さ
   | "costPerformance"; // コスパ
 
 // PFC検索パラメータ
@@ -36,14 +40,14 @@ export interface PFCSearchParams {
 export interface SearchResultMenu {
   menu: MenuSelect;
   chain: ChainSelect;
-  // PFCマッチ関連
-  pfcDeviation?: number;      // PFCからのずれ（ユークリッド距離）
-  pfcMatchPercent?: number;   // マッチ率（0-100%）
+  // 事実ベース指標（計算値）
+  proteinDensity?: number;    // タンパク質密度 (protein / calories × 100)
+  carbRatio?: number;         // 糖質比率 (carb × 4 / calories)
+  fatRatio?: number;          // 脂質比率 (fat × 9 / calories)
+  pfcBalanceScore?: number;   // PFCバランススコア（理想との乖離）
   // 距離関連
   distance?: number;          // 現在地からの距離（km）
   nearestStoreName?: string;  // 最寄り店舗名
-  // 人気度
-  popularityScore?: number;   // 人気度スコア（0-100）
   // コスパ
   costPerProtein?: number;    // タンパク質1gあたりの価格
 }

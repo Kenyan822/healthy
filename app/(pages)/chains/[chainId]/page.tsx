@@ -52,9 +52,10 @@ export default async function ChainDetailPage({ params }: Props) {
 
   const menus = getMenusByChain(chainId);
 
-  // 人気メニュー（ヘルシースコア順上位5件）
+  // 人気メニュー（タンパク質密度順上位5件）
+  const calcProteinDensity = (m: typeof menus[0]) => m.protein / m.calories;
   const popularMenus = [...menus]
-    .sort((a, b) => (b.healthScore || 0) - (a.healthScore || 0))
+    .sort((a, b) => calcProteinDensity(b) - calcProteinDensity(a))
     .slice(0, 5);
 
   return (
@@ -160,7 +161,15 @@ export default async function ChainDetailPage({ params }: Props) {
           </h2>
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[600px] table-fixed">
+                <colgroup>
+                  <col />
+                  <col className="w-[120px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[120px]" />
+                </colgroup>
                 <thead className="bg-background/50">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
@@ -197,13 +206,13 @@ export default async function ChainDetailPage({ params }: Props) {
                           {menu.menuName}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right tabular-nums">
                         {menu.calories}kcal
                       </td>
-                      <td className="px-4 py-3 text-right">{menu.protein}g</td>
-                      <td className="px-4 py-3 text-right">{menu.fat}g</td>
-                      <td className="px-4 py-3 text-right">{menu.carb}g</td>
-                      <td className="px-4 py-3 text-right font-medium">
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.protein}g</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.fat}g</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.carb}g</td>
+                      <td className="px-4 py-3 text-right font-medium tabular-nums">
                         {menu.price ? formatPrice(menu.price) : "-"}
                       </td>
                     </tr>

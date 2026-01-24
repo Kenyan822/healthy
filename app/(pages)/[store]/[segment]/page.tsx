@@ -8,22 +8,17 @@ import {
   getMenusByNutritionFilter,
   getMenusByPriceFilter,
   getMenusByTiming,
-  getMenuBySlug,
   countMenusByNutritionFilter,
   countMenusByPriceFilter,
   countMenusByTiming,
   countMenusByChain,
-  getAllMenuSlugs,
 } from "@/lib/db/queries";
+import type { MenuSelect } from "@/lib/db/schema";
 import {
   purposes,
   nutritionFilters,
   priceFilters,
   timingFilters,
-  isPurposeId,
-  isNutritionFilterId,
-  isPriceFilterId,
-  isTimingFilterId,
   allPurposeIds,
   allNutritionFilterIds,
   allPriceFilterIds,
@@ -31,7 +26,7 @@ import {
 } from "@/lib/filters";
 import { resolveSegment, generateSegmentMetadata } from "@/lib/segment-resolver";
 import { formatPrice } from "@/lib/utils";
-import type { MenuSelect } from "@/lib/db/schema";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 type Props = {
   params: Promise<{ store: string; segment: string }>;
@@ -40,7 +35,6 @@ type Props = {
 // 静的パス生成
 export async function generateStaticParams() {
   const chains = getAllChains();
-  const menuSlugs = getAllMenuSlugs();
   const params: { store: string; segment: string }[] = [];
 
   for (const chain of chains) {
@@ -77,13 +71,6 @@ export async function generateStaticParams() {
     }
   }
 
-  // メニュースラッグ
-  for (const { chainId, menuSlug } of menuSlugs) {
-    if (menuSlug) {
-      params.push({ store: chainId, segment: menuSlug });
-    }
-  }
-
   return params;
 }
 
@@ -96,9 +83,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "ページが見つかりません" };
   }
 
-  // メニュー検索用のルックアップ関数
-  const menuLookup = (slug: string) => getMenuBySlug(store, slug) ?? null;
-  const resolved = resolveSegment(segment, menuLookup);
+  const resolved = resolveSegment(segment);
 
   if (resolved.type === "notfound") {
     return { title: "ページが見つかりません" };
@@ -138,8 +123,7 @@ export default async function StoreSegmentPage({ params }: Props) {
     notFound();
   }
 
-  const menuLookup = (slug: string) => getMenuBySlug(store, slug) ?? null;
-  const resolved = resolveSegment(segment, menuLookup);
+  const resolved = resolveSegment(segment);
 
   if (resolved.type === "notfound") {
     notFound();
@@ -155,8 +139,6 @@ export default async function StoreSegmentPage({ params }: Props) {
       return <PriceView store={store} chain={chain} filter={resolved.data} filterId={segment as keyof typeof priceFilters} />;
     case "timing":
       return <TimingView store={store} chain={chain} filter={resolved.data} filterId={segment as keyof typeof timingFilters} />;
-    case "menu":
-      return <MenuDetailView menu={resolved.data.menu} chain={resolved.data.chain} store={store} />;
     default:
       notFound();
   }
@@ -190,7 +172,7 @@ function PurposeView({
 
       <div className="container mx-auto px-4 py-8">
         <PageIntroSection chainName={chain.chainName} purposeId={purpose.id} menuCount={menus.length} />
-        <MenuTable menus={menus} store={store} />
+        <MenuTable menus={menus} />
         <RelatedLinks store={store} currentSegment={purpose.id} />
       </div>
     </main>
@@ -228,7 +210,7 @@ function NutritionView({
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        <MenuTable menus={menus} store={store} highlightField={filter.type} />
+        <MenuTable menus={menus} highlightField={filter.type} />
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -266,7 +248,7 @@ function PriceView({
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        <MenuTable menus={menus} store={store} highlightField="price" />
+        <MenuTable menus={menus} highlightField="price" />
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -303,95 +285,8 @@ function TimingView({
 
       <div className="container mx-auto px-4 py-8">
         <TimingIntroSection chainName={chain.chainName} timingId={filterId} menuCount={menus.length} />
-        <MenuTable menus={menus} store={store} />
+        <MenuTable menus={menus} />
         <RelatedLinks store={store} currentSegment={filterId} />
-      </div>
-    </main>
-  );
-}
-
-// ============================
-// メニュー詳細ビュー
-// ============================
-function MenuDetailView({
-  menu,
-  chain,
-  store,
-}: {
-  menu: MenuSelect;
-  chain: { chainId: string; chainName: string };
-  store: string;
-}) {
-  return (
-    <main className="min-h-screen bg-background">
-      <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
-        <div className="container mx-auto px-4">
-          <Breadcrumb store={store} chainName={chain.chainName} current={menu.menuName} />
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            {menu.menuName}
-          </h1>
-          <p className="text-lg text-foreground/70 mt-2">{chain.chainName}</p>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 py-8">
-        {/* 栄養成分 */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">栄養成分</h2>
-          <div className="bg-card-bg rounded-xl border border-border p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-background/50 rounded-lg">
-                <p className="text-3xl font-bold text-primary">{menu.calories}</p>
-                <p className="text-sm text-foreground/60">kcal</p>
-              </div>
-              <div className="text-center p-4 bg-background/50 rounded-lg">
-                <p className="text-3xl font-bold text-red-500">{menu.protein}g</p>
-                <p className="text-sm text-foreground/60">タンパク質</p>
-              </div>
-              <div className="text-center p-4 bg-background/50 rounded-lg">
-                <p className="text-3xl font-bold text-yellow-500">{menu.fat}g</p>
-                <p className="text-sm text-foreground/60">脂質</p>
-              </div>
-              <div className="text-center p-4 bg-background/50 rounded-lg">
-                <p className="text-3xl font-bold text-blue-500">{menu.carb}g</p>
-                <p className="text-sm text-foreground/60">炭水化物</p>
-              </div>
-            </div>
-            {menu.price && (
-              <p className="text-center mt-4 text-xl font-bold">
-                価格: {formatPrice(menu.price)}
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* スコア */}
-        {(menu.muscleScore || menu.dietScore || menu.healthScore) && (
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">おすすめ度</h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              {menu.muscleScore !== null && (
-                <ScoreCard label="筋トレ向け" score={menu.muscleScore} />
-              )}
-              {menu.dietScore !== null && (
-                <ScoreCard label="ダイエット向け" score={menu.dietScore} />
-              )}
-              {menu.healthScore !== null && (
-                <ScoreCard label="健康維持" score={menu.healthScore} />
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* 説明 */}
-        {menu.description && (
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">メニュー説明</h2>
-            <p className="text-foreground/80">{menu.description}</p>
-          </section>
-        )}
-
-        <RelatedLinks store={store} currentSegment={menu.menuSlug || menu.menuId} />
       </div>
     </main>
   );
@@ -487,11 +382,9 @@ function TimingIntroSection({
 
 function MenuTable({
   menus,
-  store,
   highlightField,
 }: {
   menus: MenuSelect[];
-  store: string;
   highlightField?: "protein" | "fat" | "carb" | "price";
 }) {
   return (
@@ -520,6 +413,8 @@ function MenuTable({
                 <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "price" ? "text-primary" : "text-foreground/70"}`}>
                   価格
                 </th>
+                <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70 w-12">
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -530,7 +425,7 @@ function MenuTable({
                 >
                   <td className="px-4 py-3">
                     <Link
-                      href={`/${store}/${menu.menuSlug || menu.menuId}`}
+                      href={`/menu/${menu.menuId}`}
                       className="text-primary hover:underline font-medium"
                     >
                       {menu.menuName}
@@ -549,6 +444,9 @@ function MenuTable({
                   <td className={`px-4 py-3 text-right ${highlightField === "price" ? "font-bold text-primary" : ""}`}>
                     {menu.price ? formatPrice(menu.price) : "-"}
                   </td>
+                  <td className="px-4 py-3 text-center">
+                    <FavoriteButton menuId={menu.menuId} size="sm" />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -556,17 +454,6 @@ function MenuTable({
         </div>
       </div>
     </section>
-  );
-}
-
-function ScoreCard({ label, score }: { label: string; score: number }) {
-  const color =
-    score >= 70 ? "text-green-500" : score >= 40 ? "text-yellow-500" : "text-red-500";
-  return (
-    <div className="bg-card-bg rounded-xl border border-border p-4 text-center">
-      <p className={`text-3xl font-bold ${color}`}>{score.toFixed(1)}</p>
-      <p className="text-sm text-foreground/60">{label}</p>
-    </div>
   );
 }
 

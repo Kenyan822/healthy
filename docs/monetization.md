@@ -8,9 +8,10 @@
 
 | 収益源 | 比率（目標） | 特徴 |
 |--------|-------------|------|
-| Google AdSense | 40% | 安定収入、PV比例 |
-| アフィリエイト | 50% | 高単価、CV依存 |
-| その他 | 10% | 将来的な拡張 |
+| Google AdSense | 35% | 安定収入、PV比例 |
+| アフィリエイト | 45% | 高単価、CV依存 |
+| サブスクリプション | 15% | 継続収入、LTV高 |
+| その他 | 5% | 将来的な拡張 |
 
 ### 1.2 収益目標
 
@@ -482,181 +483,140 @@ export function getAffiliateRecommendation(
 
 ---
 
-## 5. サブスクリプション（プレミアム会員）
+## 5. サブスクリプション（プラス会員）
 
 ### 5.1 概要
 
-月額課金制のプレミアム会員サービスを提供し、無料ユーザーとの差別化された価値を提供する。
+月額課金制のプラス会員サービスを提供し、無料ユーザーとの差別化された価値を提供する。
+
+外食検索サービスの特性（使用頻度: 週2-3回程度）を考慮し、シンプルな1プラン構成とする。
 
 #### 収益ポジション
 
-| 収益源 | 比率（目標・改定） | 特徴 |
-|--------|-------------------|------|
-| Google AdSense | 30% | 安定収入、PV比例 |
-| アフィリエイト | 40% | 高単価、CV依存 |
-| **サブスクリプション** | **25%** | **継続収入、LTV高** |
+| 収益源 | 比率（目標） | 特徴 |
+|--------|-------------|------|
+| Google AdSense | 35% | 安定収入、PV比例 |
+| アフィリエイト | 45% | 高単価、CV依存 |
+| **サブスクリプション** | **15%** | **継続収入、LTV高** |
 | その他 | 5% | 将来的な拡張 |
 
 ### 5.2 プラン設計
 
-#### 無料プラン vs プレミアムプラン
+#### 無料プラン vs プラスプラン
 
-| 機能 | 無料 | ベーシック | プロ |
-|------|------|-----------|------|
-| 月額料金 | ¥0 | ¥480 | ¥980 |
-| メニュー検索 | ○ | ○ | ○ |
-| 基本栄養情報（カロリー・P・F・C） | ○ | ○ | ○ |
-| **詳細栄養情報（ビタミン・ミネラル等）** | × | ○ | ○ |
-| **マイPFCバランス設定** | × | ○ | ○ |
-| **お気に入り保存（無制限）** | 5件まで | ○ | ○ |
-| **食事記録・カレンダー** | × | ○ | ○ |
-| **週間/月間レポート** | × | × | ○ |
-| **AI献立提案** | × | × | ○ |
-| **1日の組み合わせ最適化** | × | × | ○ |
-| **広告非表示** | × | ○ | ○ |
-| **新メニュー先行情報** | × | × | ○ |
-| **CSV/PDF出力** | × | × | ○ |
+| 機能 | 無料 | プラス |
+|------|------|--------|
+| 月額料金 | ¥0 | **¥480** |
+| 年額料金 | - | ¥4,800（2ヶ月分お得） |
+| チェーン店検索 | ○ | ○ |
+| 基本栄養情報（カロリー・P・F・C） | ○ | ○ |
+| **コンビニ検索** | × | ○ |
+| **お気に入り保存** | 5件まで | 無制限 |
+| **組み合わせ検索** | × | ○ |
+| **遠隔地検索** | × | ○ |
+| **広告** | あり | 非表示 |
+
+#### プラン設計の考え方
+
+外食検索サービスとして自然な課金ポイントに絞り込み：
+
+| 機能 | 価値 | 理由 |
+|------|------|------|
+| コンビニ追加 | ◎ | 対象店舗が増える＝価値が増える |
+| お気に入り無制限 | ○ | よく行く店・メニューを保存 |
+| 組み合わせ検索 | ○ | 複数メニューでPFCバランス調整（外食特化機能） |
+| 遠隔地検索 | ○ | 出張・旅行前に調べたい需要 |
+| 広告非表示 | ○ | 課金ユーザーへの当然の配慮 |
+
+※ 食事記録・AI献立提案などは「あすけん」等の総合食事管理アプリの領域のため除外
 
 ### 5.3 機能詳細
 
-#### マイPFCバランス設定
+#### コンビニ検索
+
+対象コンビニ:
+- セブンイレブン
+- ローソン
+- ファミリーマート
+- ミニストップ
 
 ```typescript
-// types/subscription.ts
+// types/store.ts
 
-interface UserPFCGoal {
-  userId: string;
-  dailyCalories: number;      // 目標カロリー
-  proteinRatio: number;       // タンパク質比率（%）
-  fatRatio: number;           // 脂質比率（%）
-  carbRatio: number;          // 炭水化物比率（%）
-  purpose: 'muscle' | 'diet' | 'maintain' | 'custom';
-}
+type StoreType = 'chain' | 'convenience';
 
-// プリセット例
-const PFC_PRESETS = {
-  muscle: { protein: 30, fat: 25, carb: 45 },      // 筋肥大
-  diet: { protein: 35, fat: 30, carb: 35 },        // ダイエット
-  keto: { protein: 25, fat: 60, carb: 15 },        // ケトジェニック
-  maintain: { protein: 20, fat: 25, carb: 55 },    // 維持
-};
-```
-
-**ユーザー価値:**
-- 自分の目標に合わせた検索結果のパーソナライズ
-- 目標達成度の可視化
-- 食事の過不足を一目で確認
-
-#### 食事記録・カレンダー
-
-```typescript
-// types/meal-log.ts
-
-interface MealLog {
+interface ConvenienceStore {
   id: string;
-  userId: string;
-  date: string;           // YYYY-MM-DD
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  menuId: string;
-  chainId: string;
-  customNote?: string;
-  timestamp: Date;
-}
-
-interface DailySummary {
-  date: string;
-  totalCalories: number;
-  totalProtein: number;
-  totalFat: number;
-  totalCarb: number;
-  goalAchievement: {
-    calories: number;     // 達成率（%）
-    protein: number;
-    fat: number;
-    carb: number;
-  };
+  name: string;
+  type: 'convenience';
+  menuCount: number;
 }
 ```
 
 **ユーザー価値:**
-- 外食の履歴を簡単に記録
-- 週単位・月単位での振り返り
-- 他の食事管理アプリとの差別化（外食特化）
+- チェーン店が近くにない時の代替選択肢
+- コンビニでもPFCバランスを意識した選択が可能
 
-#### AI献立提案（プロプラン）
+#### 組み合わせ検索
+
+複数メニューを組み合わせてPFCバランスを調整する機能。
 
 ```typescript
-// lib/ai-meal-planner.ts
+// types/combination.ts
 
-interface MealPlanRequest {
-  userId: string;
-  date: string;
-  remainingNutrition: {
+interface CombinationSearch {
+  menus: MenuItem[];
+  totalNutrition: {
     calories: number;
     protein: number;
     fat: number;
     carb: number;
   };
-  preferences: {
-    excludeChains?: string[];      // 除外チェーン
-    maxBudget?: number;            // 予算上限
-    location?: string;             // 現在地/最寄り駅
-  };
 }
 
-interface MealSuggestion {
-  chainId: string;
-  chainName: string;
-  menuId: string;
-  menuName: string;
-  nutrition: Nutrition;
-  matchScore: number;             // マッチ度（0-100）
-  reason: string;                 // 提案理由
-}
-
-// 使用例
-const suggestion = await suggestMeal({
-  userId: 'user123',
-  date: '2026-01-13',
-  remainingNutrition: {
-    calories: 600,
-    protein: 35,
-    fat: 15,
-    carb: 60,
-  },
-  preferences: {
-    maxBudget: 1000,
-    location: '渋谷',
-  },
-});
-
-// 結果例
-// {
-//   chainName: "大戸屋",
-//   menuName: "しまほっけの炭火焼き定食",
-//   matchScore: 92,
-//   reason: "残りのタンパク質目標35gに対して、32.5gを効率よく摂取できます"
-// }
+// 使用例: サラダ + メイン + サイドで目標PFCに近づける
 ```
+
+**ユーザー価値:**
+- 単品では足りない栄養素を補完
+- 「サラダ + メイン」などの組み合わせ提案
+
+#### 遠隔地検索
+
+現在地以外のエリアを検索できる機能。
+
+```typescript
+// types/search.ts
+
+interface AreaSearch {
+  station?: string;      // 駅名
+  area?: string;         // エリア名
+  prefecture?: string;   // 都道府県
+}
+```
+
+**ユーザー価値:**
+- 出張先・旅行先での事前リサーチ
+- 引越し先での外食環境チェック
 
 ### 5.4 料金シミュレーション
 
 #### 収益予測
 
-| 月間アクティブユーザー | 無料 | ベーシック | プロ | 月間収益 |
-|----------------------|------|-----------|------|---------|
-| 10,000 | 9,700 | 200 (2%) | 100 (1%) | ¥194,000 |
-| 50,000 | 48,000 | 1,500 (3%) | 500 (1%) | ¥1,210,000 |
-| 100,000 | 95,000 | 3,500 (3.5%) | 1,500 (1.5%) | ¥3,150,000 |
+| 月間アクティブユーザー | 無料 | プラス | 月間収益 |
+|----------------------|------|--------|---------|
+| 10,000 | 9,800 | 200 (2%) | ¥96,000 |
+| 50,000 | 48,500 | 1,500 (3%) | ¥720,000 |
+| 100,000 | 96,500 | 3,500 (3.5%) | ¥1,680,000 |
 
 #### LTV（顧客生涯価値）計算
 
 ```
-ベーシックプラン:
+プラスプラン:
   月額 ¥480 × 平均継続月数 8ヶ月 = LTV ¥3,840
 
-プロプラン:
-  月額 ¥980 × 平均継続月数 12ヶ月 = LTV ¥11,760
+年額プラン:
+  年額 ¥4,800 × 平均継続年数 1.5年 = LTV ¥7,200
 ```
 
 ### 5.5 決済システム
@@ -674,22 +634,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // プラン定義
 const PLANS = {
-  basic: {
-    priceId: 'price_basic_monthly',
-    name: 'ベーシック',
+  plus_monthly: {
+    priceId: 'price_plus_monthly',
+    name: 'プラス（月額）',
     price: 480,
   },
-  pro: {
-    priceId: 'price_pro_monthly',
-    name: 'プロ',
-    price: 980,
+  plus_yearly: {
+    priceId: 'price_plus_yearly',
+    name: 'プラス（年額）',
+    price: 4800,
   },
 };
 
 // チェックアウトセッション作成
 export async function createCheckoutSession(
   userId: string,
-  planType: 'basic' | 'pro'
+  planType: 'plus_monthly' | 'plus_yearly'
 ) {
   const plan = PLANS[planType];
   
@@ -783,13 +743,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const subscription = await prisma.subscription.findUnique({
         where: { userId: user.id },
       });
-      
+
       return {
         ...session,
         user: {
           ...session.user,
           id: user.id,
-          plan: subscription?.plan ?? 'free',
+          plan: subscription?.plan ?? 'free', // 'free' | 'plus'
         },
       };
     },
@@ -811,7 +771,9 @@ import { useState } from 'react';
 interface PricingPlan {
   name: string;
   price: number;
+  yearlyPrice?: number;
   features: string[];
+  notIncluded?: string[];
   highlighted?: boolean;
   cta: string;
 }
@@ -821,62 +783,76 @@ const plans: PricingPlan[] = [
     name: '無料',
     price: 0,
     features: [
-      'メニュー検索',
-      '基本栄養情報',
+      'チェーン店検索',
+      '基本栄養情報（カロリー・PFC）',
       'お気に入り5件まで',
     ],
-    cta: '今すぐ始める',
+    notIncluded: [
+      'コンビニ検索',
+      '組み合わせ検索',
+      '遠隔地検索',
+    ],
+    cta: '無料で始める',
   },
   {
-    name: 'ベーシック',
+    name: 'プラス',
     price: 480,
+    yearlyPrice: 4800,
     features: [
       '無料プランの全機能',
-      '詳細栄養情報',
-      'マイPFCバランス設定',
+      'コンビニ検索',
       'お気に入り無制限',
-      '食事記録・カレンダー',
+      '組み合わせ検索',
+      '遠隔地検索',
       '広告非表示',
     ],
     highlighted: true,
-    cta: '人気プランを始める',
-  },
-  {
-    name: 'プロ',
-    price: 980,
-    features: [
-      'ベーシックの全機能',
-      '週間/月間レポート',
-      'AI献立提案',
-      '1日の組み合わせ最適化',
-      '新メニュー先行情報',
-      'CSV/PDF出力',
-    ],
-    cta: 'プロを始める',
+    cta: 'プラスを始める',
   },
 ];
 
 export const PricingTable = () => {
+  const [isYearly, setIsYearly] = useState(false);
+
   return (
-    <div className="pricing-grid">
-      {plans.map((plan) => (
-        <div
-          key={plan.name}
-          className={`pricing-card ${plan.highlighted ? 'pricing-card--highlighted' : ''}`}
-        >
-          <h3>{plan.name}</h3>
-          <p className="price">
-            <span className="price-amount">¥{plan.price.toLocaleString()}</span>
-            <span className="price-period">/月</span>
-          </p>
-          <ul>
-            {plan.features.map((feature) => (
-              <li key={feature}>✓ {feature}</li>
-            ))}
-          </ul>
-          <button className="cta-button">{plan.cta}</button>
-        </div>
-      ))}
+    <div className="pricing-container">
+      <div className="billing-toggle">
+        <span>月額</span>
+        <button onClick={() => setIsYearly(!isYearly)}>
+          {isYearly ? '年額' : '月額'}
+        </button>
+        <span>年額（2ヶ月分お得）</span>
+      </div>
+      <div className="pricing-grid">
+        {plans.map((plan) => (
+          <div
+            key={plan.name}
+            className={`pricing-card ${plan.highlighted ? 'pricing-card--highlighted' : ''}`}
+          >
+            <h3>{plan.name}</h3>
+            <p className="price">
+              <span className="price-amount">
+                ¥{isYearly && plan.yearlyPrice
+                  ? plan.yearlyPrice.toLocaleString()
+                  : plan.price.toLocaleString()}
+              </span>
+              <span className="price-period">/{isYearly ? '年' : '月'}</span>
+            </p>
+            {isYearly && plan.yearlyPrice && (
+              <p className="price-note">（月あたり¥400）</p>
+            )}
+            <ul>
+              {plan.features.map((feature) => (
+                <li key={feature}>✓ {feature}</li>
+              ))}
+              {plan.notIncluded?.map((feature) => (
+                <li key={feature} className="not-included">× {feature}</li>
+              ))}
+            </ul>
+            <button className="cta-button">{plan.cta}</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -912,8 +888,7 @@ const CANCEL_REASONS = [
 
 | プラン | 月額 | 年額 | 割引率 |
 |--------|------|------|--------|
-| ベーシック | ¥480 | ¥4,800 (¥400/月) | 17% OFF |
-| プロ | ¥980 | ¥9,800 (¥817/月) | 17% OFF |
+| プラス | ¥480 | ¥4,800 (¥400/月) | 17% OFF |
 
 ### 5.9 サブスク導入ロードマップ
 
@@ -922,8 +897,8 @@ const CANCEL_REASONS = [
 ```
 □ NextAuth.js導入（Google認証）
 □ Stripe連携
-□ ベーシックプランのみ提供
-□ マイPFCバランス設定
+□ プラスプラン提供開始
+□ コンビニ検索機能
 □ お気に入り無制限
 □ 広告非表示
 ```
@@ -933,20 +908,21 @@ const CANCEL_REASONS = [
 #### Phase 2: 機能拡充（6-12ヶ月目）
 
 ```
-□ 食事記録・カレンダー機能
-□ プロプラン追加
-□ 週間レポート機能
+□ 組み合わせ検索機能
+□ 遠隔地検索機能
 □ 年額プラン追加
+□ コンビニデータ拡充
 ```
 
 **目標: 有料会員500人**
 
-#### Phase 3: AI機能（12-18ヶ月目）
+#### Phase 3: 改善・最適化（12-18ヶ月目）
 
 ```
-□ AI献立提案（OpenAI API連携）
-□ 1日の組み合わせ最適化
-□ パーソナライズレコメンド
+□ ユーザーフィードバック反映
+□ 検索精度向上
+□ UI/UX改善
+□ 対象店舗拡大
 ```
 
 **目標: 有料会員2,000人**

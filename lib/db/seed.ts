@@ -7,53 +7,6 @@ const dbPath = path.join(process.cwd(), "data", "chain_restaurant.db");
 const sqlite = new Database(dbPath);
 const db = drizzle(sqlite);
 
-// スコア計算関数
-function calculateMuscleScore(protein: number, calories: number): number {
-  // タンパク質/カロリー比率を0-100にスケール
-  const ratio = (protein / calories) * 1000;
-  return Math.min(100, Math.round(ratio * 2));
-}
-
-function calculateDietScore(
-  calories: number,
-  protein: number,
-  fat: number,
-  carb: number
-): number {
-  // 低カロリー + 高タンパク + 低炭水化物を評価
-  const calorieScore = Math.max(0, 100 - calories / 10);
-  const proteinBonus = Math.min(30, protein);
-  const carbPenalty = Math.min(30, carb / 3);
-  return Math.min(100, Math.round(calorieScore + proteinBonus - carbPenalty));
-}
-
-function calculateHealthScore(
-  calories: number,
-  protein: number,
-  fat: number,
-  carb: number,
-  sodium?: number
-): number {
-  // PFCバランスを評価
-  const total = protein * 4 + fat * 9 + carb * 4;
-  if (total === 0) return 50;
-
-  const proteinRatio = (protein * 4) / total;
-  const fatRatio = (fat * 9) / total;
-  const carbRatio = (carb * 4) / total;
-
-  // 理想的なPFCバランス: P15-25%, F20-30%, C50-60%
-  let score = 50;
-  if (proteinRatio >= 0.15 && proteinRatio <= 0.25) score += 15;
-  if (fatRatio >= 0.2 && fatRatio <= 0.3) score += 15;
-  if (carbRatio >= 0.5 && carbRatio <= 0.6) score += 15;
-
-  // 塩分ペナルティ
-  if (sodium && sodium > 3) score -= 10;
-
-  return Math.min(100, Math.max(0, Math.round(score)));
-}
-
 // 初期データ
 const chainData = [
   {
@@ -459,30 +412,12 @@ async function seed() {
       .run();
   }
 
-  // メニューデータを挿入（スコア計算付き）
+  // メニューデータを挿入
   console.log("Inserting menus...");
   for (const menu of menuData) {
-    const muscleScore = calculateMuscleScore(menu.protein, menu.calories);
-    const dietScore = calculateDietScore(
-      menu.calories,
-      menu.protein,
-      menu.fat,
-      menu.carb
-    );
-    const healthScore = calculateHealthScore(
-      menu.calories,
-      menu.protein,
-      menu.fat,
-      menu.carb,
-      menu.sodium
-    );
-
     db.insert(menus)
       .values({
         ...menu,
-        muscleScore,
-        dietScore,
-        healthScore,
         isSeasonal: false,
         isLimited: false,
         isAvailable: true,

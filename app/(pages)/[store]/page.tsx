@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/queries";
 import { getCategoryLabel, getCategoryColor, formatPrice } from "@/lib/utils";
 import { purposes, allPurposeIds } from "@/lib/filters";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 type Props = {
   params: Promise<{ store: string }>;
@@ -55,9 +56,10 @@ export default async function StoreTopPage({ params }: Props) {
 
   const menus = getMenusByChain(store);
 
-  // 人気メニュー（ヘルシースコア順上位5件）
+  // 人気メニュー（タンパク質密度順上位5件）
+  const calcProteinDensity = (m: typeof menus[0]) => m.protein / m.calories;
   const popularMenus = [...menus]
-    .sort((a, b) => (b.healthScore || 0) - (a.healthScore || 0))
+    .sort((a, b) => calcProteinDensity(b) - calcProteinDensity(a))
     .slice(0, 5);
 
   // 全メニュー（表示用：最大6件）
@@ -120,7 +122,7 @@ export default async function StoreTopPage({ params }: Props) {
         {/* 目的別リンク */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-6">目的別に探す</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {allPurposeIds.map((purposeId) => {
               const purpose = purposes[purposeId];
               return (
@@ -189,29 +191,35 @@ export default async function StoreTopPage({ params }: Props) {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {popularMenus.map((menu, index) => (
-              <Link
-                key={menu.menuId}
-                href={`/${store}/${menu.menuSlug || menu.menuId}`}
-                className="bg-card-bg rounded-xl border border-border p-4 hover:border-primary transition-colors flex gap-4"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-foreground">{menu.menuName}</p>
-                  <div className="flex gap-3 text-xs text-foreground/60 mt-1">
-                    <span>{menu.calories}kcal</span>
-                    <span>P{menu.protein}g</span>
-                    <span>F{menu.fat}g</span>
-                    <span>C{menu.carb}g</span>
+              <div key={menu.menuId} className="relative">
+                <Link
+                  href={`/menu/${menu.menuId}`}
+                  className="bg-card-bg rounded-xl border border-border p-4 hover:border-primary transition-colors flex gap-4 pr-12"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    {index + 1}
                   </div>
-                  {menu.price && (
-                    <p className="text-sm text-primary font-bold mt-1">
-                      {formatPrice(menu.price)}
-                    </p>
-                  )}
-                </div>
-              </Link>
+                  <div className="flex-1">
+                    <p className="font-bold text-foreground">{menu.menuName}</p>
+                    <div className="flex gap-3 text-xs text-foreground/60 mt-1">
+                      <span>{menu.calories}kcal</span>
+                      <span>P{menu.protein}g</span>
+                      <span>F{menu.fat}g</span>
+                      <span>C{menu.carb}g</span>
+                    </div>
+                    {menu.price && (
+                      <p className="text-sm text-primary font-bold mt-1">
+                        {formatPrice(menu.price)}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+                <FavoriteButton
+                  menuId={menu.menuId}
+                  size="sm"
+                  className="absolute top-3 right-3"
+                />
+              </div>
             ))}
           </div>
         </section>
@@ -232,26 +240,32 @@ export default async function StoreTopPage({ params }: Props) {
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
             <div className="divide-y divide-border">
               {displayMenus.map((menu) => (
-                <Link
-                  key={menu.menuId}
-                  href={`/menu/${menu.menuId}`}
-                  className="flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
-                >
-                  <div className="flex-1">
-                    <p className="font-bold text-foreground">{menu.menuName}</p>
-                    <div className="flex gap-3 text-xs text-foreground/60 mt-1">
-                      <span>{menu.calories}kcal</span>
-                      <span>P{menu.protein}g</span>
-                      <span>F{menu.fat}g</span>
-                      <span>C{menu.carb}g</span>
+                <div key={menu.menuId} className="relative flex items-center">
+                  <Link
+                    href={`/menu/${menu.menuId}`}
+                    className="flex items-center justify-between p-4 hover:bg-primary/5 transition-colors flex-1 pr-14"
+                  >
+                    <div className="flex-1">
+                      <p className="font-bold text-foreground">{menu.menuName}</p>
+                      <div className="flex gap-3 text-xs text-foreground/60 mt-1">
+                        <span>{menu.calories}kcal</span>
+                        <span>P{menu.protein}g</span>
+                        <span>F{menu.fat}g</span>
+                        <span>C{menu.carb}g</span>
+                      </div>
                     </div>
-                  </div>
-                  {menu.price && (
-                    <p className="text-sm text-primary font-bold">
-                      {formatPrice(menu.price)}
-                    </p>
-                  )}
-                </Link>
+                    {menu.price && (
+                      <p className="text-sm text-primary font-bold">
+                        {formatPrice(menu.price)}
+                      </p>
+                    )}
+                  </Link>
+                  <FavoriteButton
+                    menuId={menu.menuId}
+                    size="sm"
+                    className="absolute right-3"
+                  />
+                </div>
               ))}
             </div>
           </div>
