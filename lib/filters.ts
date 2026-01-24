@@ -122,12 +122,30 @@ export const nutritionFilters = {
     label: "脂質40g以下",
     seoTitle: "脂質40g以下のメニュー",
   },
-  // 糖質/炭水化物（40g〜200g）
+  // 糖質/炭水化物（20g〜100g）
+  "carb-under-20g": {
+    type: "carb" as const,
+    max: 20,
+    label: "糖質20g以下",
+    seoTitle: "糖質20g以下のメニュー",
+  },
+  "carb-under-30g": {
+    type: "carb" as const,
+    max: 30,
+    label: "糖質30g以下",
+    seoTitle: "糖質30g以下のメニュー",
+  },
   "carb-under-40g": {
     type: "carb" as const,
     max: 40,
     label: "糖質40g以下",
     seoTitle: "糖質40g以下のメニュー",
+  },
+  "carb-under-50g": {
+    type: "carb" as const,
+    max: 50,
+    label: "糖質50g以下",
+    seoTitle: "糖質50g以下のメニュー",
   },
   "carb-under-60g": {
     type: "carb" as const,
@@ -135,17 +153,17 @@ export const nutritionFilters = {
     label: "糖質60g以下",
     seoTitle: "糖質60g以下のメニュー",
   },
+  "carb-under-80g": {
+    type: "carb" as const,
+    max: 80,
+    label: "糖質80g以下",
+    seoTitle: "糖質80g以下のメニュー",
+  },
   "carb-under-100g": {
     type: "carb" as const,
     max: 100,
     label: "糖質100g以下",
     seoTitle: "糖質100g以下のメニュー",
-  },
-  "carb-under-200g": {
-    type: "carb" as const,
-    max: 200,
-    label: "糖質200g以下",
-    seoTitle: "糖質200g以下のメニュー",
   },
 } as const;
 
@@ -155,6 +173,11 @@ export type NutritionFilterId = keyof typeof nutritionFilters;
 // 価格フィルター
 // ============================
 export const priceFilters = {
+  "under-400yen": {
+    max: 400,
+    label: "400円以下",
+    seoTitle: "400円以下のメニュー",
+  },
   "under-500yen": {
     max: 500,
     label: "500円以下",
@@ -184,6 +207,31 @@ export const priceFilters = {
     max: 1000,
     label: "1000円以下",
     seoTitle: "1000円以下のメニュー",
+  },
+  "under-1100yen": {
+    max: 1100,
+    label: "1100円以下",
+    seoTitle: "1100円以下のメニュー",
+  },
+  "under-1200yen": {
+    max: 1200,
+    label: "1200円以下",
+    seoTitle: "1200円以下のメニュー",
+  },
+  "under-1300yen": {
+    max: 1300,
+    label: "1300円以下",
+    seoTitle: "1300円以下のメニュー",
+  },
+  "under-1400yen": {
+    max: 1400,
+    label: "1400円以下",
+    seoTitle: "1400円以下のメニュー",
+  },
+  "under-1500yen": {
+    max: 1500,
+    label: "1500円以下",
+    seoTitle: "1500円以下のメニュー",
   },
 } as const;
 

@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { SiteStats } from "@/types";
 import { formatNumber, formatPrice } from "@/lib/utils";
 import { getCurrentPosition, formatDistance } from "@/lib/location";
 import type { SortBy, SearchResultMenu, SearchResponse, UserLocation } from "@/types/search";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import { UpgradeModal } from "@/components/upgrade/UpgradeModal";
 
 interface HeroSectionProps {
   stats: SiteStats;
@@ -38,6 +40,7 @@ const nutritionIndicators: { value: SortBy; label: string; description: string }
 ];
 
 export function HeroSection({ stats }: HeroSectionProps) {
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>("preset");
   const [purposeSortBy, setPurposeSortBy] = useState<SortBy>("proteinDensity");
@@ -54,6 +57,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [nearbyStores, setNearbyStores] = useState<NearbyStore[]>([]);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -96,6 +100,16 @@ export function HeroSection({ stats }: HeroSectionProps) {
       setIsLoadingStores(false);
     }
   }, []);
+
+  // 現在地取得ボタンのクリックハンドラ（Plus会員限定）
+  const handleLocationClick = useCallback(() => {
+    const plan = (session?.user as { plan?: string })?.plan || "free";
+    if (plan === "free") {
+      setShowUpgradeModal(true);
+      return;
+    }
+    fetchNearbyStores();
+  }, [session, fetchNearbyStores]);
 
   const executeSearch = useCallback(async (params: URLSearchParams) => {
     setIsLoading(true);
@@ -541,7 +555,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   位置情報を許可すると、近くのチェーン店を距離順で表示します
                 </p>
                 <button
-                  onClick={fetchNearbyStores}
+                  onClick={handleLocationClick}
                   className="px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-lg transition-colors inline-flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -667,6 +681,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
         .animate-blob { animation: blob 7s infinite; }
         .animation-delay-2000 { animation-delay: 2s; }
       `}</style>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        trigger="location"
+      />
     </section>
   );
 }

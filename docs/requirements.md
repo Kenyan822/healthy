@@ -116,10 +116,82 @@
 
 ---
 
-### 2.2 スコア計算ロジック
+### 2.2 栄養指標の計算ロジック
+
+#### 2.2.1 事実ベース指標（メインで使用）
+
+検索・ソート・ランキングで使用される主要な栄養指標。すべてSQLクエリ内で計算される。
+
+| 指標名 | 計算式 | 説明 | ソート順 |
+|--------|--------|------|----------|
+| **proteinDensity**<br>(タンパク質密度) | `protein * 100.0 / calories` | カロリーあたりのタンパク質量。高タンパク低カロリーほど高い | DESC |
+| **carbRatio**<br>(糖質比率) | `(carb * 4.0) / calories` | 総カロリーに占める糖質由来カロリーの割合 | ASC |
+| **fatRatio**<br>(脂質比率) | `(fat * 9.0) / calories` | 総カロリーに占める脂質由来カロリーの割合 | ASC |
+| **pfcBalance**<br>(PFCバランス) | 下記参照 | 理想比率(P:20%, F:25%, C:55%)との乖離度 | DESC |
+| **costPerformance**<br>(コスパ) | `price / protein` | タンパク質1gあたりの価格（円）。低いほどコスパ良好 | ASC |
+
+#### 2.2.2 PFCバランス計算の詳細
+
+PFCバランスは理想的な栄養バランス（P:20%, F:25%, C:55%）との乖離を計算し、100点満点でスコア化する。
+
+**SQLでの計算式:**
+
+```sql
+-- PFCから算出したカロリーを基準に各栄養素の比率を計算
+-- totalCal = protein * 4 + fat * 9 + carb * 4
+
+100 - (
+  ABS((protein * 4.0 / totalCal) - 0.20) * 100 +  -- P比率の乖離
+  ABS((fat * 9.0 / totalCal) - 0.25) * 100 +      -- F比率の乖離
+  ABS((carb * 4.0 / totalCal) - 0.55) * 100       -- C比率の乖離
+)
+```
+
+**TypeScriptでの計算式（API内）:**
 
 ```typescript
-// 筋トレスコア: 高タンパク・低カロリーほど高スコア
+// 各栄養素のカロリー比率を計算
+const proteinRatio = (protein * 4 / calories) * 100;  // タンパク質のカロリー比率
+const fatRatio = (fat * 9 / calories) * 100;          // 脂質のカロリー比率
+const carbRatio = (carb * 4 / calories) * 100;        // 炭水化物のカロリー比率
+
+// 理想比率との乖離を計算（正規化）
+const pDev = Math.abs(proteinRatio - 20) / 20;  // P: 理想20%
+const fDev = Math.abs(fatRatio - 25) / 25;      // F: 理想25%
+const cDev = Math.abs(carbRatio - 55) / 55;     // C: 理想55%
+
+// 100点満点のスコアに変換（乖離が少ないほど高スコア）
+const pfcBalance = Math.max(0, Math.round(100 * (1 - (pDev + fDev + cDev) / 3)));
+```
+
+#### 2.2.3 PFC検索のマッチングロジック
+
+ユーザーが入力したPFC目標値との類似度をユークリッド距離で計算する。
+
+```typescript
+// 入力された項目のみで距離を計算（未入力=0の項目は除外）
+let distanceSq = 0;
+
+if (targetP > 0) {
+  distanceSq += (menu.protein - targetP) ** 2;
+}
+if (targetF > 0) {
+  distanceSq += (menu.fat - targetF) ** 2;
+}
+if (targetC > 0) {
+  distanceSq += (menu.carb - targetC) ** 2;
+}
+
+// 距離が小さいほどマッチ度が高い
+// 結果は距離の昇順でソート
+```
+
+#### 2.2.4 レガシースコア（参考・非推奨）
+
+過去の設計で使用されていたスコア。現在は事実ベース指標に置き換えられている。
+
+```typescript
+// 筋トレスコア: 高タンパク・低カロリーほど高スコア（0-100）
 muscleScore = min(100, (protein / calories * 100) * 3)
 
 // ダイエットスコア: 低カロリー・低脂質ほど高スコア
@@ -129,37 +201,51 @@ dietScore = 100 - (calories / 15) - (fat * 1.5)
 healthScore = 50 + protein + (fiber * 3) - (sodium * 5) - (fat * 0.5)
 ```
 
+※ これらはDBスキーマに残存するが、表示・検索には使用されていない。
+
 ---
 
 ### 2.3 ページ構成・ルーティング
 
 #### 実装済みページ一覧
 
-| パス | ページ名 | 説明 |
-|------|----------|------|
-| `/` | ホーム | ヒーローセクション、メニューランキング、人気キーワード、クイックアクセス |
-| `/chains` | チェーン店一覧 | 全チェーン店をカテゴリ別に表示 |
-| `/chains/[chainId]` | チェーン店詳細 | メニュー一覧、栄養データ、目的別フィルタリング |
-| `/search` | PFC検索 | カスタムPFC入力 + プリセット検索 |
-| `/area` | エリア検索 | 199主要駅を都道府県別に表示、人気駅トップ10 |
-| `/area/[station]` | 駅詳細 | 半径2km以内のチェーン店を距離順に表示 |
-| `/ranking` | ランキングハブ | 目的別トップ5プレビュー、全チェーンランキングリンク |
-| `/ranking/[type]` | 目的別ランキング | 筋トレ/ダイエット/健康/低糖質/低脂質 |
-| `/[store]` | 店舗トップ | メニュー概要、人気メニュートップ5 |
-| `/[store]/ranking` | 店舗内ランキング | チェーン店内ベストメニュー |
-| `/[store]/menu` | メニュー一覧 | 全メニューを価格順に表示 |
-| `/[store]/[segment]` | 動的フィルタページ | 目的/栄養/価格/時間帯フィルタ + メニュー詳細 |
+| パス | ページ名 | 説明 | 生成方式 |
+|------|----------|------|----------|
+| `/` | ホーム | ヒーローセクション、メニューランキング、人気キーワード、クイックアクセス | 静的 |
+| `/chains` | チェーン店一覧 | 全チェーン店をカテゴリ別に表示 | 静的 |
+| `/chains/[chainId]` | チェーン店詳細 | メニュー一覧、栄養データ、目的別フィルタリング | SSG |
+| `/search` | PFC検索 | カスタムPFC入力 + プリセット検索 | 静的 |
+| `/area` | エリア検索 | 199主要駅を都道府県別に表示、人気駅トップ10 | 静的 |
+| `/area/[station]` | 駅詳細 | 半径2km以内のチェーン店を距離順に表示 | SSG |
+| `/ranking` | ランキングハブ | 目的別トップ5プレビュー、全チェーンランキングリンク | 静的 |
+| `/ranking/[type]` | 目的別ランキング | 全チェーン横断の目的別ランキング | SSG |
+| `/purpose/[purposeId]` | 目的別メニュー一覧 | 特定目的のメニューを全チェーンから表示 | SSG |
+| `/menu/[menuId]` | メニュー詳細（グローバル） | 単一メニューの詳細ページ | SSG |
+| `/[store]` | 店舗トップ | メニュー概要、人気メニュートップ5 | SSG |
+| `/[store]/ranking` | 店舗内ランキング | チェーン店内ベストメニュー | SSG |
+| `/[store]/menu` | メニュー一覧 | 全メニューを価格順に表示 | SSG |
+| `/[store]/[segment]` | 動的フィルタページ | 目的/栄養/価格/時間帯フィルタ + メニュー詳細 | SSG |
+| `/auth/signin` | ログイン | ユーザーログインページ | 静的 |
+| `/auth/signup` | 新規登録 | ユーザー登録ページ | 静的 |
+| `/contact` | お問い合わせ | お問い合わせフォーム | 静的 |
+| `/contact/complete` | 送信完了 | お問い合わせ送信完了ページ | 静的 |
+| `/favorites` | お気に入り | ユーザーのお気に入りメニュー一覧 | 動的 |
 
 #### 動的セグメント対応
 
 `/[store]/[segment]` は以下のセグメントタイプに対応:
 
-**目的（Purpose）**
-- `high-protein` - 高タンパク
-- `diet` - ダイエット向け
-- `health` - 健康維持
-- `low-carb` - 低糖質
-- `low-fat` - 低脂質
+**目的（Purpose）- 事実ベース指標**
+
+| ID | 名前 | 説明 | ソートフィールド | ソート順 |
+|----|------|------|------------------|----------|
+| `high-protein` | 高タンパク | タンパク質が豊富なメニュー | protein | DESC |
+| `protein-dense` | タンパク質効率 | カロリーあたりのタンパク質が多い | proteinDensity | DESC |
+| `low-calorie` | 低カロリー | カロリーを抑えたメニュー | calories | ASC |
+| `low-carb` | 低糖質 | 糖質比率が低いメニュー | carbRatio | ASC |
+| `low-fat` | 低脂質 | 脂質比率が低いメニュー | fatRatio | ASC |
+| `balanced` | バランス重視 | PFCバランスの良いメニュー | pfcBalance | DESC |
+| `cost-performance` | タンパク質コスパ | タンパク質1gあたりの価格が安い | costPerformance | ASC |
 
 **栄養フィルタ（Nutrition）**
 - `protein-over-20g`, `protein-over-30g`, `protein-over-40g`, `protein-over-50g`, `protein-over-60g`
@@ -218,18 +304,22 @@ healthScore = 50 + protein + (fiber * 3) - (sodium * 5) - (fat * 0.5)
 
 ### 2.6 ランキング機能
 
-#### ランキングタイプ
-| type | 説明 | ソート基準 |
-|------|------|------------|
-| high-protein | 筋トレ向け | muscleScore DESC |
-| diet | ダイエット向け | dietScore DESC |
-| health | 健康維持 | healthScore DESC |
-| low-carb | 低糖質 | carb ASC |
-| low-fat | 低脂質 | fat ASC |
+#### ランキングタイプ（事実ベース指標）
+
+| type | 説明 | ソート基準 | 計算式 |
+|------|------|------------|--------|
+| `high-protein` | 高タンパク | protein DESC | タンパク質量(g)の多い順 |
+| `protein-dense` | タンパク質効率 | proteinDensity DESC | `protein * 100 / calories` |
+| `low-calorie` | 低カロリー | calories ASC | カロリーの少ない順 |
+| `low-carb` | 低糖質 | carbRatio ASC | `(carb * 4) / calories` |
+| `low-fat` | 低脂質 | fatRatio ASC | `(fat * 9) / calories` |
+| `balanced` | バランス重視 | pfcBalance DESC | 理想比率P:20%/F:25%/C:55%との乖離 |
+| `cost-performance` | コスパ | costPerformance ASC | `price / protein` |
 
 #### 対象範囲
-- グローバルランキング（全チェーン店）
-- チェーン店別ランキング
+- **グローバルランキング** (`/ranking/[type]`): 全チェーン店のメニューを横断
+- **チェーン店別ランキング** (`/[store]/ranking`): 特定チェーン店内でのランキング
+- **目的別一覧** (`/purpose/[purposeId]`): 目的に沿ったメニュー一覧
 
 ---
 

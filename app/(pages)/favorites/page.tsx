@@ -158,13 +158,16 @@ export default function FavoritesPage() {
       )}
 
       {plan === "free" && count >= 5 && (
-        <div className="mt-6 p-4 bg-[#90be6d]/10 rounded-lg text-center">
-          <p className="text-sm text-[#433422] mb-2">
+        <div className="mt-6 p-4 bg-primary/10 rounded-xl text-center">
+          <p className="text-sm text-foreground mb-3">
             無料プランではお気に入りは5件までです
           </p>
-          <p className="text-xs text-[#433422]/70">
-            プラス会員になると無制限に保存できます（準備中）
-          </p>
+          <Link
+            href="/pricing"
+            className="inline-block px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
+          >
+            Plusにアップグレード
+          </Link>
         </div>
       )}
     </div>

@@ -104,6 +104,22 @@ export function Header() {
                       >
                         お気に入り
                       </Link>
+                      {(session.user as { plan?: string })?.plan === "plus" ? (
+                        <div className="px-4 py-2 text-sm text-primary font-medium flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                          Plus会員
+                        </div>
+                      ) : (
+                        <Link
+                          href="/pricing"
+                          className="block px-4 py-2 text-sm text-primary font-medium hover:bg-primary/5"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Plusにアップグレード
+                        </Link>
+                      )}
                       <button
                         onClick={() => signOut()}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
@@ -238,6 +254,25 @@ export function Header() {
                       </svg>
                       お気に入り
                     </Link>
+                    {(session.user as { plan?: string })?.plan === "plus" ? (
+                      <div className="px-4 py-3 rounded-xl font-medium text-primary flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                        Plus会員
+                      </div>
+                    ) : (
+                      <Link
+                        href="/pricing"
+                        className="px-4 py-3 rounded-xl font-medium text-primary hover:bg-primary/5 transition-colors flex items-center gap-2"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                        Plusにアップグレード
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         signOut();

@@ -10,6 +10,7 @@ import {
 import { getCategoryLabel, getCategoryColor, formatPrice } from "@/lib/utils";
 import { purposes, allPurposeIds } from "@/lib/filters";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import { NutritionFilters } from "@/components/store/NutritionFilters";
 
 type Props = {
   params: Promise<{ store: string }>;
@@ -141,40 +142,19 @@ export default async function StoreTopPage({ params }: Props) {
           </div>
         </section>
 
-        {/* クイックリンク */}
+        {/* 栄養成分で絞り込む */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">栄養成分で絞り込む</h2>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/${store}/protein-over-30g`}
-              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
-            >
-              タンパク質30g以上
-            </Link>
-            <Link
-              href={`/${store}/fat-under-20g`}
-              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
-            >
-              脂質20g以下
-            </Link>
-            <Link
-              href={`/${store}/carb-under-60g`}
-              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
-            >
-              糖質60g以下
-            </Link>
-            <Link
-              href={`/${store}/under-500yen`}
-              className="px-4 py-2 bg-card-bg rounded-full border border-border hover:border-primary transition-colors text-sm"
-            >
-              500円以下
-            </Link>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <h2 className="text-xl font-bold">絞り込み検索</h2>
             <Link
               href={`/${store}/menu`}
-              className="px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors text-sm"
+              className="text-primary hover:underline text-sm"
             >
               全メニューを見る →
             </Link>
+          </div>
+          <div className="bg-card-bg rounded-xl border border-border p-4">
+            <NutritionFilters storeId={store} />
           </div>
         </section>
 
