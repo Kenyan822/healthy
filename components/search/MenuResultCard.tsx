@@ -36,31 +36,31 @@ export function MenuResultCard({ result }: MenuResultCardProps) {
 
       {/* 栄養指標 */}
       <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-        {carbRatio !== undefined && (
+        {carbRatio != null && (
           <div className="flex justify-between px-2 py-1 bg-background rounded">
             <span className="text-foreground/60">糖質比率</span>
             <span className="font-medium">{carbRatio.toFixed(0)}%</span>
           </div>
         )}
-        {fatRatio !== undefined && (
+        {fatRatio != null && (
           <div className="flex justify-between px-2 py-1 bg-background rounded">
             <span className="text-foreground/60">脂質比率</span>
             <span className="font-medium">{fatRatio.toFixed(0)}%</span>
           </div>
         )}
-        {pfcBalanceScore !== undefined && (
+        {pfcBalanceScore != null && (
           <div className="flex justify-between px-2 py-1 bg-background rounded">
             <span className="text-foreground/60">PFCバランス</span>
             <span className="font-medium">{pfcBalanceScore}</span>
           </div>
         )}
-        {proteinDensity !== undefined && (
+        {proteinDensity != null && (
           <div className="flex justify-between px-2 py-1 bg-background rounded">
             <span className="text-foreground/60">P密度</span>
             <span className="font-medium">{proteinDensity.toFixed(1)}g/100kcal</span>
           </div>
         )}
-        {costPerProtein !== undefined && (
+        {costPerProtein != null && (
           <div className="flex justify-between px-2 py-1 bg-background rounded">
             <span className="text-foreground/60">Pコスパ</span>
             <span className="font-medium">{costPerProtein}円/gP</span>

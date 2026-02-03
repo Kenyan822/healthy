@@ -475,31 +475,31 @@ export function HeroSection({ stats }: HeroSectionProps) {
                       </div>
                       {/* 栄養指標 */}
                       <div className="grid grid-cols-2 gap-1 text-xs mt-2">
-                        {result.carbRatio !== undefined && (
+                        {result.carbRatio != null && (
                           <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
                             <span className="text-foreground/60">糖質</span>
                             <span className="font-medium">{result.carbRatio.toFixed(0)}%</span>
                           </div>
                         )}
-                        {result.fatRatio !== undefined && (
+                        {result.fatRatio != null && (
                           <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
                             <span className="text-foreground/60">脂質</span>
                             <span className="font-medium">{result.fatRatio.toFixed(0)}%</span>
                           </div>
                         )}
-                        {result.pfcBalanceScore !== undefined && (
+                        {result.pfcBalanceScore != null && (
                           <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
                             <span className="text-foreground/60">PFC</span>
                             <span className="font-medium">{result.pfcBalanceScore}</span>
                           </div>
                         )}
-                        {result.proteinDensity !== undefined && (
+                        {result.proteinDensity != null && (
                           <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
                             <span className="text-foreground/60">P密度</span>
                             <span className="font-medium">{result.proteinDensity.toFixed(1)}g/100kcal</span>
                           </div>
                         )}
-                        {result.costPerProtein !== undefined && (
+                        {result.costPerProtein != null && (
                           <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
                             <span className="text-foreground/60">Pコスパ</span>
                             <span className="font-medium">{result.costPerProtein}円/gP</span>

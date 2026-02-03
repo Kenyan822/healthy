@@ -7,7 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "npx tsx scripts/seed.ts"
+    "seed": "npx tsx scripts/seed.ts",
+    "seed:matsuya": "npx tsx scripts/seed-matsuya.ts",
+    "seed:yoshinoya": "npx tsx scripts/seed-yoshinoya.ts",
+    "seed:sukiya": "npx tsx scripts/seed-sukiya.ts",
+    "seed:yayoiken": "npx tsx scripts/seed-yayoiken.ts",
+    "seed:subway": "npx tsx scripts/seed-subway.ts",
+    "seed:ikinari": "npx tsx scripts/seed-ikinari.ts",
+    "seed:cocoichi": "npx tsx scripts/seed-cocoichi.ts",
+    "seed:mos": "npx tsx scripts/seed-mos.ts",
+    "seed:nakau": "npx tsx scripts/seed-nakau.ts",
+    "seed:ringerhut": "npx tsx scripts/seed-ringerhut.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -17,6 +27,7 @@
     "drizzle-orm": "^0.45.1",
     "next": "16.1.1",
     "next-auth": "^5.0.0-beta.30",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.8.0",
