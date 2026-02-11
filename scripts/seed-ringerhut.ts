@@ -28,10 +28,10 @@ function insertRingerhutMenus(): number {
       is_seasonal, is_limited, is_available,
       created_at, updated_at
     ) VALUES (
-      ?, 'ringerhut', ?, NULL, ?,
+      ?, 'ringerhut', ?, ?, ?,
       ?, ?, ?, ?, NULL, ?,
       ?,
-      0, ?, 1,
+      ?, ?, 1,
       datetime('now'), datetime('now')
     )
   `);
@@ -39,10 +39,12 @@ function insertRingerhutMenus(): number {
   let count = 0;
   for (const menu of ringerhutMenuData) {
     const isLimited = menu.category.includes("限定") ? 1 : 0;
+    const isSeasonal = menu.category.includes("季節") ? 1 : 0;
 
     insertStmt.run(
       menu.menu_id,
       menu.menu_name,
+      menu.price,
       menu.category,
       menu.calories,
       menu.protein,
@@ -50,6 +52,7 @@ function insertRingerhutMenus(): number {
       menu.carb,
       menu.sodium,
       JSON.stringify(menu.allergens),
+      isSeasonal,
       isLimited
     );
     count++;

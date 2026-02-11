@@ -1,5 +1,6 @@
 import { db, chains, menus, stations, stationChains, userFavorites } from "./index";
 import { eq, desc, asc, sql, and, gte, lte, inArray } from "drizzle-orm";
+import { ENABLED_CHAINS, isChainEnabled } from "@/lib/chain-config";
 
 // 目的（purpose）の定義 - 事実ベースの指標
 export const purposes = {
@@ -56,13 +57,15 @@ export const purposes = {
 
 export type PurposeId = keyof typeof purposes;
 
-// 全チェーン店を取得
+// 全チェーン店を取得（有効なチェーンのみ）
 export function getAllChains() {
-  return db.select().from(chains).all();
+  const enabledIds = [...ENABLED_CHAINS];
+  return db.select().from(chains).where(inArray(chains.chainId, enabledIds)).all();
 }
 
-// チェーン店IDで取得
+// チェーン店IDで取得（無効なチェーンはundefined）
 export function getChainById(chainId: string) {
+  if (!isChainEnabled(chainId)) return undefined;
   return db.select().from(chains).where(eq(chains.chainId, chainId)).get();
 }
 
@@ -139,9 +142,10 @@ export function getMenuWithChain(menuId: string) {
     .get();
 }
 
-// 全メニューを取得
+// 全メニューを取得（有効なチェーンのみ）
 export function getAllMenus() {
-  return db.select().from(menus).all();
+  const enabledIds = [...ENABLED_CHAINS];
+  return db.select().from(menus).where(inArray(menus.chainId, enabledIds)).all();
 }
 
 // メニューIDで取得
@@ -177,6 +181,7 @@ export function getSimilarMenusFromOtherChains(
   const maxProtein = targetProtein + 10;
   const minCalories = Math.max(0, targetCalories - 150);
   const maxCalories = targetCalories + 150;
+  const enabledIds = [...ENABLED_CHAINS];
 
   return db
     .select({
@@ -188,6 +193,7 @@ export function getSimilarMenusFromOtherChains(
     .where(
       and(
         sql`${menus.chainId} != ${currentChainId}`,
+        inArray(menus.chainId, enabledIds),
         gte(menus.protein, minProtein),
         lte(menus.protein, maxProtein),
         gte(menus.calories, minCalories),
@@ -204,6 +210,7 @@ export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
   const purpose = purposes[purposeId];
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
+  const enabledIds = [...ENABLED_CHAINS];
 
   return db
     .select({
@@ -212,6 +219,7 @@ export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(inArray(menus.chainId, enabledIds))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
@@ -236,11 +244,13 @@ export function getAllChainPurposeCombinations() {
   return combinations;
 }
 
-// 静的生成用：全メニューIDを取得
+// 静的生成用：全メニューIDを取得（有効なチェーンのみ）
 export function getAllMenuIds() {
+  const enabledIds = [...ENABLED_CHAINS];
   return db
     .select({ menuId: menus.menuId })
     .from(menus)
+    .where(inArray(menus.chainId, enabledIds))
     .all()
     .map((m) => m.menuId);
 }
@@ -304,9 +314,10 @@ export function searchMenusByPFC(
     .innerJoin(chains, eq(menus.chainId, chains.chainId));
 
   // PFC入力値との距離が近い順にソート
+  const enabledIds = [...ENABLED_CHAINS];
   const results = (chainId
-    ? query.where(eq(menus.chainId, chainId))
-    : query
+    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds)))
+    : query.where(inArray(menus.chainId, enabledIds))
   )
     .orderBy(asc(pfcDeviation))
     .limit(limit)
@@ -366,6 +377,10 @@ export function searchMenusByMultiplePresets(
   }
 
   const conditions = [];
+
+  // 有効チェーンフィルター
+  const enabledIds = [...ENABLED_CHAINS];
+  conditions.push(inArray(menus.chainId, enabledIds));
 
   // チェーン店フィルター
   if (chainId) {
@@ -471,6 +486,10 @@ export function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: str
 
   const conditions = [];
 
+  // 有効チェーンフィルター
+  const enabledIds = [...ENABLED_CHAINS];
+  conditions.push(inArray(menus.chainId, enabledIds));
+
   // チェーン店フィルター
   if (chainId) {
     conditions.push(eq(menus.chainId, chainId));
@@ -560,13 +579,14 @@ export function countMenusByPreset(presetId: PresetId): number {
  * 全メニュー数を取得
  */
 export function countAllMenus(chainId?: string): number {
+  const enabledIds = [...ENABLED_CHAINS];
   const query = db
     .select({ count: sql<number>`count(*)` })
     .from(menus);
 
   const result = (chainId
-    ? query.where(eq(menus.chainId, chainId))
-    : query
+    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds)))
+    : query.where(inArray(menus.chainId, enabledIds))
   ).get();
   return result?.count ?? 0;
 }
@@ -624,9 +644,10 @@ export function searchAllMenus(
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId));
 
+  const enabledIds = [...ENABLED_CHAINS];
   const results = (chainId
-    ? query.where(eq(menus.chainId, chainId))
-    : query
+    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds)))
+    : query.where(inArray(menus.chainId, enabledIds))
   )
     .orderBy(orderByClause)
     .limit(limit)
@@ -883,12 +904,14 @@ export function getMenuBySlug(chainId: string, slug: string) {
  */
 export function getAllMenuSlugs() {
   // menuSlugがあればそれを、なければmenuIdを使用
+  const enabledIds = [...ENABLED_CHAINS];
   return db
     .select({
       chainId: menus.chainId,
       menuSlug: sql<string>`COALESCE(${menus.menuSlug}, ${menus.menuId})`.as("menu_slug"),
     })
     .from(menus)
+    .where(inArray(menus.chainId, enabledIds))
     .all();
 }
 
@@ -913,6 +936,7 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
   const purpose = seoFilterPurposes[purposeId];
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
+  const enabledIds = [...ENABLED_CHAINS];
 
   return db
     .select({
@@ -921,6 +945,7 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(inArray(menus.chainId, enabledIds))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();

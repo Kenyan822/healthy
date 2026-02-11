@@ -23,15 +23,15 @@ function insertYayoikenMenus(): number {
   const insertStmt = db.prepare(`
     INSERT INTO menus (
       menu_id, chain_id, menu_name, price, category,
-      calories, protein, fat, carb, fiber, sodium,
-      allergens,
+      calories, protein, fat, carb, fiber, sodium, sugar,
+      allergens, timing,
       is_seasonal, is_limited, is_available,
       created_at, updated_at
     ) VALUES (
-      ?, 'yayoiken', ?, NULL, ?,
-      ?, ?, ?, ?, NULL, ?,
-      ?,
-      0, 0, 1,
+      ?, 'yayoiken', ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?,
+      ?, ?, 1,
       datetime('now'), datetime('now')
     )
   `);
@@ -41,13 +41,19 @@ function insertYayoikenMenus(): number {
     insertStmt.run(
       menu.menu_id,
       menu.menu_name,
+      menu.price,
       menu.category,
       menu.calories,
       menu.protein,
       menu.fat,
       menu.carb,
+      menu.fiber,
       menu.sodium,
-      JSON.stringify(menu.allergens)
+      menu.sugar,
+      JSON.stringify(menu.allergens),
+      menu.timing,
+      menu.is_seasonal ? 1 : 0,
+      menu.is_limited ? 1 : 0
     );
     count++;
   }

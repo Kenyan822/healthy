@@ -157,25 +157,6 @@ const newChains = [
 // メニューデータ
 // ============================
 
-// 大戸屋 追加メニュー
-const ootoyaMenus = [
-  { menu_id: "ootoya-006", menu_name: "さばの味噌煮定食", price: 990, category: "煮魚定食", calories: 720, protein: 32.5, fat: 28.2, carb: 78.5, fiber: 3.8, sodium: 3.2 },
-  { menu_id: "ootoya-007", menu_name: "鶏と野菜の黒酢あん定食", price: 940, category: "揚げ物定食", calories: 850, protein: 28.4, fat: 32.1, carb: 102.3, fiber: 4.2, sodium: 2.8 },
-  { menu_id: "ootoya-008", menu_name: "手造り豆腐とチキンかつの定食", price: 1040, category: "揚げ物定食", calories: 890, protein: 38.2, fat: 35.5, carb: 95.2, fiber: 5.1, sodium: 2.5 },
-  { menu_id: "ootoya-009", menu_name: "真だらと野菜の黒酢あん定食", price: 990, category: "揚げ物定食", calories: 680, protein: 26.8, fat: 22.4, carb: 88.5, fiber: 4.5, sodium: 2.2 },
-  { menu_id: "ootoya-010", menu_name: "沖目鯛の醤油麹漬け炭火焼き定食", price: 1150, category: "焼き魚定食", calories: 620, protein: 34.2, fat: 18.5, carb: 72.8, fiber: 3.5, sodium: 2.8 },
-  { menu_id: "ootoya-011", menu_name: "四元豚のロースかつ定食", price: 1150, category: "揚げ物定食", calories: 980, protein: 35.8, fat: 45.2, carb: 98.5, fiber: 3.2, sodium: 2.5 },
-  { menu_id: "ootoya-012", menu_name: "ばくだん丼", price: 890, category: "丼", calories: 580, protein: 28.5, fat: 12.8, carb: 82.5, fiber: 4.8, sodium: 3.5 },
-  { menu_id: "ootoya-013", menu_name: "もろみチキンの炭火焼き定食", price: 940, category: "焼き物定食", calories: 720, protein: 38.5, fat: 24.2, carb: 75.8, fiber: 3.2, sodium: 2.8 },
-  { menu_id: "ootoya-014", menu_name: "大戸屋風鶏の唐揚げ定食", price: 890, category: "揚げ物定食", calories: 920, protein: 32.5, fat: 38.5, carb: 102.5, fiber: 2.8, sodium: 2.5 },
-  { menu_id: "ootoya-015", menu_name: "野菜たっぷり味噌汁定食", price: 850, category: "定食", calories: 520, protein: 18.5, fat: 12.2, carb: 78.5, fiber: 8.5, sodium: 3.8 },
-  { menu_id: "ootoya-016", menu_name: "炭火焼きハンバーグ定食", price: 990, category: "焼き物定食", calories: 850, protein: 32.8, fat: 35.2, carb: 88.5, fiber: 3.5, sodium: 2.8 },
-  { menu_id: "ootoya-017", menu_name: "すけそう鱈と野菜の生姜煮定食", price: 940, category: "煮物定食", calories: 580, protein: 28.2, fat: 15.5, carb: 72.5, fiber: 5.2, sodium: 2.5 },
-  { menu_id: "ootoya-018", menu_name: "特撰大戸屋御膳", price: 1350, category: "御膳", calories: 920, protein: 42.5, fat: 28.5, carb: 112.5, fiber: 6.2, sodium: 3.5 },
-  { menu_id: "ootoya-019", menu_name: "鶏むね肉のグリル定食", price: 890, category: "焼き物定食", calories: 550, protein: 42.5, fat: 12.8, carb: 58.5, fiber: 4.2, sodium: 2.2 },
-  { menu_id: "ootoya-020", menu_name: "豚の生姜焼き定食", price: 890, category: "焼き物定食", calories: 780, protein: 28.5, fat: 32.5, carb: 85.2, fiber: 3.5, sodium: 2.8 },
-];
-
 // やよい軒 追加メニュー
 const yayoikenMenus = [
   { menu_id: "yayoiken-006", menu_name: "サバの味噌煮定食", price: 760, category: "煮魚定食", calories: 680, protein: 30.2, fat: 25.5, carb: 75.8, fiber: 3.5, sodium: 3.2 },
@@ -637,9 +618,6 @@ function main() {
 
   // 既存チェーン店のメニュー追加
   console.log("🍽️ 既存チェーン店のメニューを追加中...");
-  insertMenus(ootoyaMenus, "ootoya");
-  console.log("  - 大戸屋: +15メニュー");
-
   insertMenus(yayoikenMenus, "yayoiken");
   console.log("  - やよい軒: +15メニュー");
 

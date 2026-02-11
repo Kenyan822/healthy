@@ -17,7 +17,26 @@
     "seed:cocoichi": "npx tsx scripts/seed-cocoichi.ts",
     "seed:mos": "npx tsx scripts/seed-mos.ts",
     "seed:nakau": "npx tsx scripts/seed-nakau.ts",
-    "seed:ringerhut": "npx tsx scripts/seed-ringerhut.ts"
+    "seed:ringerhut": "npx tsx scripts/seed-ringerhut.ts",
+    "seed:ootoya": "npx tsx scripts/seed-ootoya.ts",
+    "scrape:ootoya": "npx tsx scripts/scrape/ootoya.ts",
+    "scrape:ootoya:dry": "npx tsx scripts/scrape/ootoya.ts --dry-run",
+    "scrape:matsuya": "npx tsx scripts/scrape/matsuya-prices.ts",
+    "scrape:matsuya:dry": "npx tsx scripts/scrape/matsuya-prices.ts --dry-run",
+    "scrape:yoshinoya": "npx tsx scripts/scrape/yoshinoya-prices.ts",
+    "scrape:yoshinoya:dry": "npx tsx scripts/scrape/yoshinoya-prices.ts --dry-run",
+    "scrape:sukiya": "npx tsx scripts/scrape/sukiya-prices.ts",
+    "scrape:sukiya:dry": "npx tsx scripts/scrape/sukiya-prices.ts --dry-run",
+    "scrape:yayoiken": "npx tsx scripts/scrape/yayoiken.ts",
+    "scrape:yayoiken:dry": "npx tsx scripts/scrape/yayoiken.ts --dry-run",
+    "scrape:nakau": "npx tsx scripts/scrape/nakau-prices.ts",
+    "scrape:nakau:dry": "npx tsx scripts/scrape/nakau-prices.ts --dry-run",
+    "scrape:cocoichi": "npx tsx scripts/scrape/cocoichi-prices.ts",
+    "scrape:cocoichi:dry": "npx tsx scripts/scrape/cocoichi-prices.ts --dry-run",
+    "scrape:ikinari": "npx tsx scripts/scrape/ikinari-prices.ts",
+    "scrape:ikinari:dry": "npx tsx scripts/scrape/ikinari-prices.ts --dry-run",
+    "scrape:subway": "npx tsx scripts/scrape/subway.ts",
+    "scrape:subway:dry": "npx tsx scripts/scrape/subway.ts --dry-run"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -46,6 +65,7 @@
     "drizzle-kit": "^0.31.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "puppeteer": "^24.37.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

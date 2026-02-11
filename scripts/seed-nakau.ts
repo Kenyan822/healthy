@@ -28,7 +28,7 @@ function insertNakauMenus(): number {
       is_seasonal, is_limited, is_available,
       created_at, updated_at
     ) VALUES (
-      ?, 'nakau', ?, NULL, ?,
+      ?, 'nakau', ?, ?, ?,
       ?, ?, ?, ?, NULL, ?,
       ?,
       0, 0, 1,
@@ -41,6 +41,7 @@ function insertNakauMenus(): number {
     insertStmt.run(
       menu.menu_id,
       menu.menu_name,
+      menu.price,
       menu.category,
       menu.calories,
       menu.protein,
