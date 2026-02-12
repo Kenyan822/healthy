@@ -44,14 +44,14 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const stationIds = getAllStationIds();
+  const stationIds = await getAllStationIds();
   return stationIds.map((stationId) => ({ station: stationId }));
 }
 
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { station } = await params;
-  const stationData = getStationById(station);
+  const stationData = await getStationById(station);
 
   if (!stationData) {
     return { title: "駅が見つかりません" };
@@ -79,15 +79,15 @@ function formatDistance(meters: number | null): string {
 
 export default async function StationPage({ params }: Props) {
   const { station } = await params;
-  const stationData = getStationById(station);
+  const stationData = await getStationById(station);
 
   if (!stationData) {
     notFound();
   }
 
-  const stationChains = getChainsByStation(station);
-  const stats = getStationStats(station);
-  const allStations = getAllStations(200);
+  const stationChains = await getChainsByStation(station);
+  const stats = await getStationStats(station);
+  const allStations = await getAllStations(200);
 
   // 同じ都道府県の他の駅
   const samePrefeStations = allStations

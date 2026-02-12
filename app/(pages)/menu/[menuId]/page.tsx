@@ -18,14 +18,14 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const menuIds = getAllMenuIds();
+  const menuIds = await getAllMenuIds();
   return menuIds.map((menuId) => ({ menuId }));
 }
 
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { menuId } = await params;
-  const result = getMenuWithChain(menuId);
+  const result = await getMenuWithChain(menuId);
 
   if (!result) {
     return { title: "メニューが見つかりません" };
@@ -102,7 +102,7 @@ function getRecommendations(menu: {
 
 export default async function MenuDetailPage({ params }: Props) {
   const { menuId } = await params;
-  const result = getMenuWithChain(menuId);
+  const result = await getMenuWithChain(menuId);
 
   if (!result) {
     notFound();
@@ -111,8 +111,8 @@ export default async function MenuDetailPage({ params }: Props) {
   const { menu, chain } = result;
 
   // 類似メニューを取得
-  const similarMenus = getSimilarMenus(chain.chainId, menuId, 4);
-  const otherChainMenus = getSimilarMenusFromOtherChains(
+  const similarMenus = await getSimilarMenus(chain.chainId, menuId, 4);
+  const otherChainMenus = await getSimilarMenusFromOtherChains(
     chain.chainId,
     menu.protein,
     menu.calories,

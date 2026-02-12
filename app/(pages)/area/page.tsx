@@ -28,8 +28,8 @@ function groupByPrefecture(
   return grouped;
 }
 
-export default function AreaPage() {
-  const allStations = getAllStations(200);
+export default async function AreaPage() {
+  const allStations = await getAllStations(200);
   const stationsByPrefecture = groupByPrefecture(allStations);
   // 人気駅（乗降客数トップ10）
   const popularStations = allStations.slice(0, 10);

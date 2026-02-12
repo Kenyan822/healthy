@@ -35,7 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = credentials.password as string;
 
         // ユーザー検索
-        const user = db
+        const user = await db
           .select()
           .from(users)
           .where(eq(users.email, email))
@@ -67,7 +67,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = profile.email;
 
         // 既存ユーザーを検索
-        let existingUser = db
+        let existingUser = await db
           .select()
           .from(users)
           .where(eq(users.email, email))
@@ -76,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!existingUser) {
           // 新規ユーザー作成
           const userId = crypto.randomUUID();
-          db.insert(users)
+          await db.insert(users)
             .values({
               id: userId,
               email: email,
@@ -86,14 +86,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             })
             .run();
 
-          existingUser = db
+          existingUser = await db
             .select()
             .from(users)
             .where(eq(users.id, userId))
             .get();
         } else {
           // 既存ユーザーの画像を更新
-          db.update(users)
+          await db.update(users)
             .set({
               image: (profile as { picture?: string }).picture || existingUser.image,
               name: profile.name || existingUser.name,
@@ -103,7 +103,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         // アカウント連携を確認/作成
-        const existingAccount = db
+        const existingAccount = await db
           .select()
           .from(accounts)
           .where(
@@ -115,7 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .get();
 
         if (!existingAccount && existingUser) {
-          db.insert(accounts)
+          await db.insert(accounts)
             .values({
               userId: existingUser.id,
               type: account.type,
@@ -148,7 +148,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
 
         // プラン情報を取得
-        const user = db
+        const user = await db
           .select()
           .from(users)
           .where(eq(users.id, token.id as string))

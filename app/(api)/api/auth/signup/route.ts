@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 既存ユーザーチェック
-    const existingUser = db
+    const existingUser = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // ユーザー作成
     const userId = crypto.randomUUID();
-    db.insert(users)
+    await db.insert(users)
       .values({
         id: userId,
         name: name || null,

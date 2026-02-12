@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       query.where(and(...conditions));
     }
 
-    const results = query
+    const results = await query
       .orderBy(getOrderBy())
       .limit(limit)
       .offset((page - 1) * limit)
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       countQuery.where(and(...conditions));
     }
 
-    const countResult = countQuery.get();
+    const countResult = await countQuery.get();
     const totalCount = countResult?.count || 0;
 
     return NextResponse.json({

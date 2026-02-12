@@ -58,19 +58,19 @@ export const purposes = {
 export type PurposeId = keyof typeof purposes;
 
 // 全チェーン店を取得（有効なチェーンのみ）
-export function getAllChains() {
+export async function getAllChains() {
   const enabledIds = [...ENABLED_CHAINS];
   return db.select().from(chains).where(inArray(chains.chainId, enabledIds)).all();
 }
 
 // チェーン店IDで取得（無効なチェーンはundefined）
-export function getChainById(chainId: string) {
+export async function getChainById(chainId: string) {
   if (!isChainEnabled(chainId)) return undefined;
   return db.select().from(chains).where(eq(chains.chainId, chainId)).get();
 }
 
 // チェーン店のメニュー一覧を取得
-export function getMenusByChain(chainId: string) {
+export async function getMenusByChain(chainId: string) {
   return db.select().from(menus).where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true))).all();
 }
 
@@ -111,7 +111,7 @@ function getSortExpression(sortField: string) {
 }
 
 // チェーン店×目的でメニューを取得（事実ベース指標順）
-export function getMenusByChainAndPurpose(
+export async function getMenusByChainAndPurpose(
   chainId: string,
   purposeId: PurposeId,
   limit = 20
@@ -146,7 +146,7 @@ export function getMenusByChainAndPurpose(
 }
 
 // メニュー詳細を取得（チェーン店情報付き）
-export function getMenuWithChain(menuId: string) {
+export async function getMenuWithChain(menuId: string) {
   return db
     .select({
       menu: menus,
@@ -159,18 +159,18 @@ export function getMenuWithChain(menuId: string) {
 }
 
 // 全メニューを取得（有効なチェーンのみ）
-export function getAllMenus() {
+export async function getAllMenus() {
   const enabledIds = [...ENABLED_CHAINS];
   return db.select().from(menus).where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true))).all();
 }
 
 // メニューIDで取得
-export function getMenuById(menuId: string) {
+export async function getMenuById(menuId: string) {
   return db.select().from(menus).where(eq(menus.menuId, menuId)).get();
 }
 
 // 類似メニューを取得（同チェーン店、タンパク質効率順）
-export function getSimilarMenus(
+export async function getSimilarMenus(
   chainId: string,
   currentMenuId: string,
   limit = 5
@@ -186,7 +186,7 @@ export function getSimilarMenus(
 }
 
 // 他チェーンの類似栄養素メニューを取得
-export function getSimilarMenusFromOtherChains(
+export async function getSimilarMenusFromOtherChains(
   currentChainId: string,
   targetProtein: number,
   targetCalories: number,
@@ -223,7 +223,7 @@ export function getSimilarMenusFromOtherChains(
 }
 
 // ランキング取得（目的別・事実ベース指標）
-export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
+export async function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
   const purpose = purposes[purposeId];
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
@@ -243,8 +243,8 @@ export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
 }
 
 // 静的生成用：全チェーン店×目的の組み合わせを取得
-export function getAllChainPurposeCombinations() {
-  const allChains = getAllChains();
+export async function getAllChainPurposeCombinations() {
+  const allChains = await getAllChains();
   const allPurposes = Object.keys(purposes) as PurposeId[];
 
   const combinations: { chain: string; purpose: string }[] = [];
@@ -262,14 +262,14 @@ export function getAllChainPurposeCombinations() {
 }
 
 // 静的生成用：全メニューIDを取得（有効なチェーンのみ）
-export function getAllMenuIds() {
+export async function getAllMenuIds() {
   const enabledIds = [...ENABLED_CHAINS];
-  return db
+  const results = await db
     .select({ menuId: menus.menuId })
     .from(menus)
     .where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
-    .all()
-    .map((m) => m.menuId);
+    .all();
+  return results.map((m) => m.menuId);
 }
 
 // ===== PFC検索関連 =====
@@ -282,7 +282,7 @@ import type { PresetId, SortBy, SearchResultMenu } from "@/types/search";
  * ユークリッド距離で近いメニューを返す（入力PFC値に近い順）
  * 未入力(0)の項目は距離計算に含めない
  */
-export function searchMenusByPFC(
+export async function searchMenusByPFC(
   targetP: number,
   targetF: number,
   targetC: number,
@@ -290,7 +290,7 @@ export function searchMenusByPFC(
   limit = 20,
   offset = 0,
   chainId?: string
-): SearchResultMenu[] {
+): Promise<SearchResultMenu[]> {
   // 入力された項目のみで距離を計算（未入力=0の項目は除外）
   const deviationTerms: ReturnType<typeof sql>[] = [];
   if (targetP > 0) {
@@ -332,7 +332,7 @@ export function searchMenusByPFC(
 
   // PFC入力値との距離が近い順にソート
   const enabledIds = [...ENABLED_CHAINS];
-  const results = (chainId
+  const results = await (chainId
     ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
     : query.where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
   )
@@ -369,25 +369,25 @@ export function searchMenusByPFC(
 /**
  * プリセット条件でメニューを検索（単一プリセット）
  */
-export function searchMenusByPreset(
+export async function searchMenusByPreset(
   presetId: PresetId,
   sortBy: SortBy = "proteinDensity",
   limit = 20,
   offset = 0
-): SearchResultMenu[] {
+): Promise<SearchResultMenu[]> {
   return searchMenusByMultiplePresets([presetId], sortBy, limit, offset);
 }
 
 /**
  * 複数プリセット条件でメニューを検索（AND条件）
  */
-export function searchMenusByMultiplePresets(
+export async function searchMenusByMultiplePresets(
   presetIds: PresetId[],
   sortBy: SortBy = "proteinDensity",
   limit = 20,
   offset = 0,
   chainId?: string
-): SearchResultMenu[] {
+): Promise<SearchResultMenu[]> {
   const validPresetIds = presetIds.filter(isValidPreset);
   if (validPresetIds.length === 0) {
     return [];
@@ -470,7 +470,7 @@ export function searchMenusByMultiplePresets(
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId));
 
-  const results = (conditions.length > 0
+  const results = await (conditions.length > 0
     ? query.where(and(...conditions))
     : query
   )
@@ -496,7 +496,7 @@ export function searchMenusByMultiplePresets(
 /**
  * 複数プリセット検索の総件数を取得
  */
-export function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: string): number {
+export async function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: string): Promise<number> {
   const validPresetIds = presetIds.filter(isValidPreset);
   if (validPresetIds.length === 0) {
     return 0;
@@ -542,7 +542,7 @@ export function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: str
     .select({ count: sql<number>`count(*)` })
     .from(menus);
 
-  const result = (conditions.length > 0
+  const result = await (conditions.length > 0
     ? query.where(and(...conditions))
     : query
   ).get();
@@ -553,7 +553,7 @@ export function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: str
 /**
  * プリセット検索の総件数を取得
  */
-export function countMenusByPreset(presetId: PresetId): number {
+export async function countMenusByPreset(presetId: PresetId): Promise<number> {
   if (!isValidPreset(presetId)) {
     return 0;
   }
@@ -586,7 +586,7 @@ export function countMenusByPreset(presetId: PresetId): number {
     .select({ count: sql<number>`count(*)` })
     .from(menus);
 
-  const result = (conditions.length > 0
+  const result = await (conditions.length > 0
     ? query.where(and(...conditions))
     : query
   ).get();
@@ -597,13 +597,13 @@ export function countMenusByPreset(presetId: PresetId): number {
 /**
  * 全メニュー数を取得
  */
-export function countAllMenus(chainId?: string): number {
+export async function countAllMenus(chainId?: string): Promise<number> {
   const enabledIds = [...ENABLED_CHAINS];
   const query = db
     .select({ count: sql<number>`count(*)` })
     .from(menus);
 
-  const result = (chainId
+  const result = await (chainId
     ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
     : query.where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
   ).get();
@@ -613,12 +613,12 @@ export function countAllMenus(chainId?: string): number {
 /**
  * 全メニューを指定のソート順で検索（目的別検索用）
  */
-export function searchAllMenus(
+export async function searchAllMenus(
   sortBy: SortBy = "proteinDensity",
   limit = 20,
   offset = 0,
   chainId?: string
-): SearchResultMenu[] {
+): Promise<SearchResultMenu[]> {
   // 各指標の計算式
   const proteinDensityExpr = sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
   const carbRatioExpr = sql`(${menus.carb} * 4.0) / NULLIF(${menus.calories}, 0) * 100`;
@@ -681,7 +681,7 @@ export function searchAllMenus(
     conditions.push(gte(menus.calories, 100));
     conditions.push(not(like(menus.category, "%ドリンク%")));
   }
-  const results = query
+  const results = await query
     .where(and(...conditions))
     .orderBy(orderByClause)
     .limit(limit)
@@ -716,8 +716,8 @@ export function searchAllMenus(
 /**
  * メニューのビュー数をインクリメント
  */
-export function incrementMenuViewCount(menuId: string): void {
-  db.update(menus)
+export async function incrementMenuViewCount(menuId: string): Promise<void> {
+  await db.update(menus)
     .set({
       viewCount: sql`COALESCE(${menus.viewCount}, 0) + 1`,
     })
@@ -741,7 +741,7 @@ import {
 /**
  * 栄養フィルターでメニューを取得
  */
-export function getMenusByNutritionFilter(
+export async function getMenusByNutritionFilter(
   chainId: string,
   filterId: NutritionFilterId,
   limit = 50
@@ -771,10 +771,10 @@ export function getMenusByNutritionFilter(
 /**
  * 栄養フィルターでメニュー数を取得（品質チェック用）
  */
-export function countMenusByNutritionFilter(
+export async function countMenusByNutritionFilter(
   chainId: string,
   filterId: NutritionFilterId
-): number {
+): Promise<number> {
   const filter = nutritionFilters[filterId];
   const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
 
@@ -784,7 +784,7 @@ export function countMenusByNutritionFilter(
     conditions.push(lte(menus[filter.type], filter.max));
   }
 
-  const result = db
+  const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(menus)
     .where(and(...conditions))
@@ -796,7 +796,7 @@ export function countMenusByNutritionFilter(
 /**
  * 価格フィルターでメニューを取得
  */
-export function getMenusByPriceFilter(
+export async function getMenusByPriceFilter(
   chainId: string,
   filterId: PriceFilterId,
   limit = 50
@@ -815,13 +815,13 @@ export function getMenusByPriceFilter(
 /**
  * 価格フィルターでメニュー数を取得（品質チェック用）
  */
-export function countMenusByPriceFilter(
+export async function countMenusByPriceFilter(
   chainId: string,
   filterId: PriceFilterId
-): number {
+): Promise<number> {
   const filter = priceFilters[filterId];
 
-  const result = db
+  const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(menus)
     .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true), lte(menus.price, filter.max)))
@@ -833,7 +833,7 @@ export function countMenusByPriceFilter(
 /**
  * 時間帯フィルターでメニューを取得
  */
-export function getMenusByTiming(
+export async function getMenusByTiming(
   chainId: string,
   filterId: TimingFilterId,
   limit = 50
@@ -859,13 +859,13 @@ export function getMenusByTiming(
 /**
  * 時間帯フィルターでメニュー数を取得（品質チェック用）
  */
-export function countMenusByTiming(
+export async function countMenusByTiming(
   chainId: string,
   filterId: TimingFilterId
-): number {
+): Promise<number> {
   const filter = timingFilters[filterId];
 
-  const result = db
+  const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(menus)
     .where(
@@ -883,7 +883,7 @@ export function countMenusByTiming(
 /**
  * 目的（SEOフィルター版）でメニューを取得
  */
-export function getMenusBySeoPurpose(
+export async function getMenusBySeoPurpose(
   chainId: string,
   purposeId: SeoPurposeId,
   limit = 50
@@ -920,8 +920,8 @@ export function getMenusBySeoPurpose(
 /**
  * チェーン店のメニュー数を取得（品質チェック用）
  */
-export function countMenusByChain(chainId: string): number {
-  const result = db
+export async function countMenusByChain(chainId: string): Promise<number> {
+  const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(menus)
     .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true)))
@@ -933,7 +933,7 @@ export function countMenusByChain(chainId: string): number {
 /**
  * メニュースラッグで取得（チェーン店情報付き）
  */
-export function getMenuBySlug(chainId: string, slug: string) {
+export async function getMenuBySlug(chainId: string, slug: string) {
   // menuSlugがnullの場合はmenuIdで検索
   return db
     .select({
@@ -954,7 +954,7 @@ export function getMenuBySlug(chainId: string, slug: string) {
 /**
  * 全メニュースラッグを取得（静的生成用）
  */
-export function getAllMenuSlugs() {
+export async function getAllMenuSlugs() {
   // menuSlugがあればそれを、なければmenuIdを使用
   const enabledIds = [...ENABLED_CHAINS];
   return db
@@ -970,7 +970,7 @@ export function getAllMenuSlugs() {
 /**
  * チェーン店のランキング取得（タンパク質効率順）
  */
-export function getChainMenuRanking(chainId: string, limit = 10) {
+export async function getChainMenuRanking(chainId: string, limit = 10) {
   const proteinDensity = getSortExpression("proteinDensity");
   return db
     .select()
@@ -984,7 +984,7 @@ export function getChainMenuRanking(chainId: string, limit = 10) {
 /**
  * 全チェーンランキング取得（目的別）
  */
-export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
+export async function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
   const purpose = seoFilterPurposes[purposeId];
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
@@ -1022,7 +1022,7 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
 /**
  * チェーン店別ランキング取得（タンパク質効率順）
  */
-export function getChainRankingGlobal(chainId: string, limit = 20) {
+export async function getChainRankingGlobal(chainId: string, limit = 20) {
   const proteinDensity = getSortExpression("proteinDensity");
   return db
     .select({
@@ -1042,14 +1042,14 @@ export function getChainRankingGlobal(chainId: string, limit = 20) {
 /**
  * 駅IDで駅情報を取得
  */
-export function getStationById(stationId: string) {
+export async function getStationById(stationId: string) {
   return db.select().from(stations).where(eq(stations.stationId, stationId)).get();
 }
 
 /**
  * 全駅を取得（乗降客数順）
  */
-export function getAllStations(limit = 200) {
+export async function getAllStations(limit = 200) {
   return db
     .select()
     .from(stations)
@@ -1061,7 +1061,7 @@ export function getAllStations(limit = 200) {
 /**
  * 都道府県で駅を検索
  */
-export function getStationsByPrefecture(prefecture: string) {
+export async function getStationsByPrefecture(prefecture: string) {
   return db
     .select()
     .from(stations)
@@ -1073,7 +1073,7 @@ export function getStationsByPrefecture(prefecture: string) {
 /**
  * 駅周辺のチェーン店を取得
  */
-export function getChainsByStation(stationId: string) {
+export async function getChainsByStation(stationId: string) {
   return db
     .select({
       stationChain: stationChains,
@@ -1092,7 +1092,7 @@ export function getChainsByStation(stationId: string) {
 /**
  * チェーン店がある駅一覧を取得
  */
-export function getStationsByChain(chainId: string) {
+export async function getStationsByChain(chainId: string) {
   return db
     .select({
       stationChain: stationChains,
@@ -1108,18 +1108,18 @@ export function getStationsByChain(chainId: string) {
 /**
  * 静的生成用：全駅IDを取得
  */
-export function getAllStationIds() {
-  return db
+export async function getAllStationIds() {
+  const results = await db
     .select({ stationId: stations.stationId })
     .from(stations)
-    .all()
-    .map((s) => s.stationId);
+    .all();
+  return results.map((s) => s.stationId);
 }
 
 /**
  * 駅×チェーン店の詳細情報を取得
  */
-export function getStationChainDetail(stationId: string, chainId: string) {
+export async function getStationChainDetail(stationId: string, chainId: string) {
   return db
     .select({
       stationChain: stationChains,
@@ -1141,9 +1141,9 @@ export function getStationChainDetail(stationId: string, chainId: string) {
 /**
  * 駅の統計情報を取得
  */
-export function getStationStats(stationId: string) {
+export async function getStationStats(stationId: string) {
   const enabledIds = [...ENABLED_CHAINS];
-  const result = db
+  const result = await db
     .select({
       totalChains: sql<number>`count(*)`,
       avgDistance: sql<number>`avg(${stationChains.distanceMeters})`,
@@ -1169,7 +1169,7 @@ export function getStationStats(stationId: string) {
 /**
  * 駅名で検索（部分一致）
  */
-export function searchStationsByName(query: string, limit = 20) {
+export async function searchStationsByName(query: string, limit = 20) {
   return db
     .select()
     .from(stations)
@@ -1182,7 +1182,7 @@ export function searchStationsByName(query: string, limit = 20) {
 /**
  * 駅周辺のチェーン店メニューを取得（目的別・事実ベース指標）
  */
-export function getStationMenusByPurpose(
+export async function getStationMenusByPurpose(
   stationId: string,
   purposeId: PurposeId,
   limit = 20
@@ -1192,12 +1192,12 @@ export function getStationMenusByPurpose(
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   // まず駅周辺のチェーン店IDを取得
-  const stationChainIds = db
+  const stationChainResults = await db
     .select({ chainId: stationChains.chainId })
     .from(stationChains)
     .where(eq(stationChains.stationId, stationId))
-    .all()
-    .map((sc) => sc.chainId);
+    .all();
+  const stationChainIds = stationChainResults.map((sc) => sc.chainId);
 
   if (stationChainIds.length === 0) {
     return [];
@@ -1219,20 +1219,20 @@ export function getStationMenusByPurpose(
 /**
  * 全都道府県リストを取得
  */
-export function getAllPrefectures() {
-  return db
+export async function getAllPrefectures() {
+  const results = await db
     .selectDistinct({ prefecture: stations.prefecture })
     .from(stations)
     .orderBy(asc(stations.prefCode))
-    .all()
-    .map((p) => p.prefecture);
+    .all();
+  return results.map((p) => p.prefecture);
 }
 
 /**
  * 全駅の統計情報を一括取得（店舗数、最短距離）
  */
-export function getAllStationStats() {
-  const results = db
+export async function getAllStationStats() {
+  const results = await db
     .select({
       stationId: stationChains.stationId,
       totalChains: sql<number>`count(*)`,
@@ -1256,7 +1256,7 @@ export function getAllStationStats() {
 /**
  * チェーン店のお気に入り数ランキングを取得
  */
-export function getChainFavoriteRanking(chainId: string, limit = 10) {
+export async function getChainFavoriteRanking(chainId: string, limit = 10) {
   return db
     .select({
       menu: menus,
@@ -1272,7 +1272,7 @@ export function getChainFavoriteRanking(chainId: string, limit = 10) {
 /**
  * 最新更新メニューを取得
  */
-export function getLatestUpdatedMenus(limit = 6) {
+export async function getLatestUpdatedMenus(limit = 6) {
   const enabledIds = [...ENABLED_CHAINS];
   return db
     .select({
@@ -1290,7 +1290,7 @@ export function getLatestUpdatedMenus(limit = 6) {
 /**
  * 全チェーンのお気に入り数ランキングを取得（人気メニュー用）
  */
-export function getGlobalFavoriteRanking(limit = 6) {
+export async function getGlobalFavoriteRanking(limit = 6) {
   const enabledIds = [...ENABLED_CHAINS];
   return db
     .select({
@@ -1309,16 +1309,18 @@ export function getGlobalFavoriteRanking(limit = 6) {
 /**
  * 注目のキーワードを自動生成（チェーン×目的、メニュー件数ベース）
  */
-export function getPopularKeywords(limit = 8) {
-  const allChainData = getAllChains();
+export async function getPopularKeywords(limit = 8) {
+  const allChainData = await getAllChains();
   const purposeList = Object.values(purposes);
 
   // 各チェーンのメニュー数を取得してソート
-  const sorted = allChainData
-    .map((chain) => ({
+  const chainWithCounts = await Promise.all(
+    allChainData.map(async (chain) => ({
       chain,
-      menuCount: countMenusByChain(chain.chainId),
+      menuCount: await countMenusByChain(chain.chainId),
     }))
+  );
+  const sorted = chainWithCounts
     .filter((c) => c.menuCount >= 3)
     .sort((a, b) => b.menuCount - a.menuCount);
 

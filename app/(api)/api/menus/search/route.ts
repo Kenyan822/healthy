@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
       const presetIds = presetParam.split(",").filter(isValidPreset) as PresetId[];
 
       if (presetIds.length > 0) {
-        results = searchMenusByMultiplePresets(presetIds, effectiveSortBy, limit, offset, chainId || undefined);
-        totalCount = countMenusByMultiplePresets(presetIds, chainId || undefined);
+        results = await searchMenusByMultiplePresets(presetIds, effectiveSortBy, limit, offset, chainId || undefined);
+        totalCount = await countMenusByMultiplePresets(presetIds, chainId || undefined);
 
         const response: SearchResponse = {
           success: true,
@@ -106,8 +106,8 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      results = searchMenusByPFC(targetP, targetF, targetC, effectiveSortBy, limit, offset, chainId || undefined);
-      totalCount = countAllMenus(chainId || undefined);
+      results = await searchMenusByPFC(targetP, targetF, targetC, effectiveSortBy, limit, offset, chainId || undefined);
+      totalCount = await countAllMenus(chainId || undefined);
 
       const response: SearchResponse = {
         success: true,
@@ -129,8 +129,8 @@ export async function GET(request: NextRequest) {
     }
 
     // 検索条件なしの場合は全メニュー検索（目的別検索）
-    results = searchAllMenus(effectiveSortBy, limit, offset, chainId || undefined);
-    totalCount = countAllMenus(chainId || undefined);
+    results = await searchAllMenus(effectiveSortBy, limit, offset, chainId || undefined);
+    totalCount = await countAllMenus(chainId || undefined);
 
     const response: SearchResponse = {
       success: true,

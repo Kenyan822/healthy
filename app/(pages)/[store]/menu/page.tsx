@@ -16,20 +16,20 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const chains = getAllChains();
+  const chains = await getAllChains();
   return chains.map((chain) => ({ store: chain.chainId }));
 }
 
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { store } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     return { title: "チェーン店が見つかりません" };
   }
 
-  const menuCount = countMenusByChain(store);
+  const menuCount = await countMenusByChain(store);
   const title = `${chain.chainName}のメニュー一覧｜全${menuCount}件の栄養成分`;
   const description = `${chain.chainName}の全メニュー${menuCount}件を栄養成分・カロリー・価格付きで一覧表示。PFCバランスで比較できます。`;
 
@@ -44,13 +44,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StoreMenuListPage({ params }: Props) {
   const { store } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     notFound();
   }
 
-  const menus = getMenusByChain(store);
+  const menus = await getMenusByChain(store);
 
   // カテゴリ別にグループ化
   const menusByCategory = menus.reduce(

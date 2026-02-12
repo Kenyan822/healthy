@@ -86,8 +86,8 @@ export default async function PurposeDetailPage({ params }: Props) {
     notFound();
   }
 
-  const rankings = getTopMenusByPurpose(purposeId as PurposeId, 50);
-  const chains = getAllChains();
+  const rankings = await getTopMenusByPurpose(purposeId as PurposeId, 50);
+  const chains = await getAllChains();
   const top3 = rankings.slice(0, 3);
 
   return (

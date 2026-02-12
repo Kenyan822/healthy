@@ -15,14 +15,14 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const chains = getAllChains();
+  const chains = await getAllChains();
   return chains.map((chain) => ({ chainId: chain.chainId }));
 }
 
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { chainId } = await params;
-  const chain = getChainById(chainId);
+  const chain = await getChainById(chainId);
 
   if (!chain) {
     return { title: "チェーン店が見つかりません" };
@@ -45,13 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ChainDetailPage({ params }: Props) {
   const { chainId } = await params;
-  const chain = getChainById(chainId);
+  const chain = await getChainById(chainId);
 
   if (!chain) {
     notFound();
   }
 
-  const menus = getMenusByChain(chainId);
+  const menus = await getMenusByChain(chainId);
 
   // 人気メニュー（タンパク質密度順上位5件）
   const calcProteinDensity = (m: typeof menus[0]) => m.protein / m.calories;

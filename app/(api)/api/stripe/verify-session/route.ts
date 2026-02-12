@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ユーザーのプランをplusに更新
-    db.update(users)
+    await db.update(users)
       .set({ plan: "plus" })
       .where(eq(users.id, session.user.id))
       .run();

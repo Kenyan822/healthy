@@ -34,11 +34,11 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const chains = getAllChains();
+  const chains = await getAllChains();
   const params: { store: string; segment: string }[] = [];
 
   for (const chain of chains) {
-    const menuCount = countMenusByChain(chain.chainId);
+    const menuCount = await countMenusByChain(chain.chainId);
     if (menuCount < 3) continue;
 
     // 目的
@@ -48,7 +48,7 @@ export async function generateStaticParams() {
 
     // 栄養フィルター（3件以上のみ）
     for (const filterId of allNutritionFilterIds) {
-      const count = countMenusByNutritionFilter(chain.chainId, filterId);
+      const count = await countMenusByNutritionFilter(chain.chainId, filterId);
       if (count >= 3) {
         params.push({ store: chain.chainId, segment: filterId });
       }
@@ -56,7 +56,7 @@ export async function generateStaticParams() {
 
     // 価格フィルター（3件以上のみ）
     for (const filterId of allPriceFilterIds) {
-      const count = countMenusByPriceFilter(chain.chainId, filterId);
+      const count = await countMenusByPriceFilter(chain.chainId, filterId);
       if (count >= 3) {
         params.push({ store: chain.chainId, segment: filterId });
       }
@@ -64,7 +64,7 @@ export async function generateStaticParams() {
 
     // 時間帯フィルター（3件以上のみ）
     for (const filterId of allTimingFilterIds) {
-      const count = countMenusByTiming(chain.chainId, filterId);
+      const count = await countMenusByTiming(chain.chainId, filterId);
       if (count >= 3) {
         params.push({ store: chain.chainId, segment: filterId });
       }
@@ -77,7 +77,7 @@ export async function generateStaticParams() {
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { store, segment } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     return { title: "ページが見つかりません" };
@@ -94,13 +94,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // 品質チェック（3件未満はnoindex）
   let menuCount = 0;
   if (resolved.type === "purpose") {
-    menuCount = countMenusByChain(store);
+    menuCount = await countMenusByChain(store);
   } else if (resolved.type === "nutrition") {
-    menuCount = countMenusByNutritionFilter(store, segment as keyof typeof nutritionFilters);
+    menuCount = await countMenusByNutritionFilter(store, segment as keyof typeof nutritionFilters);
   } else if (resolved.type === "price") {
-    menuCount = countMenusByPriceFilter(store, segment as keyof typeof priceFilters);
+    menuCount = await countMenusByPriceFilter(store, segment as keyof typeof priceFilters);
   } else if (resolved.type === "timing") {
-    menuCount = countMenusByTiming(store, segment as keyof typeof timingFilters);
+    menuCount = await countMenusByTiming(store, segment as keyof typeof timingFilters);
   } else if (resolved.type === "menu") {
     menuCount = 1;
   }
@@ -118,7 +118,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StoreSegmentPage({ params }: Props) {
   const { store, segment } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     notFound();
@@ -148,7 +148,7 @@ export default async function StoreSegmentPage({ params }: Props) {
 // ============================
 // 目的別ビュー
 // ============================
-function PurposeView({
+async function PurposeView({
   store,
   chain,
   purpose,
@@ -157,7 +157,7 @@ function PurposeView({
   chain: { chainId: string; chainName: string };
   purpose: (typeof purposes)[keyof typeof purposes];
 }) {
-  const menus = getMenusBySeoPurpose(store, purpose.id as keyof typeof purposes);
+  const menus = await getMenusBySeoPurpose(store, purpose.id as keyof typeof purposes);
 
   return (
     <main className="min-h-screen bg-background">
@@ -183,7 +183,7 @@ function PurposeView({
 // ============================
 // 栄養フィルタービュー
 // ============================
-function NutritionView({
+async function NutritionView({
   store,
   chain,
   filter,
@@ -194,7 +194,7 @@ function NutritionView({
   filter: (typeof nutritionFilters)[keyof typeof nutritionFilters];
   filterId: keyof typeof nutritionFilters;
 }) {
-  const menus = getMenusByNutritionFilter(store, filterId);
+  const menus = await getMenusByNutritionFilter(store, filterId);
 
   return (
     <main className="min-h-screen bg-background">
@@ -221,7 +221,7 @@ function NutritionView({
 // ============================
 // 価格フィルタービュー
 // ============================
-function PriceView({
+async function PriceView({
   store,
   chain,
   filter,
@@ -232,7 +232,7 @@ function PriceView({
   filter: (typeof priceFilters)[keyof typeof priceFilters];
   filterId: keyof typeof priceFilters;
 }) {
-  const menus = getMenusByPriceFilter(store, filterId);
+  const menus = await getMenusByPriceFilter(store, filterId);
 
   return (
     <main className="min-h-screen bg-background">
@@ -259,7 +259,7 @@ function PriceView({
 // ============================
 // 時間帯フィルタービュー
 // ============================
-function TimingView({
+async function TimingView({
   store,
   chain,
   filter,
@@ -270,7 +270,7 @@ function TimingView({
   filter: (typeof timingFilters)[keyof typeof timingFilters];
   filterId: keyof typeof timingFilters;
 }) {
-  const menus = getMenusByTiming(store, filterId);
+  const menus = await getMenusByTiming(store, filterId);
 
   return (
     <main className="min-h-screen bg-background">

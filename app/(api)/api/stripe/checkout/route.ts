@@ -31,7 +31,7 @@ export async function POST() {
     }
 
     // ユーザー情報を取得
-    const user = db
+    const user = await db
       .select()
       .from(users)
       .where(eq(users.id, session.user.id))

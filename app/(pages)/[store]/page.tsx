@@ -18,20 +18,20 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const chains = getAllChains();
+  const chains = await getAllChains();
   return chains.map((chain) => ({ store: chain.chainId }));
 }
 
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { store } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     return { title: "チェーン店が見つかりません" };
   }
 
-  const menuCount = countMenusByChain(store);
+  const menuCount = await countMenusByChain(store);
   const title = `${chain.chainName}のメニュー｜カロリー・栄養成分一覧`;
   const description = `${chain.chainName}のメニュー${menuCount}件の栄養成分を掲載。カロリー・タンパク質・PFCなど目的別にメニューを比較できます。`;
 
@@ -52,13 +52,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StoreTopPage({ params }: Props) {
   const { store } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     notFound();
   }
 
-  const menus = getMenusByChain(store);
+  const menus = await getMenusByChain(store);
 
   // 人気メニュー（タンパク質密度順上位5件）
   const calcProteinDensity = (m: typeof menus[0]) => m.protein / m.calories;

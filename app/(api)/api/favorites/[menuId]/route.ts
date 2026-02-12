@@ -16,7 +16,7 @@ export async function GET(
     return NextResponse.json({ isFavorite: false });
   }
 
-  const result = db
+  const result = await db
     .select()
     .from(userFavorites)
     .where(
@@ -45,12 +45,12 @@ export async function POST(
   const userId = session.user.id;
 
   // ユーザーのプラン確認
-  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  const user = await db.select().from(users).where(eq(users.id, userId)).get();
   const plan = user?.plan || "free";
 
   // 無料プランの制限チェック
   if (plan === "free") {
-    const countResult = db
+    const countResult = await db
       .select({ value: count() })
       .from(userFavorites)
       .where(eq(userFavorites.userId, userId))
@@ -65,7 +65,7 @@ export async function POST(
   }
 
   try {
-    db.insert(userFavorites)
+    await db.insert(userFavorites)
       .values({
         userId,
         menuId,
@@ -73,7 +73,7 @@ export async function POST(
       .run();
 
     // menus.favorite_count をインクリメント
-    db.update(menus)
+    await db.update(menus)
       .set({ favoriteCount: sql`COALESCE(${menus.favoriteCount}, 0) + 1` })
       .where(eq(menus.menuId, menuId))
       .run();
@@ -101,7 +101,7 @@ export async function DELETE(
   }
 
   try {
-    const result = db.delete(userFavorites)
+    const result = await db.delete(userFavorites)
       .where(
         and(
           eq(userFavorites.userId, session.user.id),
@@ -111,8 +111,8 @@ export async function DELETE(
       .run();
 
     // 実際に削除された場合のみデクリメント
-    if (result.changes > 0) {
-      db.update(menus)
+    if (result.rowsAffected > 0) {
+      await db.update(menus)
         .set({ favoriteCount: sql`CASE WHEN COALESCE(${menus.favoriteCount}, 0) > 0 THEN ${menus.favoriteCount} - 1 ELSE 0 END` })
         .where(eq(menus.menuId, menuId))
         .run();

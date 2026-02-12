@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // chainIdが指定されている場合、存在確認
     let chainName: string | undefined;
     if (chainId?.trim()) {
-      const chain = db
+      const chain = await db
         .select({ chainName: chains.chainName })
         .from(chains)
         .where(eq(chains.chainId, chainId))
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
 
-    db.insert(contacts)
+    await db.insert(contacts)
       .values({
         id,
         name: name?.trim() || null,

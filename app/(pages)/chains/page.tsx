@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ChainsPage() {
-  const chains = getAllChains();
+export default async function ChainsPage() {
+  const chains = await getAllChains();
 
   return (
     <main className="min-h-screen bg-background">

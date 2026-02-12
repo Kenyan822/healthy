@@ -1,16 +1,15 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
-import path from "path";
 
-// データベースファイルのパス
-const dbPath = path.join(process.cwd(), "data", "chain_restaurant.db");
-
-// SQLite接続
-const sqlite = new Database(dbPath);
+// Turso接続
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 // Drizzle ORM インスタンス
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(client, { schema });
 
 // スキーマもエクスポート
 export * from "./schema";

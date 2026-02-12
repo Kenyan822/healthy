@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const favorites = db
+  const favorites = await db
     .select({
       id: userFavorites.id,
       menuId: userFavorites.menuId,
@@ -34,7 +34,7 @@ export async function GET() {
     .orderBy(desc(userFavorites.createdAt))
     .all();
 
-  const countResult = db
+  const countResult = await db
     .select({ value: count() })
     .from(userFavorites)
     .where(eq(userFavorites.userId, session.user.id))

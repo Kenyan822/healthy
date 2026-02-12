@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const rankings = getTopMenusByPurpose(purposeId as PurposeId, limit);
+    const rankings = await getTopMenusByPurpose(purposeId as PurposeId, limit);
     const purpose = purposes[purposeId as PurposeId];
 
     return NextResponse.json({

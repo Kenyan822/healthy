@@ -3,7 +3,7 @@ import { getAllChains } from "@/lib/db/queries";
 
 export async function GET() {
   try {
-    const chains = getAllChains();
+    const chains = await getAllChains();
     return NextResponse.json({
       success: true,
       data: chains,

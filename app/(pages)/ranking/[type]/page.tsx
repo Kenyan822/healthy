@@ -58,7 +58,7 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const chains = getAllChains();
+  const chains = await getAllChains();
   const params: { type: string }[] = [];
 
   // 目的別ランキング
@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // チェーン店別ランキング
-  const chain = getChainById(type);
+  const chain = await getChainById(type);
   if (chain) {
     const title = `${chain.chainName}メニューランキング｜栄養成分で比較`;
     const description = `${chain.chainName}のメニューを栄養成分でランキング。おすすめメニューが一目でわかります。`;
@@ -116,7 +116,7 @@ export default async function RankingTypePage({ params }: Props) {
   }
 
   // チェーン店別ランキング
-  const chain = getChainById(type);
+  const chain = await getChainById(type);
   if (chain) {
     return <ChainRankingView chainId={type} chainName={chain.chainName} />;
   }
@@ -127,9 +127,9 @@ export default async function RankingTypePage({ params }: Props) {
 // ============================
 // 目的別ランキングビュー
 // ============================
-function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
+async function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
   const purpose = purposes[purposeId];
-  const menus = getGlobalRankingByPurpose(purposeId, 200);
+  const menus = await getGlobalRankingByPurpose(purposeId, 200);
 
   return (
     <main className="min-h-screen bg-background">
@@ -255,14 +255,14 @@ function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
 // ============================
 // チェーン店別ランキングビュー
 // ============================
-function ChainRankingView({
+async function ChainRankingView({
   chainId,
   chainName,
 }: {
   chainId: string;
   chainName: string;
 }) {
-  const menus = getChainRankingGlobal(chainId, 200);
+  const menus = await getChainRankingGlobal(chainId, 200);
 
   return (
     <main className="min-h-screen bg-background">

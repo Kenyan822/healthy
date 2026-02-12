@@ -9,7 +9,7 @@ export async function POST(
     const { menuId } = await params;
 
     // メニューの存在確認
-    const menu = getMenuById(menuId);
+    const menu = await getMenuById(menuId);
     if (!menu) {
       return NextResponse.json(
         { success: false, error: "メニューが見つかりません" },
@@ -18,7 +18,7 @@ export async function POST(
     }
 
     // ビュー数をインクリメント
-    incrementMenuViewCount(menuId);
+    await incrementMenuViewCount(menuId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

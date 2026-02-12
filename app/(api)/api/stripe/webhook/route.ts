@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
         if (userId) {
           // ユーザーのプランをplusに更新
-          db.update(users)
+          await db.update(users)
             .set({ plan: "plus" })
             .where(eq(users.id, userId))
             .run();
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
         if (userId) {
           // ユーザーのプランをfreeに戻す
-          db.update(users)
+          await db.update(users)
             .set({ plan: "free" })
             .where(eq(users.id, userId))
             .run();
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         if (userId) {
           // サブスクリプションのステータスに応じてプランを更新
           const isActive = subscription.status === "active";
-          db.update(users)
+          await db.update(users)
             .set({ plan: isActive ? "plus" : "free" })
             .where(eq(users.id, userId))
             .run();

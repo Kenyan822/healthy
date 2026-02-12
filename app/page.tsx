@@ -8,9 +8,9 @@ import {
 } from "@/data/mock";
 import { getGlobalFavoriteRanking, getLatestUpdatedMenus, getPopularKeywords } from "@/lib/db/queries";
 
-export default function Home() {
+export default async function Home() {
   // DBからお気に入り登録数が多い人気メニュー上位6件を取得
-  const dbRanking = getGlobalFavoriteRanking(6);
+  const dbRanking = await getGlobalFavoriteRanking(6);
   const menuRanking = dbRanking.map(({ menu, chain, favoriteCount }, index) => ({
     menuId: menu.menuId,
     chainId: menu.chainId,
@@ -32,7 +32,7 @@ export default function Home() {
   }));
 
   // DBから最新更新メニューを取得
-  const dbLatest = getLatestUpdatedMenus(6);
+  const dbLatest = await getLatestUpdatedMenus(6);
   const latestMenus = dbLatest.map(({ menu, chain }) => ({
     menuId: menu.menuId,
     chainId: menu.chainId,
@@ -60,7 +60,7 @@ export default function Home() {
 
           {/* Right Column - Keywords & Quick Access */}
           <div className="lg:col-span-2 space-y-6">
-            <PopularKeywords keywords={getPopularKeywords(8)} />
+            <PopularKeywords keywords={await getPopularKeywords(8)} />
             <QuickAccessGrid />
           </div>
         </div>

@@ -17,14 +17,14 @@ type Props = {
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const chains = getAllChains();
+  const chains = await getAllChains();
   return chains.map((chain) => ({ store: chain.chainId }));
 }
 
 // メタデータ生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { store } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     return { title: "チェーン店が見つかりません" };
@@ -43,20 +43,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StoreRankingPage({ params }: Props) {
   const { store } = await params;
-  const chain = getChainById(store);
+  const chain = await getChainById(store);
 
   if (!chain) {
     notFound();
   }
 
   // お気に入り登録数ランキング（お気に入り数が増えるまで一時的にコメントアウト）
-  // const favoriteRanking = getChainFavoriteRanking(store, 10);
+  // const favoriteRanking = await getChainFavoriteRanking(store, 10);
 
   // 目的別ランキング
-  const purposeRankings = allPurposeIds.map((purposeId) => ({
-    purpose: purposes[purposeId],
-    menus: getMenusBySeoPurpose(store, purposeId, 5),
-  }));
+  const purposeRankings = await Promise.all(
+    allPurposeIds.map(async (purposeId) => ({
+      purpose: purposes[purposeId],
+      menus: await getMenusBySeoPurpose(store, purposeId, 5),
+    }))
+  );
 
   return (
     <main className="min-h-screen bg-background">

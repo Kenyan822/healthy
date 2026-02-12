@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
     }
 
     // DBからチェーン店一覧を取得
-    const chains = getAllChains();
+    const chains = await getAllChains();
     const chainMap = new Map(chains.map((c) => [c.chainId, c]));
 
     // 各チェーン店を並行で検索

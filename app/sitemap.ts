@@ -22,10 +22,22 @@ const BASE_URL =
 // 最低メニュー数（品質管理）
 const MIN_MENU_COUNT = 3;
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const chains = getAllChains();
-  const menuSlugs = getAllMenuSlugs();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const chains = await getAllChains();
+  const menuSlugs = await getAllMenuSlugs();
   const now = new Date().toISOString();
+
+  // チェーンごとのメニュー数を事前に取得
+  const chainMenuCounts = new Map<string, number>();
+  for (const chain of chains) {
+    const count = await countMenusByChain(chain.chainId);
+    chainMenuCounts.set(chain.chainId, count);
+  }
+
+  // メニュー数が基準を満たすチェーンをフィルタ
+  const qualifiedChains = chains.filter(
+    (chain) => (chainMenuCounts.get(chain.chainId) ?? 0) >= MIN_MENU_COUNT
+  );
 
   // ============================
   // 静的ページ
@@ -48,52 +60,44 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // ============================
   // 店トップページ (/[store])
   // ============================
-  const storeTopPages: MetadataRoute.Sitemap = chains
-    .filter((chain) => countMenusByChain(chain.chainId) >= MIN_MENU_COUNT)
-    .map((chain) => ({
-      url: `${BASE_URL}/${chain.chainId}`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.9,
-    }));
+  const storeTopPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
+    url: `${BASE_URL}/${chain.chainId}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
 
   // ============================
   // 店メニュー一覧 (/[store]/menu)
   // ============================
-  const storeMenuPages: MetadataRoute.Sitemap = chains
-    .filter((chain) => countMenusByChain(chain.chainId) >= MIN_MENU_COUNT)
-    .map((chain) => ({
-      url: `${BASE_URL}/${chain.chainId}/menu`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+  const storeMenuPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
+    url: `${BASE_URL}/${chain.chainId}/menu`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
   // ============================
   // 店ランキング (/[store]/ranking)
   // ============================
-  const storeRankingPages: MetadataRoute.Sitemap = chains
-    .filter((chain) => countMenusByChain(chain.chainId) >= MIN_MENU_COUNT)
-    .map((chain) => ({
-      url: `${BASE_URL}/${chain.chainId}/ranking`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    }));
+  const storeRankingPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
+    url: `${BASE_URL}/${chain.chainId}/ranking`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
 
   // ============================
   // 店×目的 (/[store]/[purpose])
   // ============================
-  const storePurposePages: MetadataRoute.Sitemap = chains
-    .filter((chain) => countMenusByChain(chain.chainId) >= MIN_MENU_COUNT)
-    .flatMap((chain) =>
-      allPurposeIds.map((purposeId) => ({
-        url: `${BASE_URL}/${chain.chainId}/${purposeId}`,
-        lastModified: now,
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-      }))
-    );
+  const storePurposePages: MetadataRoute.Sitemap = qualifiedChains.flatMap((chain) =>
+    allPurposeIds.map((purposeId) => ({
+      url: `${BASE_URL}/${chain.chainId}/${purposeId}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }))
+  );
 
   // ============================
   // 店×栄養フィルター (/[store]/protein-over-30g など)
@@ -101,7 +105,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const storeNutritionPages: MetadataRoute.Sitemap = [];
   for (const chain of chains) {
     for (const filterId of allNutritionFilterIds) {
-      const count = countMenusByNutritionFilter(chain.chainId, filterId);
+      const count = await countMenusByNutritionFilter(chain.chainId, filterId);
       if (count >= MIN_MENU_COUNT) {
         storeNutritionPages.push({
           url: `${BASE_URL}/${chain.chainId}/${filterId}`,
@@ -119,7 +123,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const storePricePages: MetadataRoute.Sitemap = [];
   for (const chain of chains) {
     for (const filterId of allPriceFilterIds) {
-      const count = countMenusByPriceFilter(chain.chainId, filterId);
+      const count = await countMenusByPriceFilter(chain.chainId, filterId);
       if (count >= MIN_MENU_COUNT) {
         storePricePages.push({
           url: `${BASE_URL}/${chain.chainId}/${filterId}`,
@@ -137,7 +141,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const storeTimingPages: MetadataRoute.Sitemap = [];
   for (const chain of chains) {
     for (const filterId of allTimingFilterIds) {
-      const count = countMenusByTiming(chain.chainId, filterId);
+      const count = await countMenusByTiming(chain.chainId, filterId);
       if (count >= MIN_MENU_COUNT) {
         storeTimingPages.push({
           url: `${BASE_URL}/${chain.chainId}/${filterId}`,
@@ -164,14 +168,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // ============================
   // チェーン別ランキング (/ranking/[chainId])
   // ============================
-  const chainRankingPages: MetadataRoute.Sitemap = chains
-    .filter((chain) => countMenusByChain(chain.chainId) >= MIN_MENU_COUNT)
-    .map((chain) => ({
-      url: `${BASE_URL}/ranking/${chain.chainId}`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.75,
-    }));
+  const chainRankingPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
+    url: `${BASE_URL}/ranking/${chain.chainId}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.75,
+  }));
 
   // ============================
   // メニュー詳細 (/[store]/[menuSlug])

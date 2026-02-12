@@ -23,18 +23,18 @@ export interface SuggestItem {
 // キャッシュ用（ビルド時に生成、リクエスト間で再利用）
 let suggestionsCache: SuggestItem[] | null = null;
 
-function buildSuggestions(): SuggestItem[] {
+async function buildSuggestions(): Promise<SuggestItem[]> {
   if (suggestionsCache) {
     return suggestionsCache;
   }
 
   const suggestions: SuggestItem[] = [];
-  const chains = getAllChains();
+  const chains = await getAllChains();
   const MIN_MENU_COUNT = 3;
 
   // 1. チェーン店単体
   for (const chain of chains) {
-    const menuCount = countMenusByChain(chain.chainId);
+    const menuCount = await countMenusByChain(chain.chainId);
     if (menuCount < MIN_MENU_COUNT) continue;
 
     suggestions.push({
@@ -82,7 +82,7 @@ function buildSuggestions(): SuggestItem[] {
 
   // 4. チェーン店×目的の組み合わせ
   for (const chain of chains) {
-    const menuCount = countMenusByChain(chain.chainId);
+    const menuCount = await countMenusByChain(chain.chainId);
     if (menuCount < MIN_MENU_COUNT) continue;
 
     for (const purposeId of allPurposeIds) {
@@ -104,11 +104,11 @@ function buildSuggestions(): SuggestItem[] {
 
   // 5. チェーン店×栄養フィルター（該当メニューが3件以上のみ）
   for (const chain of chains) {
-    const chainMenuCount = countMenusByChain(chain.chainId);
+    const chainMenuCount = await countMenusByChain(chain.chainId);
     if (chainMenuCount < MIN_MENU_COUNT) continue;
 
     for (const filterId of allNutritionFilterIds) {
-      const count = countMenusByNutritionFilter(chain.chainId, filterId);
+      const count = await countMenusByNutritionFilter(chain.chainId, filterId);
       if (count < MIN_MENU_COUNT) continue;
 
       const filter = nutritionFilters[filterId];
@@ -126,11 +126,11 @@ function buildSuggestions(): SuggestItem[] {
 
   // 6. チェーン店×価格フィルター（該当メニューが3件以上のみ）
   for (const chain of chains) {
-    const chainMenuCount = countMenusByChain(chain.chainId);
+    const chainMenuCount = await countMenusByChain(chain.chainId);
     if (chainMenuCount < MIN_MENU_COUNT) continue;
 
     for (const filterId of allPriceFilterIds) {
-      const count = countMenusByPriceFilter(chain.chainId, filterId);
+      const count = await countMenusByPriceFilter(chain.chainId, filterId);
       if (count < MIN_MENU_COUNT) continue;
 
       const filter = priceFilters[filterId];
@@ -265,7 +265,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const suggestions = buildSuggestions();
+  const suggestions = await buildSuggestions();
 
   // 入力キーワードを含むもののみフィルタリング & スコア計算
   const scored = suggestions

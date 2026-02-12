@@ -8,7 +8,7 @@ type Props = {
 export async function GET(request: NextRequest, { params }: Props) {
   try {
     const { menuId } = await params;
-    const result = getMenuWithChain(menuId);
+    const result = await getMenuWithChain(menuId);
 
     if (!result) {
       return NextResponse.json(
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     }
 
     const { menu, chain } = result;
-    const similarMenus = getSimilarMenus(chain.chainId, menuId, 5);
+    const similarMenus = await getSimilarMenus(chain.chainId, menuId, 5);
 
     return NextResponse.json({
       success: true,

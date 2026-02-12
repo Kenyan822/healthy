@@ -18,14 +18,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RankingTopPage() {
-  const chains = getAllChains();
+export default async function RankingTopPage() {
+  const chains = await getAllChains();
 
   // 各目的の上位3件を取得
-  const topRankings = allPurposeIds.map((purposeId) => ({
-    purpose: purposes[purposeId],
-    menus: getGlobalRankingByPurpose(purposeId, 3),
-  }));
+  const topRankings = await Promise.all(
+    allPurposeIds.map(async (purposeId) => ({
+      purpose: purposes[purposeId],
+      menus: await getGlobalRankingByPurpose(purposeId, 3),
+    }))
+  );
 
   return (
     <main className="min-h-screen bg-background">
