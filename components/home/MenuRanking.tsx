@@ -6,6 +6,7 @@ import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 interface MenuWithRank extends Menu {
   rank: number;
+  favoriteCount?: number;
 }
 
 interface MenuRankingProps {
@@ -26,7 +27,7 @@ export function MenuRanking({ menus }: MenuRankingProps) {
           </span>
         </h2>
         <Link
-          href="/ranking/health"
+          href="/ranking"
           className="text-xs font-bold text-zinc-400 hover:text-primary transition-colors flex items-center gap-1 border-b border-dashed border-zinc-300 hover:border-primary"
         >
           すべて見る
@@ -85,6 +86,12 @@ export function MenuRanking({ menus }: MenuRankingProps) {
                       <span>C <span className="font-bold text-foreground">{menu.nutrition.carb}g</span></span>
                       <span className="ml-auto">{menu.nutrition.calories}kcal</span>
                     </div>
+                    {menu.favoriteCount != null && menu.favoriteCount > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-pink-500 mt-1">
+                        <span>&#9825;</span>
+                        <span>{menu.favoriteCount}人がお気に入り</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -112,6 +119,9 @@ export function MenuRanking({ menus }: MenuRankingProps) {
                     <span className="font-medium text-foreground text-sm line-clamp-1">{menu.menuName}</span>
                     <span className="text-xs text-primary">{menu.chainName}</span>
                   </div>
+                  {menu.favoriteCount != null && menu.favoriteCount > 0 && (
+                    <span className="text-xs text-pink-500">&#9825;{menu.favoriteCount}</span>
+                  )}
                   <span className="text-xs font-bold text-zinc-400">P{menu.nutrition.protein}g</span>
                 </Link>
                 <FavoriteButton

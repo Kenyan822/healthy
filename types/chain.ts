@@ -7,6 +7,7 @@ export type ChainCategory =
   | "ramen" // ラーメン
   | "curry" // カレー
   | "udon" // うどん・そば
+  | "steak" // ステーキ
   | "other"; // その他
 
 export interface Chain {

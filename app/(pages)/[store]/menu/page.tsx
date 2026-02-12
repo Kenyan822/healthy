@@ -7,7 +7,7 @@ import {
   getAllChains,
   countMenusByChain,
 } from "@/lib/db/queries";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, sortCategoriesByPriority } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
 type Props = {
@@ -64,7 +64,7 @@ export default async function StoreMenuListPage({ params }: Props) {
     {} as Record<string, typeof menus>
   );
 
-  const categories = Object.keys(menusByCategory).sort();
+  const categories = sortCategoriesByPriority(store, Object.keys(menusByCategory));
 
   return (
     <main className="min-h-screen bg-background">

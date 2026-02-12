@@ -121,7 +121,7 @@ async function scrapeCategoryPage(
 
   $("li.c-product_list_item").each((_, el) => {
     const $el = $(el);
-    const name = $el.find(".c-product_list_block_text p").text().trim();
+    const name = $el.find(".c-product_list_block_text p").text().trim().replace(/\s+/g, " ");
     const size =
       $el.find(".c-product_list_block_price_unit").text().trim() || undefined;
 
@@ -201,15 +201,24 @@ function getExistingMenus(): ExistingMenu[] {
 
 /**
  * データファイルの price フィールドを更新（confidence 0.8以上のみ）
+ * 同じmenuIdに複数マッチした場合は最高confidenceのもののみ適用
  */
 function updateDataFile(matches: PriceUpdateReport["matched"]): number {
   const filePath = path.join(__dirname, "../data/nakau-menus.ts");
   let content = fs.readFileSync(filePath, "utf-8");
   let updatedCount = 0;
 
+  // 同じmenuIdへの重複マッチを排除（最高confidence優先）
+  const bestByMenuId = new Map<string, (typeof matches)[0]>();
   for (const match of matches) {
     if (match.confidence < 0.8) continue;
+    const existing = bestByMenuId.get(match.menuId);
+    if (!existing || match.confidence > existing.confidence) {
+      bestByMenuId.set(match.menuId, match);
+    }
+  }
 
+  for (const match of bestByMenuId.values()) {
     const escaped = match.menuId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(
       `(menu_id: "${escaped}",[^}]*?price:) (?:null|\\d+)`
@@ -299,10 +308,11 @@ function prompt(message: string): Promise<string> {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
+  const autoYes = args.includes("--yes");
 
   if (dryRun) {
     console.log(
-      "[DRY RUN] 2カテゴリだけスクレイピングしてレポート表示します\n"
+      "[DRY RUN] 全カテゴリをスクレイピングしてレポート表示します\n"
     );
   }
 
@@ -310,8 +320,8 @@ async function main() {
   let scrapedItems: ScrapedMenuItem[];
 
   if (dryRun) {
-    // dry-run: 最初の2カテゴリのみ
-    const categoryIds = Object.keys(CONFIG.categories).slice(0, 2);
+    // dry-run: 全カテゴリ
+    const categoryIds = Object.keys(CONFIG.categories);
     scrapedItems = [];
     console.log(`\n=== なか卯 Price Scraping (DRY RUN) ===\n`);
     for (let i = 0; i < categoryIds.length; i++) {
@@ -360,10 +370,30 @@ async function main() {
 
   // 手動マッピング（サイト名とDB名の表記が大きく異なるもの）
   matcher.setManualMappings({
-    // サイトでは「京風つけもの」、DBでは「つけもの」
+    // おかず名称差異
     "京風つけもの": "つけもの",
-    // サイトでは「具だくさん豚汁」、DBでは「具だくさんとん汁」
     "具だくさん豚汁": "具だくさんとん汁",
+    "ごはん（並盛）": "ライス（並盛）",
+    "こだわり卵のプリン": "こだわり卵のプリン（カスタード）",
+    "青ネギ": "追加青ネギ",
+
+    // お子様セット（サイト: 「うき卯きセット」→ DB: 「セット」）
+    "お子様親子丼 うき卯きセット": "お子様親子丼ぶりセット",
+    "お子様カレー丼 うき卯きセット": "お子様カレー丼ぶりセット",
+    "お子様きつねうどん うき卯きセット": "お子様きつねうどんセット",
+    "お子様わかめうどん うき卯きセット": "お子様わかめうどんセット",
+    // お子様セット（温うどんサイズ付きパターン）
+    "お子様きつねうどん うき卯きセット（温うどん）": "お子様きつねうどんセット",
+    "お子様わかめうどん うき卯きセット（温うどん）": "お子様わかめうどんセット",
+
+    // お子様単品（サイト: 「【単品】」→ DB: サフィックスなし）
+    "お子様親子丼【単品】": "お子様親子丼ぶり",
+    "お子様カレー丼ぶり【単品】": "お子様カレー丼ぶり",
+    "お子様きつねうどん【単品】": "お子様きつねうどん",
+    "お子様わかめうどん【単品】": "お子様わかめうどん",
+    // お子様単品（温うどんサイズ付きパターン）
+    "お子様きつねうどん【単品】（温うどん）": "お子様きつねうどん",
+    "お子様わかめうどん【単品】（温うどん）": "お子様わかめうどん",
   });
 
   const report = matcher.matchAll(scrapedItems, existingMenus);
@@ -386,13 +416,17 @@ async function main() {
   const updateCount = report.matched.filter(
     (m) => m.confidence >= 0.8
   ).length;
-  const answer = await prompt(
-    `\n${updateCount} 件の価格をデータファイルに更新しますか？ (y/n): `
-  );
 
-  if (answer.toLowerCase() !== "y") {
-    console.log("キャンセルしました");
-    return;
+  if (!autoYes) {
+    const answer = await prompt(
+      `\n${updateCount} 件の価格をデータファイルに更新しますか？ (y/n): `
+    );
+    if (answer.toLowerCase() !== "y") {
+      console.log("キャンセルしました");
+      return;
+    }
+  } else {
+    console.log(`\n${updateCount} 件の価格をデータファイルに更新します（--yes）`);
   }
 
   // 6. データファイル更新

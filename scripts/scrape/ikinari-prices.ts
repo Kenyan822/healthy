@@ -19,16 +19,28 @@ import type {
 } from "./common/types";
 
 // いきなりステーキ用設定
+// タブ構成: mt1=路面・ロードサイド・商業施設（レストラン）, mt3=フードコート
+// 各タブ内に _lunch（ランチ）/ _global（グランドメニュー）セクションがある
 const IKINARI_CONFIG = {
   chainId: "ikinari",
   baseUrl: "https://ikinaristeak.com/menu/",
-  // 店舗タイプ: mt1=路面店/ロードサイド/商業施設, mt2=フードコート
-  menuTypes: ["mt1", "mt2"],
+  menuTypes: [
+    { id: "mt1", tabId: "mt1", label: "路面・ロードサイド・商業施設", isFoodCourt: false },
+    { id: "mt3", tabId: "mt3", label: "フードコート", isFoodCourt: true },
+  ],
   timeout: 60000,
 };
 
 interface ScrapedMenuWithType extends ScrapedMenuItem {
   menuType: string; // mt1 or mt2
+  isFoodCourt: boolean;
+}
+
+/**
+ * 指定ミリ秒待機（page.waitForTimeout の代替）
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -41,7 +53,9 @@ async function scrapeIkinari(
 
   console.log("\n=== いきなりステーキ Price Scraping ===");
   console.log(`URL: ${IKINARI_CONFIG.baseUrl}`);
-  console.log(`Menu types: ${IKINARI_CONFIG.menuTypes.join(", ")}\n`);
+  console.log(
+    `Menu types: ${IKINARI_CONFIG.menuTypes.map((t) => `${t.id}(${t.label})`).join(", ")}\n`
+  );
 
   let browser: Browser | null = null;
 
@@ -63,31 +77,48 @@ async function scrapeIkinari(
 
     // 各店舗タイプのメニューをスクレイピング
     for (const menuType of IKINARI_CONFIG.menuTypes) {
-      if (dryRun && items.length >= 20) {
-        console.log(`[DRY RUN] Skipping ${menuType} - already have enough items`);
-        continue;
-      }
-
-      console.log(`\n--- Scraping ${menuType} ---`);
+      console.log(`\n--- Scraping ${menuType.id} (${menuType.label}) ---`);
 
       // タブをクリックして店舗タイプを切り替え
+      const tabSelector = `#${menuType.tabId}`;
       try {
-        const tabSelector = `.menuTab li[data-menu="${menuType}"]`;
         await page.waitForSelector(tabSelector, { timeout: 5000 });
         await page.click(tabSelector);
-        await page.waitForTimeout(1000); // タブ切り替え待機
+        console.log(`  Tab clicked: ${tabSelector}`);
       } catch {
-        console.log(`Tab ${menuType} not found, trying URL parameter...`);
-        await page.goto(`${IKINARI_CONFIG.baseUrl}?menu=${menuType}`, {
-          waitUntil: "networkidle2",
-          timeout: IKINARI_CONFIG.timeout,
-        });
+        console.log(
+          `  Tab click failed, trying URL parameter: ?menu=${menuType.tabId}`
+        );
+        await page.goto(
+          `${IKINARI_CONFIG.baseUrl}?menu=${menuType.tabId}`,
+          {
+            waitUntil: "networkidle2",
+            timeout: IKINARI_CONFIG.timeout,
+          }
+        );
       }
 
-      // メニュー情報を抽出
-      const menuItems = await extractMenuItems(page, menuType);
+      // タブ切り替え待機
+      await delay(1500);
+
+      // グランドメニューセクションの存在確認
+      const globalSelector = `.${menuType.id}_global`;
+      const globalCount = await page.$$eval(
+        globalSelector,
+        (els) => els.length
+      );
+      console.log(
+        `  ${globalSelector}: ${globalCount} elements found`
+      );
+
+      // メニュー情報を抽出（グランドメニューセクションのみ）
+      const menuItems = await extractMenuItems(
+        page,
+        menuType.id,
+        menuType.isFoodCourt
+      );
       items.push(...menuItems);
-      console.log(`Found ${menuItems.length} items in ${menuType}`);
+      console.log(`  Found ${menuItems.length} items in ${menuType.id}`);
     }
   } catch (error) {
     console.error("Scraping error:", error);
@@ -105,135 +136,258 @@ async function scrapeIkinari(
 
 /**
  * ページからメニュー情報を抽出
+ * 各メニューアイテムは個別の LI 要素で、CSSクラス .mt{X}_global を持つ。
+ * querySelectorAll で全要素を取得し、各LIのテキストからメニュー名・サイズ・価格を抽出。
  */
 async function extractMenuItems(
   page: Page,
-  menuType: string
+  menuType: string,
+  isFoodCourt: boolean
 ): Promise<ScrapedMenuWithType[]> {
-  return await page.evaluate((mt) => {
-    const items: {
-      name: string;
-      price: number;
-      size?: string;
-      category?: string;
-      menuType: string;
-    }[] = [];
+  const result = await page.evaluate(
+    (mt, fc) => {
+      const items: {
+        name: string;
+        price: number;
+        size?: string;
+        category?: string;
+        menuType: string;
+        isFoodCourt: boolean;
+      }[] = [];
 
-    // ページ内のテキストを取得
-    const bodyText = document.body.innerText;
-    const lines = bodyText.split("\n").map((l) => l.trim()).filter((l) => l);
+      // グランドメニューの全LI要素を取得（ランチセクションは除外）
+      const globalElements = document.querySelectorAll(`.${mt}_global`);
+      if (globalElements.length === 0) return items;
 
-    // 現在のメニュー名を追跡
-    let currentMenuName = "";
+      // ランチ要素を除外（_lunch クラスも持つ要素はスキップ）
+      const grandElements = Array.from(globalElements).filter(
+        (el) => !el.className.includes("_lunch")
+      );
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+      for (const el of grandElements) {
+        const text = (el as HTMLElement).innerText;
+        const lines = text
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l);
 
-      // メニュー名を検出（ステーキ、ハンバーグ、コンボなどを含む行）
-      if (
-        /(?:ステーキ|ハンバーグ|コンボ|グリルチキン|ステーキ重|ヒレステーキ重)/.test(line) &&
-        !/円$/.test(line) &&
-        !/^\d+g$/.test(line) &&
-        !line.includes("写真")
-      ) {
-        // ランチプレフィックスを除去して保存
-        currentMenuName = line.replace(/^ランチ\s*/, "").trim();
-      }
+        if (lines.length === 0) continue;
 
-      // サイズと価格を検出
-      // パターン1: "150g" の次の行に "1,800円"
-      const sizeMatch = line.match(/^(\d+g)$/);
-      if (sizeMatch && currentMenuName) {
-        const size = sizeMatch[1];
-        // 次の行で価格を探す
-        const nextLine = lines[i + 1];
-        if (nextLine) {
-          const priceMatch = nextLine.match(/^([0-9,]+)円$/);
-          if (priceMatch) {
-            const price = parseInt(priceMatch[1].replace(/,/g, ""), 10);
-            if (!isNaN(price) && price > 0 && price < 20000) {
-              // 名前にサイズを含めるので、sizeフィールドは不要
-              const fullName = `${currentMenuName} ${size}`;
-              items.push({
-                name: fullName,
-                price,
-                size: undefined, // マッチャーでサイズ付加を防ぐ
-                category: undefined,
-                menuType: mt,
-              });
+        // 最初の数行からメニュー名を検出
+        // 複数行にまたがる名前を結合（例: "グリル" + "チキンステーキ"）
+        let menuName = "";
+        let lineIdx = 0;
+
+        for (let i = 0; i < Math.min(lines.length, 5); i++) {
+          const line = lines[i];
+          // 名前でない行を検出 → 名前収集後ならbreak、収集前ならskip
+          const isNonName =
+            /写真/.test(line) ||
+            /円/.test(line) ||
+            /^\d+g/.test(line) ||
+            /^\d+g[0-9,]+円/.test(line) ||
+            /増量/.test(line) ||
+            /大盛/.test(line) ||
+            /おかわり/.test(line) ||
+            /対象店舗/.test(line) ||
+            /盛り付け例/.test(line) ||
+            /^ランチ/.test(line) ||
+            /^ステーキ\d+g/.test(line) ||
+            /^ハンバーグ\d+g/.test(line);
+
+          if (isNonName) {
+            if (menuName) {
+              // 名前収集済み → 名前検出終了
+              lineIdx = i;
+              break;
             }
+            lineIdx = i + 1;
+            continue;
+          }
+
+          // メニュー名の一部と判断
+          if (
+            line.length < 25 &&
+            !/^\d+g/.test(line) &&
+            !/^[0-9,]+円/.test(line)
+          ) {
+            menuName += line;
+            lineIdx = i + 1;
+          } else {
+            lineIdx = i;
+            break;
           }
         }
-      }
 
-      // パターン2: "ステーキ80g+ハンバーグ100g" のようなコンボサイズ
-      const comboMatch = line.match(/^(ステーキ\d+g\+ハンバーグ\d+g)$/);
-      if (comboMatch && currentMenuName) {
-        const size = comboMatch[1];
-        const nextLine = lines[i + 1];
-        if (nextLine) {
-          const priceMatch = nextLine.match(/^([0-9,]+)円$/);
-          if (priceMatch) {
-            const price = parseInt(priceMatch[1].replace(/,/g, ""), 10);
-            if (!isNaN(price) && price > 0 && price < 20000) {
-              const fullName = `${currentMenuName} ${size}`;
-              items.push({
-                name: fullName,
-                price,
-                size: undefined, // マッチャーでサイズ付加を防ぐ
-                category: undefined,
-                menuType: mt,
-              });
-            }
-          }
+        if (!menuName) continue;
+
+        // 括弧付き説明を除去（「（オニオンソース付き）」等）
+        const cleanName = menuName
+          .replace(/（[^）]*付き）/g, "")
+          .replace(/\([^)]*付き\)/g, "")
+          .trim();
+
+        // カテゴリ判定
+        let category: string | undefined;
+        if (
+          /セット|ライス|サラダ|スープ|カレー/.test(cleanName) &&
+          !/ステーキ|ハンバーグ|コンボ|チキン/.test(cleanName)
+        ) {
+          category = "サイド";
+        } else if (
+          /ブロッコリー|オニオンスライス|コーン|キャロット|マッシュポテト|カレールー|チーズソース|オニオンソース|和風おろし/.test(
+            cleanName
+          )
+        ) {
+          category = "トッピング";
+        } else if (
+          /ハンバーグ/.test(cleanName) &&
+          /トッピング/.test(menuName)
+        ) {
+          category = "トッピング";
         }
-      }
-    }
 
-    // サイドメニュー・トッピングの抽出
-    const sidePatterns = [
-      /ランチセット/,
-      /ランチミニカレーライス/,
-      /ランチサラダ/,
-      /ランチ特製スープ/,
-      /ランチライス/,
-      /いきなりセット/,
-      /ライス・サラダセット/,
-      /ライス・スープセット/,
-      /ライス（[^）]+）/,
-      /サラダ/,
-      /特製スープ/,
-    ];
+        // サイズ・価格を抽出
+        const remaining = lines.slice(lineIdx);
+        let hasSizedItem = false; // サイズ付きアイテムが見つかったか
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      for (const pattern of sidePatterns) {
-        if (pattern.test(line) && !line.includes("写真")) {
-          const nextLine = lines[i + 1];
-          if (nextLine) {
-            const priceMatch = nextLine.match(/^([0-9,]+)円$/);
-            if (priceMatch) {
-              const price = parseInt(priceMatch[1].replace(/,/g, ""), 10);
-              if (!isNaN(price) && price > 0 && price < 5000) {
-                const menuName = line.replace(/^ランチ/, "").trim();
-                if (!items.some((item) => item.name === menuName)) {
+        for (let i = 0; i < remaining.length; i++) {
+          const line = remaining[i];
+
+          // 単純サイズ行 → 次行に価格
+          const sizeOnly = line.match(/^(\d+g)$/);
+          if (sizeOnly) {
+            const nextLine = remaining[i + 1];
+            if (nextLine) {
+              const priceMatch = nextLine.match(/^([0-9,]+)円/);
+              if (priceMatch) {
+                const price = parseInt(
+                  priceMatch[1].replace(/,/g, ""),
+                  10
+                );
+                if (price > 0 && price < 20000) {
+                  hasSizedItem = true;
                   items.push({
-                    name: menuName,
+                    name: `${cleanName} ${sizeOnly[1]}`,
                     price,
                     size: undefined,
-                    category: "サイド",
+                    category,
                     menuType: mt,
+                    isFoodCourt: fc,
                   });
                 }
               }
             }
+            continue;
+          }
+
+          // サイズ+価格同一行: "130g1,360円" or "130g 1,360円"
+          const sizePrice = line.match(/^(\d+g)\s*([0-9,]+)円/);
+          if (sizePrice) {
+            const price = parseInt(sizePrice[2].replace(/,/g, ""), 10);
+            if (price > 0 && price < 20000) {
+              hasSizedItem = true;
+              items.push({
+                name: `${cleanName} ${sizePrice[1]}`,
+                price,
+                size: undefined,
+                category,
+                menuType: mt,
+                isFoodCourt: fc,
+              });
+            }
+            continue;
+          }
+
+          // コンボ: "ステーキ100g+\nハンバーグ150g\n1,690円" (改行あり)
+          const comboStart = line.match(/^(ステーキ\d+g)\+$/);
+          if (comboStart && i + 1 < remaining.length) {
+            const nextLine = remaining[i + 1];
+            const comboEnd = nextLine.match(/^(ハンバーグ\d+g)$/);
+            if (comboEnd) {
+              const comboSize = `${comboStart[1]}+${comboEnd[1]}`;
+              const priceLine = remaining[i + 2];
+              if (priceLine) {
+                const priceMatch = priceLine.match(/^([0-9,]+)円/);
+                if (priceMatch) {
+                  const price = parseInt(
+                    priceMatch[1].replace(/,/g, ""),
+                    10
+                  );
+                  if (price > 0 && price < 20000) {
+                    hasSizedItem = true;
+                    items.push({
+                      name: `${cleanName} ${comboSize}`,
+                      price,
+                      size: undefined,
+                      category,
+                      menuType: mt,
+                      isFoodCourt: fc,
+                    });
+                  }
+                }
+              }
+            }
+            continue;
+          }
+
+          // コンボ同一行: "ステーキ60g+ハンバーグ100g1,470円"
+          const comboInline = line.match(
+            /^(ステーキ\d+g\+ハンバーグ\d+g)\s*([0-9,]+)円/
+          );
+          if (comboInline) {
+            const price = parseInt(
+              comboInline[2].replace(/,/g, ""),
+              10
+            );
+            if (price > 0 && price < 20000) {
+              hasSizedItem = true;
+              items.push({
+                name: `${cleanName} ${comboInline[1]}`,
+                price,
+                size: undefined,
+                category,
+                menuType: mt,
+                isFoodCourt: fc,
+              });
+            }
+            continue;
+          }
+
+          // 価格のみの行（サイドメニュー・トッピング等: サイズなし）
+          // サイズ付きアイテムが既にあるメニュー（ステーキ等）では不要
+          const priceOnly = line.match(/^([0-9,]+)円$/);
+          if (
+            priceOnly &&
+            !sizeOnly &&
+            !hasSizedItem &&
+            items.every((it) => it.name !== cleanName)
+          ) {
+            const price = parseInt(
+              priceOnly[1].replace(/,/g, ""),
+              10
+            );
+            if (price > 0 && price < 5000) {
+              items.push({
+                name: cleanName,
+                price,
+                size: undefined,
+                category: category || "サイド",
+                menuType: mt,
+                isFoodCourt: fc,
+              });
+            }
           }
         }
       }
-    }
 
-    return items;
-  }, menuType);
+      return items;
+    },
+    menuType,
+    isFoodCourt
+  );
+
+  return result;
 }
 
 /**
@@ -359,6 +513,7 @@ function prompt(message: string): Promise<string> {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
+  const autoYes = args.includes("--yes") || args.includes("-y");
 
   if (dryRun) {
     console.log("[DRY RUN] スクレイピングしてレポート表示します\n");
@@ -372,7 +527,20 @@ async function main() {
     process.exit(1);
   }
 
-  // 2. 重複排除
+  // 2. フードコートアイテムに「（FC）」サフィックスを付与
+  //    サイドメニュー等はFC/非FC共通なのでサフィックス不要
+  for (const item of scrapeResult) {
+    if (item.isFoodCourt && !item.category) {
+      // メインメニュー（ステーキ等のg付き or ステーキ重）にのみ「（FC）」を追加
+      if (/\d+g$/.test(item.name)) {
+        item.name = `${item.name}（FC）`;
+      } else if (/ステーキ重$/.test(item.name) || /ヒレステーキ重$/.test(item.name)) {
+        item.name = `${item.name}（FC）`;
+      }
+    }
+  }
+
+  // 3. 重複排除
   const seen = new Set<string>();
   const uniqueItems = scrapeResult.filter((item) => {
     const key = `${item.name}__${item.size || ""}`;
@@ -384,34 +552,71 @@ async function main() {
     `\nDeduplication: ${scrapeResult.length} → ${uniqueItems.length} items`
   );
 
-  // 3. 既存メニュー取得（データファイルから）
+  // 4. 既存メニュー取得（データファイルから）
   const existingMenus = getExistingMenus();
   console.log(`Existing menus in data file: ${existingMenus.length}`);
 
-  // 4. マッチング
+  // 5. マッチング
   const matcher = new MenuMatcher();
 
   // 手動マッピング（サイト名とDB名の表記が大きく異なるもの）
   matcher.setManualMappings({
-    // チキンステーキ → グリルチキンステーキ
-    "チキンステーキ 220g": "グリルチキンステーキ 220g",
-    "チキンステーキ 440g": "グリルチキンステーキ 440g",
-    // トッピングハンバーグ → ハンバーグ（トッピング）
+    // --- 路面店/商業施設（mt1）---
+    // サイトでは「グリルチキンステーキ」が「グリル」+「チキンステーキ」で結合される
+    "グリルチキンステーキ 220g": "グリルチキンステーキ 220g",
+    "グリルチキンステーキ 440g": "グリルチキンステーキ 440g",
+    // トッピングハンバーグ → ハンバーグ
     "トッピングハンバーグ 100g": "ハンバーグ 100g",
     "トッピングハンバーグ 150g": "ハンバーグ 150g",
-    // いきなりセット
-    "（ライス・サラダ・スープ）": "いきなりセット（ライス・サラダ・スープ）",
-    // ライス・サラダセット
-    "サラダセット": "ライス・サラダセット",
     // ステーキ重（サイトではサイズ付き、DBではサイズなし）
     "ステーキ重 150g": "ステーキ重",
     "ヒレステーキ重 100g": "ヒレステーキ重",
+    // サイドメニュー（サイトでは＆表記）
+    "ライス＆サラダセット": "ライス・サラダセット",
+    "ライス＆スープセット": "ライス・スープセット",
+    "ライス＆ドリンクセット": "ライス・スープセット",
+    // ワイルドコンボ（サイトはコンボ表記 → DBは合計グラム数）
+    "ワイルドコンボ ステーキ100g+ハンバーグ150g": "ワイルドコンボ 250g",
+    "ワイルドコンボ ステーキ150g+ハンバーグ150g": "ワイルドコンボ 300g",
+    "ワイルドコンボ ステーキ300g+ハンバーグ150g": "ワイルドコンボ 450g",
+
+    // --- フードコート（mt3）---
+    "グリルチキンステーキ 220g（FC）": "グリルチキンステーキ 220g（FC）",
+    "グリルチキンステーキ 440g（FC）": "グリルチキンステーキ 440g（FC）",
+    "ステーキ重 150g（FC）": "ステーキ重（FC）",
+    "ヒレステーキ重 100g（FC）": "ヒレステーキ重（FC）",
+    // FCワイルドコンボ
+    "ワイルドコンボ ステーキ60g+ハンバーグ100g（FC）": "ワイルドコンボ 160g（FC）",
+    "ワイルドコンボ ステーキ80g+ハンバーグ150g（FC）": "ワイルドコンボ 230g（FC）",
+    "ワイルドコンボ ステーキ100g+ハンバーグ150g（FC）": "ワイルドコンボ 250g（FC）",
+    // FC限定ドリンク
+    "ジンジャーエール": "ジンジャーエール（FC）",
+    "カルピスソーダ": "カルピスソーダ（FC）",
+    "アイスティー": "アイスティー（FC）",
+    "アイスコーヒー": "アイスコーヒー（FC）",
+
+    // --- 共通: 名前表記の差分 ---
+    // ドリンク（サイトに修飾語がつく）
+    "特定保健用食品（トクホ）サントリー黒烏龍茶": "サントリー黒烏龍茶",
+    "機能性表示食品いきなりブランド黒烏龍茶": "いきなりブランド黒烏龍茶",
+    "レッドブル（※柏店では取り扱っておりません）": "レッドブル",
+    "グラスワイン（赤/白）": "グラスワイン",
+    "ボトルワイン（赤/白）": "ボトルワイン",
+    "コーラ": "コカ・コーラ",
+    // セット名（サイトの説明が長い）
+    "ミニカレーライスセット（ミニカレーライス・サラダ・スープ）": "ミニカレーライスセット",
+    "ミニカレーライスセット（ミニカレーライス・サラダ・ドリンクまたはスープ）": "ミニカレーライスセット",
+    "いきなりセット（ライス・サラダ・ドリンクまたはスープ）": "いきなりセット（ライス・サラダ・スープ）",
+    // トッピング
+    "和風おろしポン酢": "和風おろしポン酢ソース",
+    // ライス（サイトは「ライス（おかわり無料）」→ 普通盛の価格）
+    "ライス": "ライス（普通盛）",
   });
 
   const report = matcher.matchAll(uniqueItems, existingMenus);
   report.chainId = "ikinari";
 
-  // 5. レポート出力
+  // 6. レポート出力
   printReport(report);
 
   if (dryRun) {
@@ -428,13 +633,17 @@ async function main() {
   const updateCount = report.matched.filter(
     (m) => m.confidence >= UPDATE_CONFIDENCE_THRESHOLD
   ).length;
-  const answer = await prompt(
-    `\n${updateCount} 件の価格をデータファイルに更新しますか？ (y/n): `
-  );
 
-  if (answer.toLowerCase() !== "y") {
-    console.log("キャンセルしました");
-    return;
+  if (!autoYes) {
+    const answer = await prompt(
+      `\n${updateCount} 件の価格をデータファイルに更新しますか？ (y/n): `
+    );
+    if (answer.toLowerCase() !== "y") {
+      console.log("キャンセルしました");
+      return;
+    }
+  } else {
+    console.log(`\n--yes: ${updateCount} 件の価格を自動更新します`);
   }
 
   // 7. データファイル更新

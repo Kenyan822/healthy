@@ -11,11 +11,11 @@ const db = new Database(
   path.join(process.cwd(), "data", "chain_restaurant.db")
 );
 
-function deletePreviousOotoyaMenus(): number {
-  const deleteStmt = db.prepare(`
-    DELETE FROM menus WHERE chain_id = 'ootoya'
+function markPreviousMenusUnavailable(): number {
+  const stmt = db.prepare(`
+    UPDATE menus SET is_available = 0 WHERE chain_id = 'ootoya'
   `);
-  const result = deleteStmt.run();
+  const result = stmt.run();
   return result.changes;
 }
 
@@ -34,6 +34,23 @@ function insertOotoyaMenus(): number {
       ?, ?, 1,
       datetime('now'), datetime('now')
     )
+    ON CONFLICT(menu_id) DO UPDATE SET
+      menu_name = excluded.menu_name,
+      price = excluded.price,
+      category = excluded.category,
+      calories = excluded.calories,
+      protein = excluded.protein,
+      fat = excluded.fat,
+      carb = excluded.carb,
+      fiber = excluded.fiber,
+      sodium = excluded.sodium,
+      sugar = excluded.sugar,
+      allergens = excluded.allergens,
+      timing = excluded.timing,
+      is_seasonal = excluded.is_seasonal,
+      is_limited = excluded.is_limited,
+      is_available = excluded.is_available,
+      updated_at = datetime('now')
   `);
 
   let count = 0;
@@ -75,13 +92,13 @@ function getCategoryCounts(): { category: string; count: number }[] {
 function main() {
   console.log("🚀 大戸屋データシード開始...\n");
 
-  // 1. 既存データ削除
-  const deletedCount = deletePreviousOotoyaMenus();
-  console.log(`🗑️  既存大戸屋メニュー ${deletedCount}件を削除`);
+  // 1. 既存メニューを非表示に設定
+  const markedCount = markPreviousMenusUnavailable();
+  console.log(`⏸️  既存大戸屋メニュー ${markedCount}件を非表示に設定`);
 
-  // 2. 新規データ投入
+  // 2. データ投入（UPSERT: 既存は更新、新規は追加）
   const insertedCount = insertOotoyaMenus();
-  console.log(`✅ 大戸屋メニュー ${insertedCount}件を投入`);
+  console.log(`✅ 大戸屋メニュー ${insertedCount}件をUPSERT`);
 
   // 3. カテゴリ別件数を表示
   console.log("\n📊 カテゴリ別メニュー数:");

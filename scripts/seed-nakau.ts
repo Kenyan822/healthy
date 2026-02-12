@@ -11,11 +11,11 @@ const db = new Database(
   path.join(process.cwd(), "data", "chain_restaurant.db")
 );
 
-function deletePreviousNakauMenus(): number {
-  const deleteStmt = db.prepare(`
-    DELETE FROM menus WHERE chain_id = 'nakau'
+function markPreviousMenusUnavailable(): number {
+  const stmt = db.prepare(`
+    UPDATE menus SET is_available = 0 WHERE chain_id = 'nakau'
   `);
-  const result = deleteStmt.run();
+  const result = stmt.run();
   return result.changes;
 }
 
@@ -34,6 +34,18 @@ function insertNakauMenus(): number {
       0, 0, 1,
       datetime('now'), datetime('now')
     )
+    ON CONFLICT(menu_id) DO UPDATE SET
+      menu_name = excluded.menu_name,
+      price = excluded.price,
+      category = excluded.category,
+      calories = excluded.calories,
+      protein = excluded.protein,
+      fat = excluded.fat,
+      carb = excluded.carb,
+      sodium = excluded.sodium,
+      allergens = excluded.allergens,
+      is_available = excluded.is_available,
+      updated_at = datetime('now')
   `);
 
   let count = 0;
@@ -70,13 +82,13 @@ function getCategoryCounts(): { category: string; count: number }[] {
 function main() {
   console.log("🚀 なか卯データシード開始...\n");
 
-  // 1. 既存データ削除
-  const deletedCount = deletePreviousNakauMenus();
-  console.log(`🗑️  既存なか卯メニュー ${deletedCount}件を削除`);
+  // 1. 既存メニューを非表示に設定
+  const markedCount = markPreviousMenusUnavailable();
+  console.log(`⏸️  既存なか卯メニュー ${markedCount}件を非表示に設定`);
 
-  // 2. 新規データ投入
+  // 2. データ投入（UPSERT: 既存は更新、新規は追加）
   const insertedCount = insertNakauMenus();
-  console.log(`✅ なか卯メニュー ${insertedCount}件を投入`);
+  console.log(`✅ なか卯メニュー ${insertedCount}件をUPSERT`);
 
   // 3. カテゴリ別件数を表示
   console.log("\n📊 カテゴリ別メニュー数:");

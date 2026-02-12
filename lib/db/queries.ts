@@ -1,5 +1,5 @@
-import { db, chains, menus, stations, stationChains, userFavorites } from "./index";
-import { eq, desc, asc, sql, and, gte, lte, inArray } from "drizzle-orm";
+import { db, chains, menus, stations, stationChains } from "./index";
+import { eq, desc, asc, sql, and, gt, gte, lte, inArray } from "drizzle-orm";
 import { ENABLED_CHAINS, isChainEnabled } from "@/lib/chain-config";
 
 // 目的（purpose）の定義 - 事実ベースの指標
@@ -71,7 +71,7 @@ export function getChainById(chainId: string) {
 
 // チェーン店のメニュー一覧を取得
 export function getMenusByChain(chainId: string) {
-  return db.select().from(menus).where(eq(menus.chainId, chainId)).all();
+  return db.select().from(menus).where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true))).all();
 }
 
 // 事実ベース指標のSQL式を取得
@@ -120,10 +120,15 @@ export function getMenusByChainAndPurpose(
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
+  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
+  if (purpose.sortField === "costPerformance") {
+    conditions.push(gt(menus.price, 0));
+  }
+
   return db
     .select()
     .from(menus)
-    .where(eq(menus.chainId, chainId))
+    .where(and(...conditions))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
@@ -145,7 +150,7 @@ export function getMenuWithChain(menuId: string) {
 // 全メニューを取得（有効なチェーンのみ）
 export function getAllMenus() {
   const enabledIds = [...ENABLED_CHAINS];
-  return db.select().from(menus).where(inArray(menus.chainId, enabledIds)).all();
+  return db.select().from(menus).where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true))).all();
 }
 
 // メニューIDで取得
@@ -163,7 +168,7 @@ export function getSimilarMenus(
   return db
     .select()
     .from(menus)
-    .where(and(eq(menus.chainId, chainId), sql`${menus.menuId} != ${currentMenuId}`))
+    .where(and(eq(menus.chainId, chainId), sql`${menus.menuId} != ${currentMenuId}`, eq(menus.isAvailable, true)))
     .orderBy(desc(proteinDensity))
     .limit(limit)
     .all();
@@ -194,6 +199,7 @@ export function getSimilarMenusFromOtherChains(
       and(
         sql`${menus.chainId} != ${currentChainId}`,
         inArray(menus.chainId, enabledIds),
+        eq(menus.isAvailable, true),
         gte(menus.protein, minProtein),
         lte(menus.protein, maxProtein),
         gte(menus.calories, minCalories),
@@ -219,7 +225,7 @@ export function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
-    .where(inArray(menus.chainId, enabledIds))
+    .where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
@@ -250,7 +256,7 @@ export function getAllMenuIds() {
   return db
     .select({ menuId: menus.menuId })
     .from(menus)
-    .where(inArray(menus.chainId, enabledIds))
+    .where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
     .all()
     .map((m) => m.menuId);
 }
@@ -316,8 +322,8 @@ export function searchMenusByPFC(
   // PFC入力値との距離が近い順にソート
   const enabledIds = [...ENABLED_CHAINS];
   const results = (chainId
-    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds)))
-    : query.where(inArray(menus.chainId, enabledIds))
+    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
+    : query.where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
   )
     .orderBy(asc(pfcDeviation))
     .limit(limit)
@@ -381,6 +387,7 @@ export function searchMenusByMultiplePresets(
   // 有効チェーンフィルター
   const enabledIds = [...ENABLED_CHAINS];
   conditions.push(inArray(menus.chainId, enabledIds));
+  conditions.push(eq(menus.isAvailable, true));
 
   // チェーン店フィルター
   if (chainId) {
@@ -489,6 +496,7 @@ export function countMenusByMultiplePresets(presetIds: PresetId[], chainId?: str
   // 有効チェーンフィルター
   const enabledIds = [...ENABLED_CHAINS];
   conditions.push(inArray(menus.chainId, enabledIds));
+  conditions.push(eq(menus.isAvailable, true));
 
   // チェーン店フィルター
   if (chainId) {
@@ -540,7 +548,7 @@ export function countMenusByPreset(presetId: PresetId): number {
   }
 
   const preset = presets[presetId];
-  const conditions = [];
+  const conditions = [eq(menus.isAvailable, true)];
 
   if (preset.filter) {
     if (preset.filter.minProtein !== undefined) {
@@ -585,8 +593,8 @@ export function countAllMenus(chainId?: string): number {
     .from(menus);
 
   const result = (chainId
-    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds)))
-    : query.where(inArray(menus.chainId, enabledIds))
+    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
+    : query.where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
   ).get();
   return result?.count ?? 0;
 }
@@ -645,10 +653,14 @@ export function searchAllMenus(
     .innerJoin(chains, eq(menus.chainId, chains.chainId));
 
   const enabledIds = [...ENABLED_CHAINS];
-  const results = (chainId
-    ? query.where(and(eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds)))
-    : query.where(inArray(menus.chainId, enabledIds))
-  )
+  const conditions = chainId
+    ? [eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)]
+    : [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)];
+  if (sortBy === "costPerformance") {
+    conditions.push(gt(menus.price, 0));
+  }
+  const results = query
+    .where(and(...conditions))
     .orderBy(orderByClause)
     .limit(limit)
     .offset(offset)
@@ -713,7 +725,7 @@ export function getMenusByNutritionFilter(
   limit = 50
 ) {
   const filter = nutritionFilters[filterId];
-  const conditions = [eq(menus.chainId, chainId)];
+  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
 
   if ("min" in filter) {
     // protein-over-XXg
@@ -742,7 +754,7 @@ export function countMenusByNutritionFilter(
   filterId: NutritionFilterId
 ): number {
   const filter = nutritionFilters[filterId];
-  const conditions = [eq(menus.chainId, chainId)];
+  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
 
   if ("min" in filter) {
     conditions.push(gte(menus[filter.type], filter.min));
@@ -772,7 +784,7 @@ export function getMenusByPriceFilter(
   return db
     .select()
     .from(menus)
-    .where(and(eq(menus.chainId, chainId), lte(menus.price, filter.max)))
+    .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true), lte(menus.price, filter.max)))
     .orderBy(asc(menus.price))
     .limit(limit)
     .all();
@@ -790,7 +802,7 @@ export function countMenusByPriceFilter(
   const result = db
     .select({ count: sql<number>`count(*)` })
     .from(menus)
-    .where(and(eq(menus.chainId, chainId), lte(menus.price, filter.max)))
+    .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true), lte(menus.price, filter.max)))
     .get();
 
   return result?.count ?? 0;
@@ -813,6 +825,7 @@ export function getMenusByTiming(
     .where(
       and(
         eq(menus.chainId, chainId),
+        eq(menus.isAvailable, true),
         sql`(${menus.timing} = ${filter.value} OR ${menus.timing} = 'anytime')`
       )
     )
@@ -836,6 +849,7 @@ export function countMenusByTiming(
     .where(
       and(
         eq(menus.chainId, chainId),
+        eq(menus.isAvailable, true),
         sql`(${menus.timing} = ${filter.value} OR ${menus.timing} = 'anytime')`
       )
     )
@@ -856,10 +870,15 @@ export function getMenusBySeoPurpose(
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
+  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
+  if (purpose.sortField === "costPerformance") {
+    conditions.push(gt(menus.price, 0));
+  }
+
   return db
     .select()
     .from(menus)
-    .where(eq(menus.chainId, chainId))
+    .where(and(...conditions))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
@@ -872,7 +891,7 @@ export function countMenusByChain(chainId: string): number {
   const result = db
     .select({ count: sql<number>`count(*)` })
     .from(menus)
-    .where(eq(menus.chainId, chainId))
+    .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true)))
     .get();
 
   return result?.count ?? 0;
@@ -911,7 +930,7 @@ export function getAllMenuSlugs() {
       menuSlug: sql<string>`COALESCE(${menus.menuSlug}, ${menus.menuId})`.as("menu_slug"),
     })
     .from(menus)
-    .where(inArray(menus.chainId, enabledIds))
+    .where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
     .all();
 }
 
@@ -923,7 +942,7 @@ export function getChainMenuRanking(chainId: string, limit = 10) {
   return db
     .select()
     .from(menus)
-    .where(eq(menus.chainId, chainId))
+    .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true)))
     .orderBy(desc(proteinDensity))
     .limit(limit)
     .all();
@@ -938,6 +957,11 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
   const enabledIds = [...ENABLED_CHAINS];
 
+  const conditions = [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)];
+  if (purpose.sortField === "costPerformance") {
+    conditions.push(gt(menus.price, 0));
+  }
+
   return db
     .select({
       menu: menus,
@@ -945,7 +969,7 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
-    .where(inArray(menus.chainId, enabledIds))
+    .where(and(...conditions))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
@@ -963,7 +987,7 @@ export function getChainRankingGlobal(chainId: string, limit = 20) {
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
-    .where(eq(menus.chainId, chainId))
+    .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true)))
     .orderBy(desc(proteinDensity))
     .limit(limit)
     .all();
@@ -1013,7 +1037,10 @@ export function getChainsByStation(stationId: string) {
     })
     .from(stationChains)
     .innerJoin(chains, eq(stationChains.chainId, chains.chainId))
-    .where(eq(stationChains.stationId, stationId))
+    .where(and(
+      eq(stationChains.stationId, stationId),
+      inArray(chains.chainId, [...ENABLED_CHAINS])
+    ))
     .orderBy(asc(stationChains.distanceMeters))
     .all();
 }
@@ -1134,7 +1161,7 @@ export function getStationMenusByPurpose(
     })
     .from(menus)
     .innerJoin(chains, eq(menus.chainId, chains.chainId))
-    .where(inArray(menus.chainId, stationChainIds))
+    .where(and(inArray(menus.chainId, stationChainIds), eq(menus.isAvailable, true)))
     .orderBy(orderFn(sortExpr))
     .limit(limit)
     .all();
@@ -1184,13 +1211,30 @@ export function getChainFavoriteRanking(chainId: string, limit = 10) {
   return db
     .select({
       menu: menus,
-      favoriteCount: sql<number>`count(${userFavorites.id})`.as("favorite_count"),
+      favoriteCount: menus.favoriteCount,
     })
     .from(menus)
-    .leftJoin(userFavorites, eq(menus.menuId, userFavorites.menuId))
-    .where(eq(menus.chainId, chainId))
-    .groupBy(menus.menuId)
-    .orderBy(desc(sql`favorite_count`))
+    .where(and(eq(menus.chainId, chainId), eq(menus.isAvailable, true)))
+    .orderBy(desc(menus.favoriteCount))
+    .limit(limit)
+    .all();
+}
+
+/**
+ * 全チェーンのお気に入り数ランキングを取得（人気メニュー用）
+ */
+export function getGlobalFavoriteRanking(limit = 6) {
+  const enabledIds = [...ENABLED_CHAINS];
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+      favoriteCount: menus.favoriteCount,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
+    .orderBy(desc(menus.favoriteCount), desc(menus.viewCount))
     .limit(limit)
     .all();
 }

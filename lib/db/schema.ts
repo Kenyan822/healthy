@@ -40,8 +40,10 @@ export const menus = sqliteTable("menus", {
   isSeasonal: integer("is_seasonal", { mode: "boolean" }).default(false),
   isLimited: integer("is_limited", { mode: "boolean" }).default(false),
   isAvailable: integer("is_available", { mode: "boolean" }).default(true),
+  priceSource: text("price_source").default("scraper"), // scraper | manual | null
   // 人気度追跡
   viewCount: integer("view_count").default(0),
+  favoriteCount: integer("favorite_count").default(0),
   searchCount: integer("search_count").default(0),
   // 時間帯
   timing: text("timing").default("anytime"), // breakfast | lunch | anytime

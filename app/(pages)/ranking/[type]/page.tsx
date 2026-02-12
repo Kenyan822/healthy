@@ -390,6 +390,7 @@ function getRankingIntroText(purposeId: PurposeId): string {
     "low-carb": "外食でも糖質制限を続けたい方へ。炭水化物を抑えたメニューを、糖質比率でランキングしました。",
     "low-fat": "外食でも脂質を抑えた食事をしたい方へ。ローファットダイエット中でも安心して選べるメニューをランキング形式で紹介します。",
     "balanced": "外食でも健康的な食事を心がけたい方へ。PFCバランスの良いメニューをランキングしました。",
+    "cost-performance": "外食でもコスパ良くタンパク質を摂りたい方へ。1円あたりのタンパク質量でランキングしました。",
   };
 
   return introText[purposeId];

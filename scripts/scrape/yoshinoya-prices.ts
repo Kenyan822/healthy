@@ -16,6 +16,7 @@ import type {
   ScraperConfig,
   ScrapedMenuItem,
   ExistingMenu,
+  MatchResult,
   PriceUpdateReport,
 } from "./common/types";
 
@@ -35,6 +36,7 @@ const YOSHINOYA_CONFIG: ScraperConfig = {
     "morningset", // 朝食
     "kids", // お子様セット
     "sidemenu", // サイドメニュー・お飲み物
+    "cc", // クッキング＆コンフォート限定
   ],
   rateLimit: 3000, // 3秒間隔
   batchSize: 10, // 10件ごとに長めの待機
@@ -261,6 +263,70 @@ function updateDataFile(matches: PriceUpdateReport["matched"]): number {
 }
 
 /**
+ * マッチ済みの価格からご飯増量(+55円)・肉2倍盛(+327円)の派生価格を計算
+ * サイト上ではオプション扱いで独立メニューとして存在しないため、
+ * ベースメニューの価格から計算して補完する
+ */
+function generateDerivedPrices(
+  matchedItems: MatchResult[],
+  existingMenus: ExistingMenu[]
+): MatchResult[] {
+  const derived: MatchResult[] = [];
+
+  // ご飯増量: カレー/ハヤシの並盛価格 + 55円(店内税込)
+  const gohanZouryoPairs: [string, string][] = [
+    ["黒カレー（並盛）", "黒カレー（ご飯増量）"],
+    ["牛黒カレー（並盛）", "牛黒カレー（ご飯増量）"],
+    ["肉だく牛黒カレー（並盛）", "肉だく牛黒カレー（ご飯増量）"],
+    ["牛カルビ黒カレー（並盛）", "牛カルビ黒カレー（ご飯増量）"],
+    ["牛×牛カルビ黒カレー（並盛）", "牛×牛カルビ黒カレー（ご飯増量）"],
+    ["から揚げ黒カレー（並盛）", "から揚げ黒カレー（ご飯増量）"],
+    ["牛ハヤシライス（並盛）", "牛ハヤシライス（ご飯増量）"],
+    ["肉だく牛ハヤシライス（並盛）", "肉だく牛ハヤシライス（ご飯増量）"],
+  ];
+
+  for (const [baseName, derivedName] of gohanZouryoPairs) {
+    const baseMatch = matchedItems.find((m) => m.menuName === baseName);
+    const derivedMenu = existingMenus.find((m) => m.menuName === derivedName);
+    if (baseMatch && derivedMenu) {
+      derived.push({
+        menuId: derivedMenu.menuId,
+        menuName: derivedMenu.menuName,
+        scrapedName: `${baseName} + ご飯増量`,
+        price: baseMatch.price + 55,
+        confidence: 0.95,
+        matchType: "manual",
+      });
+    }
+  }
+
+  // 肉2倍盛: 鍋の並盛価格 + 327円(店内税込)
+  const niku2baiPairs: [string, string][] = [
+    ["牛すき鍋膳（並盛）", "牛すき鍋膳（肉2倍盛）"],
+    ["牛すき鍋（単品・並盛）", "牛すき鍋（単品・肉2倍盛）"],
+    ["牛カレー鍋膳（並盛）", "牛カレー鍋膳（肉2倍盛）"],
+    ["牛カレー鍋（単品・並盛）", "牛カレー鍋（単品・肉2倍盛）"],
+  ];
+
+  for (const [baseName, derivedName] of niku2baiPairs) {
+    const baseMatch = matchedItems.find((m) => m.menuName === baseName);
+    const derivedMenu = existingMenus.find((m) => m.menuName === derivedName);
+    if (baseMatch && derivedMenu) {
+      derived.push({
+        menuId: derivedMenu.menuId,
+        menuName: derivedMenu.menuName,
+        scrapedName: `${baseName} + 肉2倍盛`,
+        price: baseMatch.price + 327,
+        confidence: 0.95,
+        matchType: "manual",
+      });
+    }
+  }
+
+  return derived;
+}
+
+/**
  * レポートを出力
  */
 function printReport(report: PriceUpdateReport): void {
@@ -376,7 +442,7 @@ async function main() {
 
   // 手動マッピング（サイト名とDB名の表記が大きく異なるもの）
   matcher.setManualMappings({
-    // サイズなし → 並盛へマッピング
+    // === サイズなし → 並盛へマッピング ===
     "から揚げ黒カレー": "から揚げ黒カレー（並盛）",
     "牛カレー鍋膳": "牛カレー鍋膳（並盛）",
     "牛すき鍋膳": "牛すき鍋膳（並盛）",
@@ -393,6 +459,38 @@ async function main() {
     "肉だく牛オムハヤシライス": "肉だく牛オムハヤシライス（並盛）",
     "牛オム黒カレー": "牛オム黒カレー（並盛）",
     "牛オムハヤシライス": "牛オムハヤシライス（並盛）",
+
+    // === 朝定食: サイトでは（鮭）なし ===
+    "焼魚定食": "焼魚定食（鮭）",
+    "特朝定食": "特朝定食（鮭）",
+
+    // === お子様: サイトでは「セット」付き ===
+    "ミニ牛丼セット": "ミニ牛丼",
+    "ミニカレーセット": "ミニカレー",
+
+    // === サイドメニュー: サイト名とDB名の表記差異 ===
+    "とん汁": "豚汁",
+    "クワトロチーズ": "チーズ",
+    "鮭（単品）": "鮭",
+    "納豆": "納豆（タレ・カラシ・ネギ含む）",
+    "鬼おろしポン酢": "鬼おろしポン酢（単品）",
+    "鬼おろしわさび": "鬼おろしわさび（単品）",
+
+    // === W定食: サイトでは「W定食（...）」形式 ===
+    "W定食（牛皿・牛カルビ定食）": "牛皿・牛カルビ定食",
+    "W定食（牛皿・ねぎ塩豚定食）": "牛皿・ねぎ塩豚定食",
+    "W定食（牛皿・ねぎ塩牛カルビ定食）": "牛皿・ねぎ塩牛カルビ定食",
+    "W定食（牛皿・から揚げ定食）": "牛皿・から揚げ定食",
+    "W定食（牛皿・大判豚肩ロース焼き定食（旨ダレ生姜））":
+      "牛皿・大判豚肩ロース焼き定食（旨ダレ生姜）",
+
+    // === 鍋の単品: サイト名とDB名の形式差異 ===
+    "牛すき鍋（単品）": "牛すき鍋（単品・並盛）",
+    "牛カレー鍋（単品）": "牛カレー鍋（単品・並盛）",
+
+    // === ファミリーパック: 数字 → 漢数字 ===
+    "牛皿ファミリーパック（3人前）": "牛皿ファミリーパック（三人前）",
+    "牛皿ファミリーパック（4人前）": "牛皿ファミリーパック（四人前）",
   });
 
   // トッピング付き商品・コンビ商品をスキップ（DBに個別登録なし）
@@ -429,6 +527,14 @@ async function main() {
 
   const report = matcher.matchAll(filteredItems, existingMenus);
   report.chainId = "yoshinoya";
+
+  // 3.5. 派生価格を計算（ご飯増量+55円、肉2倍盛+327円）
+  const derivedMatches = generateDerivedPrices(report.matched, existingMenus);
+  report.matched.push(...derivedMatches);
+  report.totalMatched += derivedMatches.length;
+  if (derivedMatches.length > 0) {
+    console.log(`\nDerived prices: ${derivedMatches.length} items`);
+  }
 
   // 4. レポート出力
   printReport(report);

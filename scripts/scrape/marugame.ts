@@ -81,10 +81,13 @@ interface MenuListItem {
   href: string;
   category: string;
   price: {
+    small?: number;
     regular?: number;
     large?: number;
     xlarge?: number;
     piece?: number;
+    no_size?: number;
+    [key: string]: string | number | undefined;
   };
   temperatures?: {
     hot?: boolean;
@@ -235,12 +238,7 @@ async function scrapeMenuList(): Promise<MenuListItem[]> {
       id: string;
       name: string;
       href: string;
-      price?: {
-        regular?: number;
-        large?: number;
-        xlarge?: number;
-        piece?: number;
-      };
+      price?: Record<string, number>;
       temperatures?: {
         hot?: boolean;
         cold?: boolean;
@@ -248,12 +246,20 @@ async function scrapeMenuList(): Promise<MenuListItem[]> {
     }>;
 
     for (const menu of shopMenus) {
+      const price = menu.price || {};
+      // 未知の価格フィールドがあればログ出力
+      const knownKeys = new Set(["small", "regular", "large", "xlarge", "piece", "no_size", "fieldId"]);
+      for (const key of Object.keys(price)) {
+        if (!knownKeys.has(key)) {
+          console.log(`  ⚠ 未知の価格フィールド: ${menu.name} → price.${key} = ${price[key]}`);
+        }
+      }
       items.push({
         id: menu.id,
         name: menu.name,
         href: menu.href,
         category: category.name,
-        price: menu.price || {},
+        price,
         temperatures: menu.temperatures,
       });
     }
@@ -344,10 +350,12 @@ function transformToMenuEntries(items: ScrapedItem[]): MarugameMenuItem[] {
 
         // 価格を決定
         let price = 0;
-        if (nut.size === "並" && item.price.regular) price = item.price.regular;
+        if (nut.size === "小" && item.price.small) price = item.price.small;
+        else if (nut.size === "並" && item.price.regular) price = item.price.regular;
         else if (nut.size === "大" && item.price.large) price = item.price.large;
         else if (nut.size === "得" && item.price.xlarge) price = item.price.xlarge;
         else if (item.price.piece) price = item.price.piece;
+        else if (item.price.no_size && typeof item.price.no_size === "number") price = item.price.no_size;
         else if (item.price.regular) price = item.price.regular;
 
         // メニュー名生成
@@ -377,7 +385,8 @@ function transformToMenuEntries(items: ScrapedItem[]): MarugameMenuItem[] {
       const seq = String(categoryCounters[slug]).padStart(3, "0");
       const menuId = `marugame-${slug}-${seq}`;
 
-      const price = item.price.piece || item.price.regular || 0;
+      const noSize = typeof item.price.no_size === "number" ? item.price.no_size : 0;
+      const price = item.price.piece || item.price.regular || noSize || 0;
 
       entries.push({
         menu_id: menuId,

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { userFavorites, users } from "@/lib/db/schema";
-import { eq, and, count } from "drizzle-orm";
+import { userFavorites, users, menus } from "@/lib/db/schema";
+import { eq, and, count, sql } from "drizzle-orm";
 
 // お気に入り状態確認
 export async function GET(
@@ -72,6 +72,12 @@ export async function POST(
       })
       .run();
 
+    // menus.favorite_count をインクリメント
+    db.update(menus)
+      .set({ favoriteCount: sql`COALESCE(${menus.favoriteCount}, 0) + 1` })
+      .where(eq(menus.menuId, menuId))
+      .run();
+
     return NextResponse.json({ success: true });
   } catch (error) {
     // 重複エラーの場合
@@ -95,7 +101,7 @@ export async function DELETE(
   }
 
   try {
-    db.delete(userFavorites)
+    const result = db.delete(userFavorites)
       .where(
         and(
           eq(userFavorites.userId, session.user.id),
@@ -103,6 +109,14 @@ export async function DELETE(
         )
       )
       .run();
+
+    // 実際に削除された場合のみデクリメント
+    if (result.changes > 0) {
+      db.update(menus)
+        .set({ favoriteCount: sql`MAX(COALESCE(${menus.favoriteCount}, 0) - 1, 0)` })
+        .where(eq(menus.menuId, menuId))
+        .run();
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

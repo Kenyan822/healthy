@@ -24,16 +24,15 @@ const SUKIYA_CONFIG: ScraperConfig = {
   chainId: "sukiya",
   baseUrl: "https://www.sukiya.jp/menu/in",
   categories: [
-    "gyusuki", // 牛すき鍋
-    "gyudon", // 牛丼
+    "gyudon", // 牛丼（ライト含む）
     "curry", // カレー
     "oshokujisalad", // お食事サラダ
     "don", // こだわり丼
+    "gyusuki", // 牛すき鍋
     "special", // 定食
     "morning", // 朝食
-    "dinner", // 夜すきセット
     "kids", // お子様
-    "side", // おかず
+    "side", // おかず・牛皿
     "drink", // ドリンク・スイーツ
     "beer", // ビールセット
   ],
@@ -43,6 +42,34 @@ const SUKIYA_CONFIG: ScraperConfig = {
   maxRetries: 3,
   timeout: 30000,
 };
+
+/**
+ * サイトのサイズ名をDB命名に正規化
+ *
+ * サイト表記 → DB表記:
+ *   "ごはんミニ" → "ミニ"
+ *   "ごはん並盛" → "並盛"
+ *   "ごはん大盛" → "大盛"
+ *   "（肉）並盛" → "並盛"
+ *   "（肉）中盛" → "中盛"
+ *   "（肉）2倍盛" → "2倍盛"
+ *   "ごはん少な目" → "ごはん少なめ"
+ */
+function normalizeSize(size: string): string {
+  return (
+    size
+      // 「ごはん」接頭辞を除去（ミニ・並盛・大盛）
+      .replace(/^ごはん(ミニ|並盛|大盛)$/, "$1")
+      // 「お肉」接頭辞を除去（牛丼ライト系: お肉ミニ→ミニ）
+      .replace(/^お肉(ミニ|並盛|大盛)$/, "$1")
+      // 「（肉）」接頭辞を除去（定食系: （肉）並盛→並盛）
+      .replace(/^（肉）/, "")
+      // 「少な目」→「少なめ」（サイト側の表記ゆれ）
+      .replace(/少な目/, "少なめ")
+      // 「並」→「並盛」（ごはんの並サイズ表記）
+      .replace(/^並$/, "並盛")
+  );
+}
 
 class SukiyaScraper extends BaseScraper {
   private visitedUrls = new Set<string>();
@@ -64,13 +91,18 @@ class SukiyaScraper extends BaseScraper {
       const menuLinks: { name: string; url: string }[] = [];
 
       // カテゴリページからメニューリンクと名前を収集
-      $("li").each((_, el) => {
+      // li.page_menu_list_li がメニュー項目の正確なセレクタ
+      $("li.page_menu_list_li").each((_, el) => {
         const $el = $(el);
         const $link = $el.find("a").first();
         const href = $link.attr("href");
         if (!href || !href.includes("/menu/in/")) return;
 
-        const menuName = $link.find("div.pro_name").text().trim();
+        // メニュー名: div.pro_name または span.pro_name
+        const menuName = ($link.find("div.pro_name").text().trim() ||
+          $link.find("span.pro_name").text().trim())
+          // <br>タグはCheerioでは改行にならないが、念のため空白を正規化
+          .replace(/\s+/g, "");
         if (!menuName) return;
 
         // 相対URLを絶対URLに変換
@@ -152,6 +184,9 @@ class SukiyaScraper extends BaseScraper {
    *     <div class="price"><span>450</span>円</div>
    *   </li>
    * </ul>
+   *
+   * 注: HTMLにはコメントアウトされた同構造のブロックが先にあるが、
+   *     Cheerioはコメントを無視するので問題ない
    */
   private async scrapeDetailPage(
     url: string,
@@ -162,15 +197,20 @@ class SukiyaScraper extends BaseScraper {
     const items: ScrapedMenuItem[] = [];
 
     // メニュー名: h2.pro_page_title（h1は固定の「メニューMENU」）
-    const menuName =
+    // media_sp版とmedia_pc版の2つがあるが、firstで取得
+    const rawName =
       $("h2.pro_page_title").first().text().trim() || fallbackName;
+    // <br>由来の空白を除去して正規化
+    const menuName = rawName.replace(/\s+/g, "");
 
     // 価格リスト: ul.pro_page_size_list > li.pro_page_size_li
     $("ul.pro_page_size_list > li.pro_page_size_li").each((_, el) => {
       const $el = $(el);
 
       // サイズ名（単品は空文字）
-      const size = $el.find("div.size").text().trim() || undefined;
+      const rawSize = $el.find("div.size").text().trim() || undefined;
+      // サイズ名をDB命名に正規化
+      const size = rawSize ? normalizeSize(rawSize) : undefined;
 
       // 価格（div.price > span）
       const priceText = $el
@@ -256,14 +296,14 @@ function printReport(report: PriceUpdateReport): void {
   );
   const lowConfidence = report.matched.filter((m) => m.confidence < 0.8);
 
-  console.log(`\n--- High Confidence (≥0.95): ${highConfidence.length} ---`);
-  for (const m of highConfidence.slice(0, 10)) {
+  console.log(`\n--- High Confidence (>=0.95): ${highConfidence.length} ---`);
+  for (const m of highConfidence.slice(0, 20)) {
     console.log(
-      `  ✓ ${m.scrapedName} → ${m.menuName} (${m.price}円, ${m.matchType})`
+      `  OK ${m.scrapedName} -> ${m.menuName} (${m.price}JPY, ${m.matchType})`
     );
   }
-  if (highConfidence.length > 10) {
-    console.log(`  ... and ${highConfidence.length - 10} more`);
+  if (highConfidence.length > 20) {
+    console.log(`  ... and ${highConfidence.length - 20} more`);
   }
 
   console.log(
@@ -271,22 +311,22 @@ function printReport(report: PriceUpdateReport): void {
   );
   for (const m of mediumConfidence) {
     console.log(
-      `  ? ${m.scrapedName} → ${m.menuName} (${m.price}円, ${m.confidence.toFixed(2)})`
+      `  ? ${m.scrapedName} -> ${m.menuName} (${m.price}JPY, ${m.confidence.toFixed(2)})`
     );
   }
 
   console.log(`\n--- Low Confidence (<0.8): ${lowConfidence.length} ---`);
   for (const m of lowConfidence) {
     console.log(
-      `  ⚠ ${m.scrapedName} → ${m.menuName} (${m.price}円, ${m.confidence.toFixed(2)})`
+      `  !! ${m.scrapedName} -> ${m.menuName} (${m.price}JPY, ${m.confidence.toFixed(2)})`
     );
   }
 
   if (report.unmatched.length > 0) {
     console.log(`\n--- Unmatched: ${report.unmatched.length} ---`);
     for (const item of report.unmatched) {
-      const sizePart = item.size ? `（${item.size}）` : "";
-      console.log(`  ✗ ${item.name}${sizePart}: ${item.price}円`);
+      const sizePart = item.size ? ` (${item.size})` : "";
+      console.log(`  X ${item.name}${sizePart}: ${item.price}JPY`);
     }
   }
 
@@ -314,11 +354,11 @@ async function main() {
   const dryRun = args.includes("--dry-run");
 
   if (dryRun) {
-    console.log("[DRY RUN] 10件だけスクレイピングしてレポート表示します\n");
+    console.log("[DRY RUN] スクレイピングしてレポート表示します（データファイル更新なし）\n");
   }
 
-  // 1. スクレイピング実行
-  const scraper = new SukiyaScraper(dryRun ? 10 : 0);
+  // 1. スクレイピング実行（dry-runでも全件取得）
+  const scraper = new SukiyaScraper(0);
   const scrapeResult = await scraper.scrapeAll();
 
   if (scrapeResult.items.length === 0) {
@@ -335,7 +375,7 @@ async function main() {
     return true;
   });
   console.log(
-    `\nDeduplication: ${scrapeResult.items.length} → ${uniqueItems.length} items`
+    `\nDeduplication: ${scrapeResult.items.length} -> ${uniqueItems.length} items`
   );
   scrapeResult.items = uniqueItems;
 
@@ -347,11 +387,56 @@ async function main() {
   const matcher = new MenuMatcher();
 
   matcher.setManualMappings({
-    // 牛すき鍋定食: サイトは「ごはんミニ」「ごはん並盛」「ごはん大盛」、DBは「（たまご1個）（ミニ）」など
+    // === 定食: サイト名とDB名の不一致 ===
+    // 焼鮭定食 → DB: 鮭定食
+    "焼鮭定食（ミニ）": "鮭定食（ミニ）",
+    "焼鮭定食（並盛）": "鮭定食（並盛）",
+    "焼鮭定食（大盛）": "鮭定食（大盛）",
+    // 塩さば定食 → DB: さば定食
+    "塩さば定食（ミニ）": "さば定食（ミニ）",
+    "塩さば定食（並盛）": "さば定食（並盛）",
+    "塩さば定食（大盛）": "さば定食（大盛）",
+
+    // === お子様メニュー: サイトは「すきすきセット」付き、DBはなし ===
+    "お子様牛丼すきすきセット": "お子様牛丼",
+    "お子様カレーすきすきセット": "お子様カレー",
+    "お子様とりそぼろ丼すきすきセット": "お子様とりそぼろ丼",
+
+    // === おかず: サイト名とDB名の不一致 ===
+    "山かけ(わさび付)": "山かけ",
+    // 「炙り塩さば」→ DB: 「塩サバ」
+    "炙り塩さば": "塩サバ",
+    // 「焼鮭」→ DB: 「鮭」
+    "焼鮭": "鮭",
+    // 「からあげ」のサイズがDB名と異なる
+    "からあげ（2個）": "からあげ（2個）",
+    "からあげ（6個）": "からあげ（6個）",
+    // 「ささみチキン」→ DB: 「ささみチキン（単品）」
+    "ささみチキン": "ささみチキン（単品）",
+    // 「キムチ」→ DB: 「キムチ単品」
+    "キムチ": "キムチ単品",
+    // 「ソーセージ」のサイズ表記
+    "ソーセージ（1本）": "ソーセージ（単品）",
+
+    // === こだわり丼: メガいくら丼は独立メニュー ===
+    "メガいくら丼": "いくら丼（メガ）",
+
+    // === 一品: DB名に「（ドレッシング除く）」が付く ===
+    "サラダ": "サラダ（ドレッシング除く）",
+    "オクラサラダ": "オクラサラダ（ドレッシング除く）",
+
+    // === 牛すき鍋定食（specialに残っている場合用） ===
+    "牛すき鍋定食（ミニ）": "牛すき鍋定食（たまご1個）（ミニ）",
+    "牛すき鍋定食（並盛）": "牛すき鍋定食（たまご1個）（並盛）",
+    "牛すき鍋定食（大盛）": "牛すき鍋定食（たまご1個）（大盛）",
+    // 旧マッピング互換
     "牛すき鍋定食（ごはんミニ）": "牛すき鍋定食（たまご1個）（ミニ）",
     "牛すき鍋定食（ごはん並盛）": "牛すき鍋定食（たまご1個）（並盛）",
     "牛すき鍋定食（ごはん大盛）": "牛すき鍋定食（たまご1個）（大盛）",
     // 牛・旨辛豆腐鍋定食
+    "牛・旨辛豆腐鍋定食（ミニ）": "牛・旨辛豆腐鍋定食（たまご1個）（ミニ）",
+    "牛・旨辛豆腐鍋定食（並盛）": "牛・旨辛豆腐鍋定食（たまご1個）（並盛）",
+    "牛・旨辛豆腐鍋定食（大盛）": "牛・旨辛豆腐鍋定食（たまご1個）（大盛）",
     "牛・旨辛豆腐鍋定食（ごはんミニ）": "牛・旨辛豆腐鍋定食（たまご1個）（ミニ）",
     "牛・旨辛豆腐鍋定食（ごはん並盛）": "牛・旨辛豆腐鍋定食（たまご1個）（並盛）",
     "牛・旨辛豆腐鍋定食（ごはん大盛）": "牛・旨辛豆腐鍋定食（たまご1個）（大盛）",
@@ -391,8 +476,8 @@ async function main() {
 
   // 6. データファイル更新
   report.totalUpdated = updateDataFile(report.matched);
-  console.log(`\n✅ ${report.totalUpdated} 件の価格をデータファイルに更新しました`);
-  console.log("💡 DBに反映するには npm run seed:sukiya を実行してください");
+  console.log(`\n${report.totalUpdated} 件の価格をデータファイルに更新しました`);
+  console.log("DBに反映するには npm run seed:sukiya を実行してください");
 }
 
 main().catch((error) => {

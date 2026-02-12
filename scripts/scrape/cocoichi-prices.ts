@@ -378,6 +378,8 @@ async function main() {
     "マル得コンボA（カレーソース付）": "コンボA",
     "マル得コンボB（カレーソース付）": "コンボB",
     "マル得コンボC（カレーソース付）": "コンボC",
+    // トッピングの牛すじ煮込みはサイトで「（一部店舗限定）」付き
+    "牛すじ煮込み（一部店舗限定）": "牛すじ煮込み",
   });
 
   const report = matcher.matchAll(scrapedItems, existingMenus);

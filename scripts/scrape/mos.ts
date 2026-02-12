@@ -172,7 +172,7 @@ async function scrapeCategory(
       const href = link.getAttribute("href") || "";
       const text = link.textContent || "";
 
-      const menuIdMatch = href.match(/menu_id=(\d+)/);
+      const menuIdMatch = href.match(/menu_id=([A-Za-z0-9]+)/);
       if (!menuIdMatch) return;
 
       const menuId = menuIdMatch[1];
@@ -180,10 +180,21 @@ async function scrapeCategory(
       const priceMatch = text.match(/¥(\d+)/);
       if (!priceMatch) return;
 
-      const price = parseInt(priceMatch[1], 10);
+      // サイズ制商品: "S ¥260M ¥330L ¥400" → Mサイズの価格を採用
+      // 単一価格商品: "¥300" → そのまま採用
+      const allPrices = [...text.matchAll(/¥(\d+)/g)].map((m) =>
+        parseInt(m[1], 10)
+      );
+      const price =
+        allPrices.length >= 3
+          ? allPrices[1] // S/M/L → Mサイズ
+          : allPrices.length === 2
+            ? allPrices[0] // S/M → Sサイズ
+            : allPrices[0]; // 単一価格
 
-      // 商品名（価格と期間限定タグを除去）
+      // 商品名（価格・サイズ表記・期間限定タグを除去）
       let name = text
+        .replace(/[SML]\s*¥\d+/g, "")
         .replace(/¥\d+/g, "")
         .replace(/期間限定/g, "")
         .replace(/時間限定/g, "")
@@ -211,7 +222,7 @@ async function scrapeCategory(
  * 詳細ページから栄養成分とアレルゲンを取得
  */
 async function scrapeDetailPage(
-  page: Page,
+  browser: Browser,
   item: MenuListItem
 ): Promise<{
   calories: number;
@@ -222,6 +233,7 @@ async function scrapeDetailPage(
   allergens: string[];
 }> {
   const url = `${CONFIG.baseUrl}${item.href}`;
+  const page = await browser.newPage();
 
   try {
     await page.goto(url, { waitUntil: "networkidle2", timeout: CONFIG.timeout });
@@ -291,6 +303,8 @@ async function scrapeDetailPage(
   } catch (error) {
     console.error(`    Error fetching detail: ${error}`);
     return { calories: 0, protein: 0, fat: 0, carb: 0, sodium: 0, allergens: [] };
+  } finally {
+    await page.close();
   }
 }
 
@@ -298,7 +312,7 @@ async function scrapeDetailPage(
  * 全カテゴリをスクレイピング
  */
 async function scrapeAll(
-  page: Page,
+  browser: Browser,
   maxDetailPages = 0,
   skipDetails = false
 ): Promise<ScrapedItem[]> {
@@ -308,13 +322,14 @@ async function scrapeAll(
 
   // Step 1: カテゴリ一覧から商品リストを取得
   console.log("\n📋 Step 1: カテゴリ一覧ページ取得...");
+  const listPage = await browser.newPage();
 
   for (let i = 0; i < CATEGORIES.length; i++) {
     const category = CATEGORIES[i];
     console.log(`[${i + 1}/${CATEGORIES.length}] Scraping: ${category.name}`);
 
     try {
-      const items = await scrapeCategory(page, category);
+      const items = await scrapeCategory(listPage, category);
 
       for (const item of items) {
         if (!seenMenuIds.has(item.menuId)) {
@@ -334,6 +349,7 @@ async function scrapeAll(
   }
 
   console.log(`\n  合計 ${menuListItems.length} 件のメニューを発見\n`);
+  await listPage.close();
 
   // Step 2: 詳細ページから栄養成分とアレルゲンを取得
   console.log("📋 Step 2: 詳細ページ取得...");
@@ -353,7 +369,7 @@ async function scrapeAll(
       let allergens: string[] = [];
 
       if (!skipDetails) {
-        const detail = await scrapeDetailPage(page, item);
+        const detail = await scrapeDetailPage(browser, item);
         calories = detail.calories;
         protein = detail.protein;
         fat = detail.fat;
@@ -550,11 +566,10 @@ async function main() {
   }
 
   const browser = await launchBrowser();
-  const page = await browser.newPage();
 
   try {
     // スクレイピング実行
-    const scrapedItems = await scrapeAll(page, dryRun ? 5 : 0);
+    const scrapedItems = await scrapeAll(browser, dryRun ? 5 : 0);
 
     if (scrapedItems.length === 0) {
       console.error("\nスクレイピング結果が0件です。終了します。");

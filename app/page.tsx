@@ -4,13 +4,36 @@ import { PopularKeywords } from "@/components/home/PopularKeywords";
 import { LatestMenus } from "@/components/home/LatestMenus";
 import { QuickAccessGrid } from "@/components/home/QuickAccessGrid";
 import {
-  mockMenuRanking,
   mockPopularKeywords,
   mockLatestMenus,
   mockSiteStats,
 } from "@/data/mock";
+import { getGlobalFavoriteRanking } from "@/lib/db/queries";
+import type { Menu } from "@/types";
 
 export default function Home() {
+  // DBからお気に入り登録数が多い人気メニュー上位6件を取得
+  const dbRanking = getGlobalFavoriteRanking(6);
+  const menuRanking = dbRanking.map(({ menu, chain, favoriteCount }, index) => ({
+    menuId: menu.menuId,
+    chainId: menu.chainId,
+    chainName: chain.chainName,
+    menuName: menu.menuName,
+    price: menu.price ?? undefined,
+    nutrition: {
+      calories: menu.calories,
+      protein: menu.protein,
+      fat: menu.fat,
+      carb: menu.carb,
+    },
+    category: menu.category ?? undefined,
+    isSeasonal: menu.isSeasonal ?? false,
+    isLimited: menu.isLimited ?? false,
+    updatedAt: menu.updatedAt,
+    rank: index + 1,
+    favoriteCount: favoriteCount ?? 0,
+  }));
+
   return (
     <div className="flex flex-col">
       {/* Hero Section with Search */}
@@ -21,7 +44,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Menu Ranking */}
           <div className="lg:col-span-1">
-            <MenuRanking menus={mockMenuRanking} />
+            <MenuRanking menus={menuRanking} />
           </div>
 
           {/* Right Column - Keywords & Quick Access */}

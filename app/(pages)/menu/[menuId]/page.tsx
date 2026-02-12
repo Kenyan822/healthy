@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/queries";
 import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import { ViewCounter } from "@/components/menu/ViewCounter";
 
 type Props = {
   params: Promise<{ menuId: string }>;
@@ -119,6 +120,7 @@ export default async function MenuDetailPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-background">
+      <ViewCounter menuId={menuId} />
       {/* ヒーローセクション */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-8 md:py-12">
         <div className="container mx-auto px-4">

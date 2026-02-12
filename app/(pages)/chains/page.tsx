@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { getAllChains } from "@/lib/db/queries";
 import { getCategoryLabel, getCategoryColor } from "@/lib/utils";
+import type { ChainCategory } from "@/types";
 
 export const metadata: Metadata = {
   title: "チェーン店一覧 | ヘルシー検索",
@@ -39,9 +40,9 @@ export default function ChainsPage() {
                 {chain.chainName}
               </h2>
               <span
-                className={`inline-block text-xs px-2 py-0.5 rounded ${getCategoryColor(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}`}
+                className={`inline-block text-xs px-2 py-0.5 rounded ${getCategoryColor(chain.category as ChainCategory)}`}
               >
-                {getCategoryLabel(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}
+                {getCategoryLabel(chain.category as ChainCategory)}
               </span>
             </Link>
           ))}
