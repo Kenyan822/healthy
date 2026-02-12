@@ -11,7 +11,7 @@ export function MenuResultCard({ result }: MenuResultCardProps) {
   const { menu, chain, proteinDensity, carbRatio, fatRatio, pfcBalanceScore, costPerProtein } = result;
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <Link
         href={`/menu/${menu.menuId}`}
         className="block bg-card-bg rounded-xl p-5 border border-border hover:border-primary transition-all hover:shadow-md overflow-hidden"
