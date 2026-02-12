@@ -18,18 +18,22 @@ const zenMaruGothic = Zen_Maru_Gothic({
 });
 
 export const metadata: Metadata = {
-  title: "チェーン店ヘルシー検索 | PFCで見つける健康メニュー",
+  title: "チェンメシ | チェーン店メニューの栄養成分・価格比較",
   description:
-    "チェーン店のメニューをPFC（タンパク質・脂質・炭水化物）で検索。高タンパク、低糖質、ダイエット向けメニューが簡単に見つかります。",
+    "チェーン店のメニューをPFC（タンパク質・脂質・炭水化物）や価格で比較。松屋・吉野家・すき家など人気チェーンの栄養成分が一目でわかります。",
   keywords: [
     "チェーン店",
     "PFC",
     "高タンパク",
     "低糖質",
-    "ダイエット",
-    "ヘルシー",
+    "メニュー比較",
+    "価格比較",
     "栄養成分",
   ],
+  icons: {
+    icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

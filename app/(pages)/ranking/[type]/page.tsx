@@ -16,6 +16,7 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { MenuSelect } from "@/lib/db/schema";
+import { RankingList } from "@/components/ranking/RankingList";
 
 // 事実ベース指標の表示値を計算
 function getDisplayValue(menu: MenuSelect, sortField: string): { value: string; label: string } {
@@ -92,8 +93,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // チェーン店別ランキング
   const chain = getChainById(type);
   if (chain) {
-    const title = `${chain.chainName}メニューランキング｜おすすめヘルシーメニュー`;
-    const description = `${chain.chainName}のメニューをヘルシー度でランキング。おすすめメニューが一目でわかります。`;
+    const title = `${chain.chainName}メニューランキング｜栄養成分で比較`;
+    const description = `${chain.chainName}のメニューを栄養成分でランキング。おすすめメニューが一目でわかります。`;
     return {
       title,
       description,
@@ -126,7 +127,7 @@ export default async function RankingTypePage({ params }: Props) {
 // ============================
 function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
   const purpose = purposes[purposeId];
-  const menus = getGlobalRankingByPurpose(purposeId, 50);
+  const menus = getGlobalRankingByPurpose(purposeId, 200);
 
   return (
     <main className="min-h-screen bg-background">
@@ -174,17 +175,17 @@ function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-6">ランキング（{menus.length}件）</h2>
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
-            <div className="divide-y divide-border">
+            <RankingList totalCount={menus.length}>
               {menus.map(({ menu, chain }, index) => {
                 const displayValue = getDisplayValue(menu, purpose.sortField);
                 return (
-                <div key={menu.menuId} className="relative flex items-center">
+                <div key={menu.menuId} className="relative">
                   <Link
                     href={`/menu/${menu.menuId}`}
-                    className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors flex-1 pr-14"
+                    className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-background/30 transition-colors pr-12"
                   >
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base shrink-0 mt-0.5 ${
                         index === 0
                           ? "bg-yellow-500 text-white"
                           : index === 1
@@ -196,36 +197,34 @@ function PurposeRankingView({ purposeId }: { purposeId: PurposeId }) {
                     >
                       {index + 1}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-foreground/60">{chain.chainName}</p>
-                      <p className="font-bold text-foreground">{menu.menuName}</p>
-                      <div className="flex gap-3 text-xs text-foreground/60 mt-1">
-                        <span>{menu.calories}kcal</span>
-                        <span>P{menu.protein}g</span>
-                        <span>F{menu.fat}g</span>
-                        <span>C{menu.carb}g</span>
+                      <p className="font-bold text-foreground line-clamp-2">{menu.menuName}</p>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <div className="flex flex-wrap gap-x-3 gap-y-0 text-xs text-foreground/60">
+                          <span>{menu.calories}kcal</span>
+                          <span>P{menu.protein}g</span>
+                          <span>F{menu.fat}g</span>
+                          <span>C{menu.carb}g</span>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0 ml-2">
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-primary leading-tight">{displayValue.value}</p>
+                            <p className="text-[10px] text-foreground/60">{displayValue.label}</p>
+                          </div>
+                          <p className="font-bold text-sm w-16 sm:w-20 text-right">{menu.price ? formatPrice(menu.price) : "-"}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-primary">
-                        {displayValue.value}
-                      </p>
-                      <p className="text-xs text-foreground/60">{displayValue.label}</p>
-                    </div>
-                    {menu.price && (
-                      <div className="text-right">
-                        <p className="font-bold">{formatPrice(menu.price)}</p>
-                      </div>
-                    )}
                   </Link>
                   <FavoriteButton
                     menuId={menu.menuId}
                     size="sm"
-                    className="absolute right-4"
+                    className="absolute top-3 right-3 sm:right-4"
                   />
                 </div>
               );})}
-            </div>
+            </RankingList>
           </div>
         </section>
 
@@ -261,7 +260,7 @@ function ChainRankingView({
   chainId: string;
   chainName: string;
 }) {
-  const menus = getChainRankingGlobal(chainId, 50);
+  const menus = getChainRankingGlobal(chainId, 200);
 
   return (
     <main className="min-h-screen bg-background">
@@ -289,7 +288,7 @@ function ChainRankingView({
             {chainName}メニューランキング
           </h1>
           <p className="text-lg text-foreground/70 mt-2">
-            ヘルシー度でランキング｜おすすめメニュー{menus.length}件
+            栄養成分でランキング｜おすすめメニュー{menus.length}件
           </p>
         </div>
       </section>
@@ -298,15 +297,15 @@ function ChainRankingView({
         {/* ランキング一覧 */}
         <section className="mb-8">
           <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
-            <div className="divide-y divide-border">
+            <RankingList totalCount={menus.length}>
               {menus.map(({ menu }, index) => (
-                <div key={menu.menuId} className="relative flex items-center">
+                <div key={menu.menuId} className="relative">
                   <Link
                     href={`/menu/${menu.menuId}`}
-                    className="flex items-center gap-4 p-4 hover:bg-background/30 transition-colors flex-1 pr-14"
+                    className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-background/30 transition-colors pr-12"
                   >
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base shrink-0 mt-0.5 ${
                         index === 0
                           ? "bg-yellow-500 text-white"
                           : index === 1
@@ -318,35 +317,33 @@ function ChainRankingView({
                     >
                       {index + 1}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-foreground">{menu.menuName}</p>
-                      <div className="flex gap-3 text-xs text-foreground/60 mt-1">
-                        <span>{menu.calories}kcal</span>
-                        <span>P{menu.protein}g</span>
-                        <span>F{menu.fat}g</span>
-                        <span>C{menu.carb}g</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-foreground line-clamp-2">{menu.menuName}</p>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <div className="flex flex-wrap gap-x-3 gap-y-0 text-xs text-foreground/60">
+                          <span>{menu.calories}kcal</span>
+                          <span>P{menu.protein}g</span>
+                          <span>F{menu.fat}g</span>
+                          <span>C{menu.carb}g</span>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0 ml-2">
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-primary leading-tight">{((menu.protein / menu.calories) * 100).toFixed(1)}</p>
+                            <p className="text-[10px] text-foreground/60">P密度</p>
+                          </div>
+                          <p className="font-bold text-sm w-16 sm:w-20 text-right">{menu.price ? formatPrice(menu.price) : "-"}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-primary">
-                        {((menu.protein / menu.calories) * 100).toFixed(1)}
-                      </p>
-                      <p className="text-xs text-foreground/60">P密度</p>
-                    </div>
-                    {menu.price && (
-                      <div className="text-right">
-                        <p className="font-bold">{formatPrice(menu.price)}</p>
-                      </div>
-                    )}
                   </Link>
                   <FavoriteButton
                     menuId={menu.menuId}
                     size="sm"
-                    className="absolute right-4"
+                    className="absolute top-3 right-3 sm:right-4"
                   />
                 </div>
               ))}
-            </div>
+            </RankingList>
           </div>
         </section>
 
@@ -384,13 +381,13 @@ function ChainRankingView({
 // ============================
 function getRankingIntroText(purposeId: PurposeId): string {
   const introText: Record<PurposeId, string> = {
-    "high-protein": "外食でも高タンパクな食事を摂りたい方へ。筋トレやボディメイク中の方におすすめのメニューを、タンパク質量でランキングしました。",
-    "protein-dense": "カロリーあたりのタンパク質量を重視する方へ。効率的にタンパク質を摂取できるメニューをランキング形式で紹介します。",
-    "low-calorie": "外食でもダイエットを続けたい方へ。カロリーを抑えたメニューをランキング形式で紹介します。",
-    "low-carb": "外食でも糖質制限を続けたい方へ。炭水化物を抑えたメニューを、糖質比率でランキングしました。",
-    "low-fat": "外食でも脂質を抑えた食事をしたい方へ。ローファットダイエット中でも安心して選べるメニューをランキング形式で紹介します。",
-    "balanced": "外食でも健康的な食事を心がけたい方へ。PFCバランスの良いメニューをランキングしました。",
-    "cost-performance": "外食でもコスパ良くタンパク質を摂りたい方へ。1円あたりのタンパク質量でランキングしました。",
+    "high-protein": "外食チェーンで高タンパクなメニューをお探しの方へ。タンパク質量が多いメニューをランキングしました。",
+    "protein-dense": "カロリーあたりのタンパク質量を重視する方へ。タンパク質密度が高いメニューをランキング形式で紹介します。",
+    "low-calorie": "外食チェーンでカロリーを抑えたメニューをお探しの方へ。低カロリーなメニューをランキング形式で紹介します。",
+    "low-carb": "外食チェーンで糖質を抑えたメニューをお探しの方へ。炭水化物を抑えたメニューを糖質比率でランキングしました。",
+    "low-fat": "外食チェーンで脂質を抑えたメニューをお探しの方へ。脂質が控えめなメニューをランキング形式で紹介します。",
+    "balanced": "外食チェーンでPFCバランスの良いメニューをお探しの方へ。理想的なPFC比率に近いメニューをランキングしました。",
+    "cost-performance": "外食チェーンでコスパ良くタンパク質を摂りたい方へ。タンパク質1gあたりの価格が安いメニューをランキングしました。",
   };
 
   return introText[purposeId];

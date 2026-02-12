@@ -119,7 +119,7 @@ function SearchPageContent() {
   }, [searchParams, executeSearch]);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background overflow-x-hidden">
       {/* ヘッダーセクション */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-8 md:py-12">
         <div className="container mx-auto px-4">
@@ -146,7 +146,7 @@ function SearchPageContent() {
 
       <div className="container mx-auto px-4 py-8">
         {/* 検索フォーム */}
-        <div className="bg-card-bg rounded-2xl border border-border p-6 mb-8">
+        <div className="bg-card-bg rounded-2xl border border-border p-4 sm:p-6 mb-8">
           {/* タブ */}
           <div className="flex border-b border-border mb-6">
             <button

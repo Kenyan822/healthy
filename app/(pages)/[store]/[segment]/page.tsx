@@ -242,7 +242,7 @@ function PriceView({
             {chain.chainName}の{filter.label}メニュー
           </h1>
           <p className="text-lg text-foreground/70 mt-2">
-            お得にヘルシーな食事を｜{menus.length}件
+            お得なメニューを比較｜{menus.length}件
           </p>
         </div>
       </section>
@@ -331,11 +331,11 @@ function PageIntroSection({
   menuCount: number;
 }) {
   const introText: Record<string, string> = {
-    "high-protein": `${chainName}で高タンパクな食事をお探しの方へ。筋トレやボディメイク中でも外食を楽しめるよう、タンパク質が豊富なメニューを栄養成分付きでまとめました。`,
-    "diet": `${chainName}でダイエット中の食事をお探しの方へ。カロリーや脂質を抑えながらも満足感のあるメニューを、PFCバランスで比較できます。`,
-    "health": `${chainName}で栄養バランスの良い食事をお探しの方へ。健康的な食生活を続けたい方向けに、バランスの取れたメニューをまとめました。`,
-    "low-carb": `${chainName}で糖質制限中の食事をお探しの方へ。炭水化物を抑えたメニューを、糖質量とともに一覧で確認できます。`,
-    "low-fat": `${chainName}で脂質を抑えた食事をお探しの方へ。ローファットダイエット中でも安心して選べるメニューをまとめました。`,
+    "high-protein": `${chainName}で高タンパクなメニューをお探しの方へ。タンパク質が豊富なメニューを栄養成分付きでまとめました。`,
+    "diet": `${chainName}でカロリーを抑えたメニューをお探しの方へ。カロリーや脂質を抑えたメニューを、PFCバランスで比較できます。`,
+    "health": `${chainName}でPFCバランスの良いメニューをお探しの方へ。バランスの取れたメニューを栄養成分付きでまとめました。`,
+    "low-carb": `${chainName}で糖質を抑えたメニューをお探しの方へ。炭水化物を抑えたメニューを、糖質量とともに一覧で確認できます。`,
+    "low-fat": `${chainName}で脂質を抑えたメニューをお探しの方へ。脂質が控えめなメニューを栄養成分付きでまとめました。`,
   };
 
   const text = introText[purposeId] || `${chainName}のメニューを栄養成分付きで紹介しています。`;
@@ -362,8 +362,8 @@ function TimingIntroSection({
   menuCount: number;
 }) {
   const introText: Record<string, string> = {
-    "breakfast": `${chainName}の朝食メニューをお探しの方へ。朝から栄養バランスを整えたい方向けに、モーニングタイムに注文できるメニューを栄養成分付きでまとめました。`,
-    "lunch": `${chainName}のランチメニューをお探しの方へ。忙しい昼休みでも栄養バランスを意識した食事ができるよう、ランチにおすすめのメニューをまとめました。`,
+    "breakfast": `${chainName}の朝食メニューをお探しの方へ。モーニングタイムに注文できるメニューを栄養成分付きでまとめました。`,
+    "lunch": `${chainName}のランチメニューをお探しの方へ。ランチにおすすめのメニューを栄養成分付きでまとめました。`,
   };
 
   const text = introText[timingId] || `${chainName}のメニューを栄養成分付きで紹介しています。`;
@@ -387,71 +387,93 @@ function MenuTable({
   menus: MenuSelect[];
   highlightField?: "protein" | "fat" | "carb" | "price";
 }) {
+  const getHighlightValue = (menu: MenuSelect) => {
+    switch (highlightField) {
+      case "protein": return { value: `${menu.protein}g`, label: "タンパク質" };
+      case "fat": return { value: `${menu.fat}g`, label: "脂質" };
+      case "carb": return { value: `${menu.carb}g`, label: "炭水化物" };
+      case "price": return { value: menu.price ? formatPrice(menu.price) : "-", label: "価格" };
+      default: return null;
+    }
+  };
+
   return (
     <section className="mb-8">
       <h2 className="text-2xl font-bold mb-4">メニュー一覧（{menus.length}件）</h2>
-      <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-background/50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
-                  メニュー名
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                  カロリー
-                </th>
-                <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "protein" ? "text-primary" : "text-foreground/70"}`}>
-                  P
-                </th>
-                <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "fat" ? "text-primary" : "text-foreground/70"}`}>
-                  F
-                </th>
-                <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "carb" ? "text-primary" : "text-foreground/70"}`}>
-                  C
-                </th>
-                <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "price" ? "text-primary" : "text-foreground/70"}`}>
-                  価格
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70 w-12">
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {menus.map((menu) => (
-                <tr
-                  key={menu.menuId}
-                  className="hover:bg-background/30 transition-colors"
+
+      {/* モバイル: カードリスト */}
+      <div className="md:hidden bg-card-bg rounded-xl border border-border overflow-hidden">
+        <div className="divide-y divide-border">
+          {menus.map((menu) => {
+            const highlight = getHighlightValue(menu);
+            return (
+              <div key={menu.menuId} className="relative">
+                <Link
+                  href={`/menu/${menu.menuId}`}
+                  className="flex items-start gap-3 p-3 hover:bg-background/30 transition-colors pr-12"
                 >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/menu/${menu.menuId}`}
-                      className="text-primary hover:underline font-medium"
-                    >
-                      {menu.menuName}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-right">{menu.calories}kcal</td>
-                  <td className={`px-4 py-3 text-right ${highlightField === "protein" ? "font-bold text-primary" : ""}`}>
-                    {menu.protein}g
-                  </td>
-                  <td className={`px-4 py-3 text-right ${highlightField === "fat" ? "font-bold text-primary" : ""}`}>
-                    {menu.fat}g
-                  </td>
-                  <td className={`px-4 py-3 text-right ${highlightField === "carb" ? "font-bold text-primary" : ""}`}>
-                    {menu.carb}g
-                  </td>
-                  <td className={`px-4 py-3 text-right ${highlightField === "price" ? "font-bold text-primary" : ""}`}>
-                    {menu.price ? formatPrice(menu.price) : "-"}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <FavoriteButton menuId={menu.menuId} size="sm" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-primary line-clamp-2">{menu.menuName}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <div className="flex flex-wrap gap-x-3 gap-y-0 text-xs text-foreground/60">
+                        <span>{menu.calories}kcal</span>
+                        <span>P{menu.protein}g</span>
+                        <span>F{menu.fat}g</span>
+                        <span>C{menu.carb}g</span>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0 ml-2">
+                        {highlight && (
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-primary leading-tight">{highlight.value}</p>
+                            <p className="text-[10px] text-foreground/60">{highlight.label}</p>
+                          </div>
+                        )}
+                        <p className="font-bold text-sm w-16 text-right">{menu.price ? formatPrice(menu.price) : "-"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                <FavoriteButton
+                  menuId={menu.menuId}
+                  size="sm"
+                  className="absolute top-3 right-3"
+                />
+              </div>
+            );
+          })}
         </div>
+      </div>
+
+      {/* デスクトップ: テーブル */}
+      <div className="hidden md:block bg-card-bg rounded-xl border border-border overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-background/50">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">メニュー名</th>
+              <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">カロリー</th>
+              <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "protein" ? "text-primary" : "text-foreground/70"}`}>P</th>
+              <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "fat" ? "text-primary" : "text-foreground/70"}`}>F</th>
+              <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "carb" ? "text-primary" : "text-foreground/70"}`}>C</th>
+              <th className={`px-4 py-3 text-right text-sm font-medium ${highlightField === "price" ? "text-primary" : "text-foreground/70"}`}>価格</th>
+              <th className="px-4 py-3 w-12"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {menus.map((menu) => (
+              <tr key={menu.menuId} className="hover:bg-background/30 transition-colors">
+                <td className="px-4 py-3">
+                  <Link href={`/menu/${menu.menuId}`} className="text-primary hover:underline font-medium">{menu.menuName}</Link>
+                </td>
+                <td className="px-4 py-3 text-right">{menu.calories}kcal</td>
+                <td className={`px-4 py-3 text-right ${highlightField === "protein" ? "font-bold text-primary" : ""}`}>{menu.protein}g</td>
+                <td className={`px-4 py-3 text-right ${highlightField === "fat" ? "font-bold text-primary" : ""}`}>{menu.fat}g</td>
+                <td className={`px-4 py-3 text-right ${highlightField === "carb" ? "font-bold text-primary" : ""}`}>{menu.carb}g</td>
+                <td className={`px-4 py-3 text-right ${highlightField === "price" ? "font-bold text-primary" : ""}`}>{menu.price ? formatPrice(menu.price) : "-"}</td>
+                <td className="px-4 py-3 text-center"><FavoriteButton menuId={menu.menuId} size="sm" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );

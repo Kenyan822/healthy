@@ -59,7 +59,6 @@ export async function POST(req: NextRequest) {
             .where(eq(users.id, userId))
             .run();
 
-          console.log(`User ${userId} upgraded to plus`);
         }
         break;
       }
@@ -74,8 +73,6 @@ export async function POST(req: NextRequest) {
             .set({ plan: "free" })
             .where(eq(users.id, userId))
             .run();
-
-          console.log(`User ${userId} downgraded to free`);
         }
         break;
       }
@@ -91,14 +88,12 @@ export async function POST(req: NextRequest) {
             .set({ plan: isActive ? "plus" : "free" })
             .where(eq(users.id, userId))
             .run();
-
-          console.log(`User ${userId} subscription updated: ${subscription.status}`);
         }
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        break;
     }
 
     return NextResponse.json({ received: true });

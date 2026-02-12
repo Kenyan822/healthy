@@ -1,5 +1,5 @@
 import { db, chains, menus, stations, stationChains } from "./index";
-import { eq, desc, asc, sql, and, gt, gte, lte, inArray } from "drizzle-orm";
+import { eq, desc, asc, sql, and, gt, gte, lte, inArray, not, like } from "drizzle-orm";
 import { ENABLED_CHAINS, isChainEnabled } from "@/lib/chain-config";
 
 // 目的（purpose）の定義 - 事実ベースの指標
@@ -120,9 +120,20 @@ export function getMenusByChainAndPurpose(
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
-  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
+  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true), gt(menus.calories, 0)];
   if (purpose.sortField === "costPerformance") {
     conditions.push(gt(menus.price, 0));
+    conditions.push(gt(menus.protein, 0));
+  }
+  if (purpose.sortField === "fatRatio") {
+    conditions.push(gt(menus.fat, 0));
+  }
+  if (purpose.sortField === "carbRatio") {
+    conditions.push(gt(menus.carb, 0));
+  }
+  if (purpose.sortField === "calories") {
+    conditions.push(gte(menus.calories, 100));
+    conditions.push(not(like(menus.category, "%ドリンク%")));
   }
 
   return db
@@ -654,10 +665,21 @@ export function searchAllMenus(
 
   const enabledIds = [...ENABLED_CHAINS];
   const conditions = chainId
-    ? [eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)]
-    : [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)];
+    ? [eq(menus.chainId, chainId), inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true), gt(menus.calories, 0)]
+    : [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true), gt(menus.calories, 0)];
   if (sortBy === "costPerformance") {
     conditions.push(gt(menus.price, 0));
+    conditions.push(gt(menus.protein, 0));
+  }
+  if (sortBy === "fatRatio") {
+    conditions.push(gt(menus.fat, 0));
+  }
+  if (sortBy === "carbRatio") {
+    conditions.push(gt(menus.carb, 0));
+  }
+  if (sortBy === "calories") {
+    conditions.push(gte(menus.calories, 100));
+    conditions.push(not(like(menus.category, "%ドリンク%")));
   }
   const results = query
     .where(and(...conditions))
@@ -870,9 +892,20 @@ export function getMenusBySeoPurpose(
   const sortExpr = getSortExpression(purpose.sortField);
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
-  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true)];
+  const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true), gt(menus.calories, 0)];
   if (purpose.sortField === "costPerformance") {
     conditions.push(gt(menus.price, 0));
+    conditions.push(gt(menus.protein, 0));
+  }
+  if (purpose.sortField === "fatRatio") {
+    conditions.push(gt(menus.fat, 0));
+  }
+  if (purpose.sortField === "carbRatio") {
+    conditions.push(gt(menus.carb, 0));
+  }
+  if (purpose.sortField === "calories") {
+    conditions.push(gte(menus.calories, 100));
+    conditions.push(not(like(menus.category, "%ドリンク%")));
   }
 
   return db
@@ -957,9 +990,20 @@ export function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit = 20) {
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
   const enabledIds = [...ENABLED_CHAINS];
 
-  const conditions = [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)];
+  const conditions = [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true), gt(menus.calories, 0)];
   if (purpose.sortField === "costPerformance") {
     conditions.push(gt(menus.price, 0));
+    conditions.push(gt(menus.protein, 0));
+  }
+  if (purpose.sortField === "fatRatio") {
+    conditions.push(gt(menus.fat, 0));
+  }
+  if (purpose.sortField === "carbRatio") {
+    conditions.push(gt(menus.carb, 0));
+  }
+  if (purpose.sortField === "calories") {
+    conditions.push(gte(menus.calories, 100));
+    conditions.push(not(like(menus.category, "%ドリンク%")));
   }
 
   return db
@@ -1098,6 +1142,7 @@ export function getStationChainDetail(stationId: string, chainId: string) {
  * 駅の統計情報を取得
  */
 export function getStationStats(stationId: string) {
+  const enabledIds = [...ENABLED_CHAINS];
   const result = db
     .select({
       totalChains: sql<number>`count(*)`,
@@ -1106,7 +1151,11 @@ export function getStationStats(stationId: string) {
       maxDistance: sql<number>`max(${stationChains.distanceMeters})`,
     })
     .from(stationChains)
-    .where(eq(stationChains.stationId, stationId))
+    .innerJoin(chains, eq(stationChains.chainId, chains.chainId))
+    .where(and(
+      eq(stationChains.stationId, stationId),
+      inArray(chains.chainId, enabledIds)
+    ))
     .get();
 
   return {
@@ -1221,6 +1270,24 @@ export function getChainFavoriteRanking(chainId: string, limit = 10) {
 }
 
 /**
+ * 最新更新メニューを取得
+ */
+export function getLatestUpdatedMenus(limit = 6) {
+  const enabledIds = [...ENABLED_CHAINS];
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(and(inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true)))
+    .orderBy(desc(menus.updatedAt))
+    .limit(limit)
+    .all();
+}
+
+/**
  * 全チェーンのお気に入り数ランキングを取得（人気メニュー用）
  */
 export function getGlobalFavoriteRanking(limit = 6) {
@@ -1237,4 +1304,48 @@ export function getGlobalFavoriteRanking(limit = 6) {
     .orderBy(desc(menus.favoriteCount), desc(menus.viewCount))
     .limit(limit)
     .all();
+}
+
+/**
+ * 注目のキーワードを自動生成（チェーン×目的、メニュー件数ベース）
+ */
+export function getPopularKeywords(limit = 8) {
+  const allChainData = getAllChains();
+  const purposeList = Object.values(purposes);
+
+  // 各チェーンのメニュー数を取得してソート
+  const sorted = allChainData
+    .map((chain) => ({
+      chain,
+      menuCount: countMenusByChain(chain.chainId),
+    }))
+    .filter((c) => c.menuCount >= 3)
+    .sort((a, b) => b.menuCount - a.menuCount);
+
+  const keywords: {
+    id: string;
+    displayText: string;
+    url: string;
+    purposeId: string;
+  }[] = [];
+
+  // 上位チェーンから目的をラウンドロビンで割り当て（同チェーン連続を避ける）
+  let round = 0;
+  while (keywords.length < limit && round < purposeList.length) {
+    for (const { chain } of sorted) {
+      if (keywords.length >= limit) break;
+      const purpose = purposeList[round % purposeList.length];
+      const id = `${chain.chainId}-${purpose.id}`;
+      if (keywords.some((k) => k.id === id)) continue;
+      keywords.push({
+        id,
+        displayText: `${chain.chainName} ${purpose.name}`,
+        url: `/${chain.chainId}/${purpose.id}`,
+        purposeId: purpose.id,
+      });
+    }
+    round++;
+  }
+
+  return keywords.slice(0, limit);
 }

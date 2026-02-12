@@ -5,9 +5,9 @@ import { getCategoryLabel, getCategoryColor } from "@/lib/utils";
 import type { ChainCategory } from "@/types";
 
 export const metadata: Metadata = {
-  title: "チェーン店一覧 | ヘルシー検索",
+  title: "チェーン店一覧 | チェンメシ",
   description:
-    "大戸屋、やよい軒、すき家、松屋、吉野家など、人気チェーン店のヘルシーメニューを栄養成分・PFCバランスで比較検索。",
+    "大戸屋、やよい軒、すき家、松屋、吉野家など、人気チェーン店のメニューを栄養成分・PFCで比較。",
 };
 
 export default function ChainsPage() {
@@ -22,7 +22,7 @@ export default function ChainsPage() {
             チェーン店一覧
           </h1>
           <p className="text-lg text-foreground/70 max-w-2xl">
-            {chains.length}社のチェーン店から、目的に合ったヘルシーメニューを探せます。
+            {chains.length}社のチェーン店のメニューを栄養成分・価格で比較できます。
           </p>
         </div>
       </section>

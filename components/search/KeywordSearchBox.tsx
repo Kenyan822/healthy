@@ -16,7 +16,7 @@ interface KeywordSearchBoxProps {
 }
 
 export function KeywordSearchBox({
-  placeholder = "店舗名や目的で検索（例: 松屋 ダイエット）",
+  placeholder = "店舗名や栄養素で検索（例: 松屋 高タンパク）",
   className = "",
   autoFocus = false,
 }: KeywordSearchBoxProps) {

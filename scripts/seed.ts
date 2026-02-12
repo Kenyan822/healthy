@@ -15,7 +15,7 @@ const newChains = [
     category: "famires",
     subcategory: "イタリアン",
     official_url: "https://www.saizeriya.co.jp/",
-    description: "低価格で本格イタリアンが楽しめるファミリーレストラン。ヘルシーなサラダやグリル料理も充実。",
+    description: "低価格で本格イタリアンが楽しめるファミリーレストラン。サラダやグリル料理も充実。",
     store_count: 1069,
   },
   {
@@ -60,7 +60,7 @@ const newChains = [
     category: "convenience",
     subcategory: "コンビニ",
     official_url: "https://www.family.co.jp/",
-    description: "ファミチキやフラッペで人気のコンビニ。健康志向商品も充実。",
+    description: "ファミチキやフラッペで人気のコンビニ。栄養成分表示付き商品も充実。",
     store_count: 16500,
   },
   {
@@ -82,7 +82,7 @@ const newChains = [
     category: "ramen",
     subcategory: "ちゃんぽん",
     official_url: "https://www.ringerhut.jp/",
-    description: "長崎ちゃんぽん専門店。国産野菜をたっぷり使用したヘルシーメニューが特徴。",
+    description: "長崎ちゃんぽん専門店。国産野菜をたっぷり使用した野菜メニューが特徴。",
     store_count: 670,
   },
   {
@@ -137,7 +137,7 @@ const newChains = [
     category: "fastfood",
     subcategory: "サンドイッチ",
     official_url: "https://www.subway.co.jp/",
-    description: "野菜たっぷりのサンドイッチ。カスタマイズ自由でヘルシー志向に人気。",
+    description: "野菜たっぷりのサンドイッチ。カスタマイズ自由で栄養成分も確認しやすい。",
     store_count: 180,
   },
   {

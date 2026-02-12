@@ -192,7 +192,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
               </span>
               に、
               <span className="relative inline-block ml-2 md:ml-4 text-accent">
-                健康
+                スマート
                 <svg className="absolute w-[120%] -left-[10%] -bottom-2 md:-bottom-4 h-4 md:h-6 text-orange-200 -z-10 opacity-60" viewBox="0 0 100 20" preserveAspectRatio="none">
                   <path d="M0 15 Q 50 5 100 15" stroke="currentColor" strokeWidth="12" fill="none" />
                 </svg>
@@ -200,7 +200,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
               に。
             </h1>
             <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-              チェーン店{formatNumber(stats.totalMenus)}件のメニューから、あなたの体づくりに最適な食事を見つけます。
+              チェーン店{formatNumber(stats.totalMenus)}件のメニューを、栄養成分・価格で比較できます。
             </p>
           </div>
 
@@ -409,13 +409,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   すべて見る →
                 </Link>
               </div>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {(() => {
                   // 距離ソートの場合、nearbyStoresの距離順でソート
                   if (sortBy === "distance" && nearbyStores.length > 0) {
                     const chainDistanceMap = new Map<string, number>();
                     nearbyStores.forEach(store => {
-                      // 各チェーンの最小距離を記録
                       const existing = chainDistanceMap.get(store.chainId);
                       if (existing === undefined || store.distance < existing) {
                         chainDistanceMap.set(store.chainId, store.distance);
@@ -434,7 +433,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   <div key={result.menu.menuId} className="relative">
                     <Link
                       href={`/menu/${result.menu.menuId}`}
-                      className={`block bg-white dark:bg-zinc-800 rounded-xl p-4 pb-12 border border-zinc-100 dark:border-zinc-700 hover:border-primary transition-all hover:shadow-md relative ${
+                      className={`block bg-white dark:bg-zinc-800 rounded-xl p-3 md:p-4 border border-zinc-100 dark:border-zinc-700 hover:border-primary transition-all hover:shadow-md relative h-full flex flex-col ${
                         index < 3 ? "ring-2 ring-offset-2 " + (
                           index === 0 ? "ring-yellow-400" :
                           index === 1 ? "ring-gray-400" :
@@ -443,7 +442,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                       }`}
                     >
                       {index < 3 && (
-                        <div className={`absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
+                        <div className={`absolute -top-2 -left-2 w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md ${
                           index === 0 ? "bg-yellow-400 text-yellow-900" :
                           index === 1 ? "bg-gray-300 text-gray-700" :
                           "bg-amber-600 text-white"
@@ -451,71 +450,26 @@ export function HeroSection({ stats }: HeroSectionProps) {
                           {index + 1}
                         </div>
                       )}
-                      <div className="flex justify-between items-start mb-2 gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-foreground truncate">{result.menu.menuName}</h3>
-                          <p className="text-xs text-primary">
-                            {result.chain.chainName}
-                            {sortBy === "distance" && nearbyStores.length > 0 && (() => {
-                              const nearestStore = nearbyStores.find(s => s.chainId === result.chain.chainId);
-                              return nearestStore ? (
-                                <span className="ml-2 text-foreground/50">
-                                  📍{formatDistance(nearestStore.distance)}
-                                </span>
-                              ) : null;
-                            })()}
-                          </p>
-                        </div>
+                      <div className="mb-2">
+                        <h3 className="font-bold text-sm text-foreground line-clamp-1">{result.menu.menuName}</h3>
+                        <p className="text-xs text-primary truncate">{result.chain.chainName}</p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-foreground/60">
+                      <div className="flex items-center gap-2 text-[10px] md:text-xs text-foreground/60">
                         <span>P {result.menu.protein}g</span>
                         <span>F {result.menu.fat}g</span>
                         <span>C {result.menu.carb}g</span>
-                        <span className="ml-auto">{result.menu.calories}kcal</span>
                       </div>
-                      {/* 栄養指標 */}
-                      <div className="grid grid-cols-2 gap-1 text-xs mt-2">
-                        {result.carbRatio != null && (
-                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
-                            <span className="text-foreground/60">糖質</span>
-                            <span className="font-medium">{result.carbRatio.toFixed(0)}%</span>
-                          </div>
-                        )}
-                        {result.fatRatio != null && (
-                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
-                            <span className="text-foreground/60">脂質</span>
-                            <span className="font-medium">{result.fatRatio.toFixed(0)}%</span>
-                          </div>
-                        )}
-                        {result.pfcBalanceScore != null && (
-                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
-                            <span className="text-foreground/60">PFC</span>
-                            <span className="font-medium">{result.pfcBalanceScore}</span>
-                          </div>
-                        )}
-                        {result.proteinDensity != null && (
-                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
-                            <span className="text-foreground/60">P密度</span>
-                            <span className="font-medium">{result.proteinDensity.toFixed(1)}g/100kcal</span>
-                          </div>
-                        )}
-                        {result.costPerProtein != null && (
-                          <div className="flex justify-between px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded">
-                            <span className="text-foreground/60">Pコスパ</span>
-                            <span className="font-medium">{result.costPerProtein}円/gP</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-end mt-2 text-xs">
-                        {result.menu.price && (
-                          <span className="font-bold text-primary">{formatPrice(result.menu.price)}</span>
-                        )}
+                      <div className="mt-auto pt-2 flex items-center justify-between text-xs">
+                        <span className="text-foreground/50">{result.menu.calories}kcal</span>
+                        <span className="font-bold text-primary">
+                          {result.menu.price ? formatPrice(result.menu.price) : "-"}
+                        </span>
                       </div>
                     </Link>
                     <FavoriteButton
                       menuId={result.menu.menuId}
                       size="sm"
-                      className="absolute bottom-3 right-3 z-10"
+                      className="absolute top-1 right-1 z-10"
                     />
                   </div>
                 ))}

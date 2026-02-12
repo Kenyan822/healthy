@@ -2,14 +2,13 @@ import { Metadata } from "next";
 import Link from "next/link";
 import {
   getAllStations,
-  getAllStationStats,
 } from "@/lib/db/queries";
 import type { StationSelect } from "@/lib/db/schema";
 
 export const metadata: Metadata = {
-  title: "駅から探す｜ヘルシー検索",
+  title: "駅から探す｜チェンメシ",
   description:
-    "全国199駅の主要駅周辺でヘルシーなチェーン店を探せます。渋谷、新宿、梅田、名古屋など人気エリアの健康的な外食スポットをチェック。",
+    "全国199駅の主要駅周辺のチェーン店を探せます。渋谷、新宿、梅田、名古屋など人気エリアの外食チェーンをチェック。",
 };
 
 // 都道府県ごとにグループ化
@@ -28,20 +27,9 @@ function groupByPrefecture(
   return grouped;
 }
 
-// 距離をフォーマット
-function formatDistance(meters: number | null): string {
-  if (!meters) return "-";
-  if (meters < 1000) {
-    return `${meters}m`;
-  }
-  return `${(meters / 1000).toFixed(1)}km`;
-}
-
 export default function AreaPage() {
   const allStations = getAllStations(200);
   const stationsByPrefecture = groupByPrefecture(allStations);
-  const stationStats = getAllStationStats();
-
   // 人気駅（乗降客数トップ10）
   const popularStations = allStations.slice(0, 10);
 
@@ -109,7 +97,7 @@ export default function AreaPage() {
             駅から探す
           </h1>
           <p className="text-lg text-foreground/70">
-            全国199の主要駅周辺でヘルシーなチェーン店を探せます
+            全国199の主要駅周辺のチェーン店を探せます
           </p>
         </div>
       </section>
@@ -122,7 +110,6 @@ export default function AreaPage() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {popularStations.map((station, index) => {
-              const stats = stationStats[station.stationId];
               return (
                 <Link
                   key={station.stationId}
@@ -139,15 +126,6 @@ export default function AreaPage() {
                     <p className="text-xs text-foreground/50 mt-1">
                       {station.prefecture}
                     </p>
-                    {stats && stats.totalChains > 0 ? (
-                      <p className="text-xs text-primary/80 mt-2 font-medium">
-                        {stats.totalChains}店舗 / 最短{formatDistance(stats.minDistance)}
-                      </p>
-                    ) : station.passengerCount ? (
-                      <p className="text-xs text-foreground/40 mt-2">
-                        約{(station.passengerCount / 10000).toFixed(0)}万人/日
-                      </p>
-                    ) : null}
                   </div>
                 </Link>
               );
@@ -176,7 +154,6 @@ export default function AreaPage() {
                 </h3>
                 <div className="flex flex-wrap gap-3">
                   {stationsByPrefecture[prefecture].map((station) => {
-                    const stats = stationStats[station.stationId];
                     return (
                       <Link
                         key={station.stationId}
@@ -184,11 +161,6 @@ export default function AreaPage() {
                         className="px-4 py-2 bg-background rounded-lg border border-border hover:border-primary hover:text-primary transition-colors text-sm font-medium"
                       >
                         {station.stationName}
-                        {stats && stats.totalChains > 0 && (
-                          <span className="ml-1 text-xs text-foreground/50">
-                            ({stats.totalChains}店・{formatDistance(stats.minDistance)})
-                          </span>
-                        )}
                       </Link>
                     );
                   })}
@@ -202,9 +174,9 @@ export default function AreaPage() {
         <section className="mt-12 p-6 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl">
           <h2 className="font-bold text-lg mb-3">駅から探すとは？</h2>
           <p className="text-foreground/70 text-sm leading-relaxed">
-            お出かけ先や通勤・通学の途中で、ヘルシーな食事ができるチェーン店を探せます。
+            お出かけ先や通勤・通学の途中で、チェーン店のメニューを栄養成分で比較できます。
             各駅のページでは、駅から徒歩2km圏内のチェーン店と距離を表示しています。
-            高タンパク、低糖質、ダイエット向けなど、目的に合わせたメニュー選びにお役立てください。
+            高タンパク、低糖質、低カロリーなど、目的に合わせたメニュー選びにお役立てください。
           </p>
         </section>
       </div>

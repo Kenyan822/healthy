@@ -32,8 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const menuCount = countMenusByChain(store);
-  const title = `${chain.chainName}のヘルシーメニュー｜カロリー・栄養成分一覧`;
-  const description = `${chain.chainName}のメニュー${menuCount}件の栄養成分を掲載。ダイエット・筋トレ・健康維持など目的別にヘルシーメニューを探せます。`;
+  const title = `${chain.chainName}のメニュー｜カロリー・栄養成分一覧`;
+  const description = `${chain.chainName}のメニュー${menuCount}件の栄養成分を掲載。カロリー・タンパク質・PFCなど目的別にメニューを比較できます。`;
 
   return {
     title,
@@ -93,7 +93,7 @@ export default async function StoreTopPage({ params }: Props) {
                 {getCategoryLabel(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}
               </span>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                {chain.chainName}のヘルシーメニュー
+                {chain.chainName}のメニュー一覧
               </h1>
               {chain.description && (
                 <p className="text-lg text-foreground/70 mt-2">

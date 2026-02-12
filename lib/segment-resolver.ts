@@ -97,7 +97,7 @@ export function generateSegmentMetadata(
     case "price":
       return {
         title: `${chainName}の${segment.data.label}メニュー一覧`,
-        description: `${chainName}で${segment.data.label}で食べられるメニューを紹介。お得にヘルシーな食事を。`,
+        description: `${chainName}で${segment.data.label}で食べられるメニューを紹介。栄養成分付きで比較できます。`,
       };
 
     case "timing":

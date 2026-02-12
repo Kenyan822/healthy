@@ -84,6 +84,20 @@ export async function GET(request: NextRequest) {
       const targetF = parseFloat(fat || "0");
       const targetC = parseFloat(carb || "0");
 
+      // NaN, Infinity, マイナス値, 異常値チェック
+      if ([targetP, targetF, targetC].some(v => !Number.isFinite(v) || v < 0)) {
+        return NextResponse.json(
+          { success: false, error: "PFC値は0以上の数値で入力してください" },
+          { status: 400 }
+        );
+      }
+      if ([targetP, targetF, targetC].some(v => v > 1000)) {
+        return NextResponse.json(
+          { success: false, error: "PFC値が大きすぎます" },
+          { status: 400 }
+        );
+      }
+
       // 少なくとも1つは入力されている必要がある
       if (targetP === 0 && targetF === 0 && targetC === 0) {
         return NextResponse.json(

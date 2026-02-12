@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "チェーン店が見つかりません" };
   }
 
-  const title = `${chain.chainName}メニューランキング｜おすすめヘルシーメニュー`;
-  const description = `${chain.chainName}のメニューをヘルシー度・タンパク質量・ダイエット向けなど目的別にランキング。おすすめメニューが一目でわかります。`;
+  const title = `${chain.chainName}メニューランキング｜栄養成分で比較`;
+  const description = `${chain.chainName}のメニューを栄養成分・タンパク質量・カロリーなど目的別にランキング。おすすめメニューが一目でわかります。`;
 
   return {
     title,

@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "ページが見つかりません" };
   }
 
-  const title = `${purpose.name}メニューランキング | 全チェーン店 | ヘルシー検索`;
+  const title = `${purpose.name}メニューランキング | 全チェーン店 | チェンメシ`;
   const description = `${purpose.description}。大戸屋、すき家、やよい軒など人気チェーン店の${purpose.name}メニューをスコア順にランキング。`;
 
   return {

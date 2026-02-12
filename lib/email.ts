@@ -19,7 +19,7 @@ export async function sendEmail(options: SendEmailOptions) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const { data, error } = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'ヘルシー検索 <noreply@resend.dev>',
+      from: process.env.FROM_EMAIL || 'チェンメシ <noreply@resend.dev>',
       to: options.to,
       subject: options.subject,
       html: options.html,

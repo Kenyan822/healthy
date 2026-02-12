@@ -120,72 +120,77 @@ export default async function StoreMenuListPage({ params }: Props) {
         {categories.map((category) => (
           <section key={category} id={category} className="mb-12 scroll-mt-4">
             <h2 className="text-2xl font-bold mb-4">{category}</h2>
-            <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[600px] table-fixed">
-                  <colgroup>
-                    <col />
-                    <col className="w-[120px]" />
-                    <col className="w-[90px]" />
-                    <col className="w-[90px]" />
-                    <col className="w-[90px]" />
-                    <col className="w-[120px]" />
-                    <col className="w-[50px]" />
-                  </colgroup>
-                  <thead className="bg-background/50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">
-                        メニュー名
-                      </th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                        カロリー
-                      </th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                        P
-                      </th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                        F
-                      </th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                        C
-                      </th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                        価格
-                      </th>
-                      <th className="px-2 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {menusByCategory[category].map((menu) => (
-                      <tr
-                        key={menu.menuId}
-                        className="hover:bg-background/30 transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <Link
-                            href={`/menu/${menu.menuId}`}
-                            className="text-primary hover:underline font-medium"
-                          >
-                            {menu.menuName}
-                          </Link>
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums">
-                          {menu.calories}kcal
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums">{menu.protein}g</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{menu.fat}g</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{menu.carb}g</td>
-                        <td className="px-4 py-3 text-right font-medium tabular-nums">
-                          {menu.price ? formatPrice(menu.price) : "-"}
-                        </td>
-                        <td className="px-2 py-3">
-                          <FavoriteButton menuId={menu.menuId} size="sm" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {/* モバイル: カードリスト */}
+            <div className="md:hidden bg-card-bg rounded-xl border border-border overflow-hidden">
+              <div className="divide-y divide-border">
+                {menusByCategory[category].map((menu) => (
+                  <div key={menu.menuId} className="relative">
+                    <Link
+                      href={`/menu/${menu.menuId}`}
+                      className="flex items-start gap-3 p-3 hover:bg-background/30 transition-colors pr-12"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-primary line-clamp-2">{menu.menuName}</p>
+                        <div className="flex items-center justify-between mt-1.5">
+                          <div className="flex flex-wrap gap-x-3 gap-y-0 text-xs text-foreground/60">
+                            <span>{menu.calories}kcal</span>
+                            <span>P{menu.protein}g</span>
+                            <span>F{menu.fat}g</span>
+                            <span>C{menu.carb}g</span>
+                          </div>
+                          <p className="font-bold text-sm w-16 text-right shrink-0 ml-2">{menu.price ? formatPrice(menu.price) : "-"}</p>
+                        </div>
+                      </div>
+                    </Link>
+                    <FavoriteButton
+                      menuId={menu.menuId}
+                      size="sm"
+                      className="absolute top-3 right-3"
+                    />
+                  </div>
+                ))}
               </div>
+            </div>
+
+            {/* デスクトップ: テーブル */}
+            <div className="hidden md:block bg-card-bg rounded-xl border border-border overflow-hidden">
+              <table className="w-full table-fixed">
+                <colgroup>
+                  <col />
+                  <col className="w-[120px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[90px]" />
+                  <col className="w-[120px]" />
+                  <col className="w-[50px]" />
+                </colgroup>
+                <thead className="bg-background/50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground/70">メニュー名</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">カロリー</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">P</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">F</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">C</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">価格</th>
+                    <th className="px-2 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {menusByCategory[category].map((menu) => (
+                    <tr key={menu.menuId} className="hover:bg-background/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <Link href={`/menu/${menu.menuId}`} className="text-primary hover:underline font-medium">{menu.menuName}</Link>
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.calories}kcal</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.protein}g</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.fat}g</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{menu.carb}g</td>
+                      <td className="px-4 py-3 text-right font-medium tabular-nums">{menu.price ? formatPrice(menu.price) : "-"}</td>
+                      <td className="px-2 py-3"><FavoriteButton menuId={menu.menuId} size="sm" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         ))}
@@ -213,10 +218,10 @@ export default async function StoreMenuListPage({ params }: Props) {
               高タンパク
             </Link>
             <Link
-              href={`/${store}/diet`}
+              href={`/${store}/low-calorie`}
               className="px-4 py-2 bg-card-bg rounded-lg border border-border hover:border-primary transition-colors text-sm"
             >
-              ダイエット
+              低カロリー
             </Link>
           </div>
         </section>

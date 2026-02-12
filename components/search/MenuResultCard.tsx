@@ -14,7 +14,7 @@ export function MenuResultCard({ result }: MenuResultCardProps) {
     <div className="relative">
       <Link
         href={`/menu/${menu.menuId}`}
-        className="block bg-card-bg rounded-xl p-5 border border-border hover:border-primary transition-all hover:shadow-md"
+        className="block bg-card-bg rounded-xl p-5 border border-border hover:border-primary transition-all hover:shadow-md overflow-hidden"
       >
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1 min-w-0 pr-10">
@@ -25,7 +25,7 @@ export function MenuResultCard({ result }: MenuResultCardProps) {
           </div>
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-foreground/70 mb-3">
+      <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/70 mb-3">
         <span className="font-medium">P {menu.protein}g</span>
         <span>|</span>
         <span className="font-medium">F {menu.fat}g</span>
@@ -35,7 +35,7 @@ export function MenuResultCard({ result }: MenuResultCardProps) {
       </div>
 
       {/* 栄養指標 */}
-      <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-3 min-w-0">
         {carbRatio != null && (
           <div className="flex justify-between px-2 py-1 bg-background rounded">
             <span className="text-foreground/60">糖質比率</span>
@@ -55,15 +55,15 @@ export function MenuResultCard({ result }: MenuResultCardProps) {
           </div>
         )}
         {proteinDensity != null && (
-          <div className="flex justify-between px-2 py-1 bg-background rounded">
-            <span className="text-foreground/60">P密度</span>
-            <span className="font-medium">{proteinDensity.toFixed(1)}g/100kcal</span>
+          <div className="flex justify-between px-2 py-1 bg-background rounded min-w-0">
+            <span className="text-foreground/60 shrink-0">P密度</span>
+            <span className="font-medium truncate ml-1">{proteinDensity.toFixed(1)}g/100kcal</span>
           </div>
         )}
         {costPerProtein != null && (
-          <div className="flex justify-between px-2 py-1 bg-background rounded">
-            <span className="text-foreground/60">Pコスパ</span>
-            <span className="font-medium">{costPerProtein}円/gP</span>
+          <div className="flex justify-between px-2 py-1 bg-background rounded min-w-0">
+            <span className="text-foreground/60 shrink-0">Pコスパ</span>
+            <span className="font-medium truncate ml-1">{costPerProtein}円/gP</span>
           </div>
         )}
       </div>

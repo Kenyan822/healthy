@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   return (
@@ -8,15 +9,19 @@ export function Footer() {
           {/* Logo & Description */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">H</span>
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="チェンメシ"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
               <span className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
-                ヘルシー検索
+                チェンメシ
               </span>
             </Link>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              チェーン店のメニューをPFC（タンパク質・脂質・炭水化物）で検索できるサイトです。
+              チェーン店のメニューをPFC・価格で比較できるサイトです。
             </p>
           </div>
 
@@ -131,7 +136,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800">
           <p className="text-center text-sm text-zinc-500 dark:text-zinc-500">
-            &copy; {new Date().getFullYear()} ヘルシー検索. All rights reserved.
+            &copy; {new Date().getFullYear()} チェンメシ. All rights reserved.
           </p>
           <p className="text-center text-xs text-zinc-400 dark:text-zinc-600 mt-2">
             ※栄養成分値は各チェーン店の公式情報を元にしています。最新情報は公式サイトをご確認ください。

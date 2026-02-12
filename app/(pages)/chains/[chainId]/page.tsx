@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "チェーン店が見つかりません" };
   }
 
-  const title = `${chain.chainName}のヘルシーメニュー | ヘルシー検索`;
-  const description = `${chain.chainName}のメニューを栄養成分・PFCバランスで検索。ダイエット・筋トレ・健康維持など目的別におすすめメニューをランキング。`;
+  const title = `${chain.chainName}のメニュー栄養成分一覧 | チェンメシ`;
+  const description = `${chain.chainName}のメニューを栄養成分・PFCで比較。カロリー・タンパク質・価格など目的別にメニューをランキング。`;
 
   return {
     title,

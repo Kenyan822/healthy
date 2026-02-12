@@ -5,12 +5,12 @@ import { purposes, allPurposeIds } from "@/lib/filters";
 import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "外食チェーンヘルシーメニューランキング｜目的別おすすめ",
+  title: "外食チェーン メニューランキング｜栄養成分で比較",
   description:
-    "外食チェーン店のヘルシーメニューを目的別にランキング。高タンパク、ダイエット、低糖質など、あなたの目的に合ったメニューが見つかります。",
+    "外食チェーン店のメニューを栄養成分でランキング。高タンパク・低カロリー・低糖質など、目的に合ったメニューが見つかります。",
   openGraph: {
-    title: "外食チェーンヘルシーメニューランキング",
-    description: "目的別におすすめの外食メニューをランキング形式で紹介",
+    title: "外食チェーン メニューランキング",
+    description: "栄養成分で外食メニューをランキング形式で比較",
     type: "website",
   },
 };
@@ -42,7 +42,7 @@ export default function RankingTopPage() {
           </nav>
 
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            外食チェーンヘルシーメニューランキング
+            外食チェーン メニューランキング
           </h1>
           <p className="text-lg text-foreground/70 mt-2">
             目的別・チェーン店別におすすめメニューをランキング

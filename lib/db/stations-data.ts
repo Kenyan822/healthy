@@ -112,7 +112,7 @@ export const tokyoStations = [
     lng: 139.728439,
   },
   {
-    stationId: "shinbashi",
+    stationId: "shimbashi",
     stationName: "新橋",
     stationNameKana: "しんばし",
     stationNameEn: "Shinbashi",

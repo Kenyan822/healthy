@@ -4,12 +4,9 @@ import { PopularKeywords } from "@/components/home/PopularKeywords";
 import { LatestMenus } from "@/components/home/LatestMenus";
 import { QuickAccessGrid } from "@/components/home/QuickAccessGrid";
 import {
-  mockPopularKeywords,
-  mockLatestMenus,
   mockSiteStats,
 } from "@/data/mock";
-import { getGlobalFavoriteRanking } from "@/lib/db/queries";
-import type { Menu } from "@/types";
+import { getGlobalFavoriteRanking, getLatestUpdatedMenus, getPopularKeywords } from "@/lib/db/queries";
 
 export default function Home() {
   // DBからお気に入り登録数が多い人気メニュー上位6件を取得
@@ -34,6 +31,20 @@ export default function Home() {
     favoriteCount: favoriteCount ?? 0,
   }));
 
+  // DBから最新更新メニューを取得
+  const dbLatest = getLatestUpdatedMenus(6);
+  const latestMenus = dbLatest.map(({ menu, chain }) => ({
+    menuId: menu.menuId,
+    chainId: menu.chainId,
+    chainName: chain.chainName,
+    menuName: menu.menuName,
+    price: menu.price,
+    calories: menu.calories,
+    protein: menu.protein,
+    fat: menu.fat,
+    carb: menu.carb,
+  }));
+
   return (
     <div className="flex flex-col">
       {/* Hero Section with Search */}
@@ -49,7 +60,7 @@ export default function Home() {
 
           {/* Right Column - Keywords & Quick Access */}
           <div className="lg:col-span-2 space-y-6">
-            <PopularKeywords keywords={mockPopularKeywords} />
+            <PopularKeywords keywords={getPopularKeywords(8)} />
             <QuickAccessGrid />
           </div>
         </div>
@@ -61,7 +72,7 @@ export default function Home() {
           <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
             最新更新メニュー
           </h2>
-          <LatestMenus menus={mockLatestMenus} />
+          <LatestMenus menus={latestMenus} />
         </div>
       </section>
     </div>

@@ -80,8 +80,6 @@ async function searchPlacesForChain(
         includedType: "restaurant",
       };
 
-      console.log(`[Places API New] Searching for "${keyword}" near ${lat},${lng}`);
-
       const response = await fetch(
         "https://places.googleapis.com/v1/places:searchText",
         {
@@ -103,7 +101,6 @@ async function searchPlacesForChain(
       }
 
       const places = data.places || [];
-      console.log(`[Places API New] Response for "${keyword}": ${places.length} results`);
 
       for (const place of places as PlaceNewResult[]) {
         // 重複チェック
@@ -158,8 +155,6 @@ export async function GET(request: NextRequest) {
     const radius = parseInt(searchParams.get("radius") || "3000", 10); // デフォルト3km
     const limit = parseInt(searchParams.get("limit") || "12", 10);
 
-    console.log("[Nearby API] Request:", { lat, lng, radius, limit });
-
     // バリデーション
     if (isNaN(lat) || isNaN(lng)) {
       return NextResponse.json(
@@ -176,11 +171,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("[Nearby API] API Key exists:", !!GOOGLE_MAPS_API_KEY);
-
     // DBからチェーン店一覧を取得
     const chains = getAllChains();
-    console.log("[Nearby API] Chains from DB:", chains.length);
     const chainMap = new Map(chains.map((c) => [c.chainId, c]));
 
     // 各チェーン店を並行で検索

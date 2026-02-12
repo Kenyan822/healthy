@@ -17,7 +17,7 @@ const triggerMessages: Record<
 > = {
   favorite_limit: {
     title: "お気に入りの上限に達しました",
-    description: "無料プランではお気に入りは5件までです。Plus会員になると無制限に保存できます。",
+    description: "無料プランではお気に入りは2件までです。Plus会員になると無制限に保存できます。",
     icon: "heart",
   },
   location: {

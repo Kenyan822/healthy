@@ -56,9 +56,9 @@ export async function POST(
       .where(eq(userFavorites.userId, userId))
       .get();
 
-    if ((countResult?.value ?? 0) >= 5) {
+    if ((countResult?.value ?? 0) >= 2) {
       return NextResponse.json(
-        { error: "無料プランでは5件までお気に入り登録できます" },
+        { error: "無料プランでは2件までお気に入り登録できます" },
         { status: 403 }
       );
     }
@@ -113,7 +113,7 @@ export async function DELETE(
     // 実際に削除された場合のみデクリメント
     if (result.changes > 0) {
       db.update(menus)
-        .set({ favoriteCount: sql`MAX(COALESCE(${menus.favoriteCount}, 0) - 1, 0)` })
+        .set({ favoriteCount: sql`CASE WHEN COALESCE(${menus.favoriteCount}, 0) > 0 THEN ${menus.favoriteCount} - 1 ELSE 0 END` })
         .where(eq(menus.menuId, menuId))
         .run();
     }

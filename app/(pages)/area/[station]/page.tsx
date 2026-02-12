@@ -57,8 +57,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "駅が見つかりません" };
   }
 
-  const title = `${stationData.stationName}駅周辺のヘルシーランチ・外食チェーン`;
-  const description = `${stationData.stationName}駅（${stationData.prefecture}）周辺で食べられるヘルシーな外食チェーン店を紹介。ダイエット・筋トレ・健康維持に最適なメニューを探せます。`;
+  const title = `${stationData.stationName}駅周辺のランチ・外食チェーン`;
+  const description = `${stationData.stationName}駅（${stationData.prefecture}）周辺の外食チェーン店を紹介。栄養成分・カロリー・価格でメニューを比較できます。`;
 
   return {
     title,
@@ -125,7 +125,7 @@ export default async function StationPage({ params }: Props) {
           </nav>
 
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            {stationData.stationName}駅周辺のヘルシー外食
+            {stationData.stationName}駅周辺の外食チェーン
           </h1>
           <p className="text-lg text-foreground/70 mt-2">
             {stationData.prefecture}｜{stationData.line || ""}
@@ -188,16 +188,6 @@ export default async function StationPage({ params }: Props) {
                       <span className="inline-block bg-primary/10 text-primary px-2 py-1 rounded text-sm font-bold">
                         {formatDistance(stationChain.distanceMeters)}
                       </span>
-                      {stationChain.rating && (
-                        <p className="text-xs text-foreground/60 mt-1">
-                          ★ {stationChain.rating.toFixed(1)}
-                          {stationChain.userRatingsTotal && (
-                            <span className="ml-1">
-                              ({stationChain.userRatingsTotal})
-                            </span>
-                          )}
-                        </p>
-                      )}
                     </div>
                   </div>
                   {stationChain.placeAddress && (

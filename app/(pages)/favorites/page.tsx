@@ -91,7 +91,7 @@ export default function FavoritesPage() {
   }
 
   const plan = (session?.user as { plan?: string })?.plan || "free";
-  const maxFavorites = plan === "free" ? 5 : "無制限";
+  const maxFavorites = plan === "free" ? 2 : "無制限";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -128,7 +128,7 @@ export default function FavoritesPage() {
                 <p className="text-xs text-[#433422]/60 mb-1">
                   {favorite.chainName}
                 </p>
-                <h3 className="font-medium text-[#433422] mb-2">
+                <h3 className="font-medium text-primary mb-2 hover:underline">
                   {favorite.menuName}
                 </h3>
                 <div className="flex gap-4 text-sm text-[#433422]/70">
@@ -157,10 +157,10 @@ export default function FavoritesPage() {
         </div>
       )}
 
-      {plan === "free" && count >= 5 && (
+      {plan === "free" && count >= 2 && (
         <div className="mt-6 p-4 bg-primary/10 rounded-xl text-center">
           <p className="text-sm text-foreground mb-3">
-            無料プランではお気に入りは5件までです
+            無料プランではお気に入りは2件までです
           </p>
           <Link
             href="/pricing"

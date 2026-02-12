@@ -18,17 +18,20 @@ export function Header() {
         <div className="flex items-center justify-between h-16 md:h-20 gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="relative flex items-center justify-center w-10 h-10 bg-primary rounded-2xl rotate-3 transition-transform group-hover:rotate-6 shadow-sm">
-              <span className="text-white font-rounded font-bold text-xl">
-                H
-              </span>
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="チェンメシ"
+              width={36}
+              height={36}
+              className="rounded-lg"
+              priority
+            />
             <div className="flex flex-col -space-y-1">
               <span className="font-rounded font-bold text-lg md:text-xl text-foreground tracking-tight">
-                ヘルシー検索
+                チェンメシ
               </span>
               <span className="text-[10px] text-primary font-bold tracking-wider">
-                HEALTHY SEARCH
+                CHENMESHI
               </span>
             </div>
           </Link>

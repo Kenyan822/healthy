@@ -24,7 +24,7 @@ export const purposes = {
     description: "カロリーを抑えたメニュー",
     sortField: "calories" as const,
     sortOrder: "asc" as const,
-    keywords: ["低カロリー", "ダイエット", "カロリー制限"],
+    keywords: ["低カロリー", "カロリー制限", "カロリー控えめ"],
   },
   "low-carb": {
     id: "low-carb",
@@ -48,7 +48,7 @@ export const purposes = {
     description: "PFCバランスの良いメニュー",
     sortField: "pfcBalance" as const,
     sortOrder: "desc" as const,
-    keywords: ["バランス", "健康", "栄養バランス"],
+    keywords: ["バランス", "PFC", "PFCバランス"],
   },
   "cost-performance": {
     id: "cost-performance",

@@ -17,7 +17,7 @@ import { stationIds } from "@/lib/db/stations-data";
 
 // サイトのベースURL
 const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL || "https://healthy-chain.jp";
+  process.env.NEXT_PUBLIC_BASE_URL || "https://chenmeshi.com";
 
 // 最低メニュー数（品質管理）
 const MIN_MENU_COUNT = 3;
