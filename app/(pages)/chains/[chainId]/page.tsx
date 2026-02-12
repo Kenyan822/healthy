@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "チェーン店が見つかりません" };
   }
 
-  const title = `${chain.chainName}のメニュー栄養成分一覧 | チェンメシ`;
+  const title = `${chain.chainName}のメニュー栄養成分一覧`;
   const description = `${chain.chainName}のメニューを栄養成分・PFCで比較。カロリー・タンパク質・価格など目的別にメニューをランキング。`;
 
   return {
@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "website",
     },
+    alternates: { canonical: `/chains/${chainId}` },
   };
 }
 

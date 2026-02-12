@@ -6,9 +6,10 @@ import {
 import type { StationSelect } from "@/lib/db/schema";
 
 export const metadata: Metadata = {
-  title: "駅から探す｜チェンメシ",
+  title: "駅から探す",
   description:
     "全国199駅の主要駅周辺のチェーン店を探せます。渋谷、新宿、梅田、名古屋など人気エリアの外食チェーンをチェック。",
+  alternates: { canonical: "/area" },
 };
 
 // 都道府県ごとにグループ化

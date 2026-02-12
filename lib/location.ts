@@ -1,10 +1,7 @@
-import type { UserLocation, NearbyStore } from "@/types/search";
-
-// 環境変数からAPIキーを取得
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+import type { UserLocation } from "@/types/search";
 
 // 位置情報機能が有効かどうか
-export const LOCATION_FEATURE_ENABLED = !!GOOGLE_MAPS_API_KEY;
+export const LOCATION_FEATURE_ENABLED = !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 /**
  * ブラウザのGeolocation APIで現在地を取得
@@ -56,73 +53,6 @@ export function calculateDistance(
       Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
-}
-
-/**
- * Google Places APIで近くの店舗を検索
- * @param chainName チェーン店名
- * @param lat 緯度
- * @param lng 経度
- * @param radius 検索半径（メートル）
- */
-export async function findNearbyStores(
-  chainName: string,
-  lat: number,
-  lng: number,
-  radius: number = 5000
-): Promise<NearbyStore[]> {
-  if (!GOOGLE_MAPS_API_KEY) {
-    console.warn("Google Maps API key is not configured");
-    return [];
-  }
-
-  try {
-    const url = new URL(
-      "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
-    );
-    url.searchParams.set("location", `${lat},${lng}`);
-    url.searchParams.set("radius", radius.toString());
-    url.searchParams.set("keyword", chainName);
-    url.searchParams.set("type", "restaurant");
-    url.searchParams.set("key", GOOGLE_MAPS_API_KEY);
-    url.searchParams.set("language", "ja");
-
-    const response = await fetch(url.toString());
-    const data = await response.json();
-
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      console.error("Google Places API error:", data.status);
-      return [];
-    }
-
-    const results: NearbyStore[] = (data.results || []).map(
-      (place: {
-        place_id: string;
-        name: string;
-        vicinity: string;
-        geometry: { location: { lat: number; lng: number } };
-      }) => ({
-        chainId: "", // チェーンIDは別途マッピングが必要
-        storeName: place.name,
-        address: place.vicinity,
-        lat: place.geometry.location.lat,
-        lng: place.geometry.location.lng,
-        distance: calculateDistance(
-          lat,
-          lng,
-          place.geometry.location.lat,
-          place.geometry.location.lng
-        ),
-        placeId: place.place_id,
-      })
-    );
-
-    // 距離順にソート
-    return results.sort((a, b) => a.distance - b.distance);
-  } catch (error) {
-    console.error("Error fetching nearby stores:", error);
-    return [];
-  }
 }
 
 /**

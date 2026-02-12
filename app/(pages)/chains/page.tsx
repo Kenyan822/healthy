@@ -5,9 +5,12 @@ import { getCategoryLabel, getCategoryColor } from "@/lib/utils";
 import type { ChainCategory } from "@/types";
 
 export const metadata: Metadata = {
-  title: "チェーン店一覧 | チェンメシ",
+  title: "チェーン店一覧",
   description:
     "大戸屋、やよい軒、すき家、松屋、吉野家など、人気チェーン店のメニューを栄養成分・PFCで比較。",
+  alternates: {
+    canonical: "/chains",
+  },
 };
 
 export default function ChainsPage() {

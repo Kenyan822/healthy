@@ -38,6 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     openGraph: { title, description, type: "website" },
     robots: menuCount >= 3 ? { index: true, follow: true } : { index: false, follow: true },
+    alternates: { canonical: `/${store}/menu` },
   };
 }
 

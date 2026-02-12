@@ -44,6 +44,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
     },
     robots: menuCount >= 3 ? { index: true, follow: true } : { index: false, follow: true },
+    alternates: {
+      canonical: `/${store}`,
+    },
   };
 }
 

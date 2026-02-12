@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     description: "栄養成分で外食メニューをランキング形式で比較",
     type: "website",
   },
+  alternates: {
+    canonical: "/ranking",
+  },
 };
 
 export default function RankingTopPage() {

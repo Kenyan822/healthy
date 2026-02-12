@@ -112,6 +112,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     robots: menuCount >= 3 || resolved.type === "menu"
       ? { index: true, follow: true }
       : { index: false, follow: true },
+    alternates: { canonical: `/${store}/${segment}` },
   };
 }
 

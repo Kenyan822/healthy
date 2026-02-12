@@ -17,8 +17,14 @@ const zenMaruGothic = Zen_Maru_Gothic({
   weight: ["500", "700"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://chenmeshi.com";
+
 export const metadata: Metadata = {
-  title: "チェンメシ | チェーン店メニューの栄養成分・価格比較",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: "チェンメシ | チェーン店メニューの栄養成分・価格比較",
+    template: "%s | チェンメシ",
+  },
   description:
     "チェーン店のメニューをPFC（タンパク質・脂質・炭水化物）や価格で比較。松屋・吉野家・すき家など人気チェーンの栄養成分が一目でわかります。",
   keywords: [
@@ -33,6 +39,17 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.svg",
     apple: "/logo.svg",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: "チェンメシ",
+  },
+  twitter: {
+    card: "summary",
+  },
+  alternates: {
+    canonical: "/",
   },
 };
 

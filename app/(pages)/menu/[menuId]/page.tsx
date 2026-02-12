@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { menu, chain } = result;
-  const title = `${menu.menuName}の栄養成分・カロリー | ${chain.chainName} | チェンメシ`;
+  const title = `${menu.menuName}の栄養成分・カロリー | ${chain.chainName}`;
   const description = `${chain.chainName}の${menu.menuName}の栄養成分。カロリー${menu.calories}kcal、タンパク質${menu.protein}g、脂質${menu.fat}g、炭水化物${menu.carb}g。PFC・価格で他メニューと比較できます。`;
 
   return {
@@ -42,6 +42,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
+    },
+    alternates: {
+      canonical: `/menu/${menuId}`,
     },
   };
 }
@@ -118,8 +121,60 @@ export default async function MenuDetailPage({ params }: Props) {
 
   const recommendations = getRecommendations(menu);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "MenuItem",
+    name: menu.menuName,
+    offers: menu.price
+      ? {
+          "@type": "Offer",
+          price: menu.price,
+          priceCurrency: "JPY",
+        }
+      : undefined,
+    nutrition: {
+      "@type": "NutritionInformation",
+      calories: `${menu.calories} cal`,
+      proteinContent: `${menu.protein} g`,
+      fatContent: `${menu.fat} g`,
+      carbohydrateContent: `${menu.carb} g`,
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "ホーム",
+        item: "https://chenmeshi.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: chain.chainName,
+        item: `https://chenmeshi.com/${chain.chainId}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: menu.menuName,
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <ViewCounter menuId={menuId} />
       {/* ヒーローセクション */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-8 md:py-12">
