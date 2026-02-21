@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Noto_Sans_JP, Zen_Maru_Gothic } from "next/font/google";
-import Script from "next/script";
 import { Providers } from "@/components/Providers";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CookieConsent } from "@/components/layout/CookieConsent";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -61,22 +61,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      {process.env.NEXT_PUBLIC_GA_ID && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
-            `}
-          </Script>
-        </>
-      )}
       <body
         className={`${notoSansJP.variable} ${zenMaruGothic.variable} antialiased bg-[#faf9f6] text-[#433422]`}
       >
@@ -84,6 +68,7 @@ export default function RootLayout({
           <Header />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <CookieConsent />
         </Providers>
       </body>
     </html>

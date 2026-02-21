@@ -129,6 +129,30 @@ export function Footer() {
                   お問い合わせ・情報提供
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/disclaimer"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  免責事項
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/cookie-policy"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  クッキーポリシー
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/legal/tokushoho"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                >
+                  特定商取引法に基づく表記
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
