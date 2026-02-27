@@ -206,7 +206,7 @@ export default async function StationPage({ params }: Props) {
                     </Link>
                     {stationChain.placeId && (
                       <a
-                        href={`https://www.google.com/maps/place/?q=place_id:${stationChain.placeId}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stationChain.placeName ?? '')}&query_place_id=${stationChain.placeId}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 text-center text-sm py-2 px-3 bg-zinc-100 dark:bg-zinc-800 text-foreground/70 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"

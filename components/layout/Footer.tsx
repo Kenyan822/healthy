@@ -165,6 +165,9 @@ export function Footer() {
           <p className="text-center text-xs text-zinc-400 dark:text-zinc-600 mt-2">
             ※栄養成分値は各チェーン店の公式情報を元にしています。最新情報は公式サイトをご確認ください。
           </p>
+          <p className="text-center text-xs text-zinc-400 dark:text-zinc-600 mt-1">
+            ※当サイトは各チェーン店とは一切関係のない非公式サービスです。
+          </p>
         </div>
       </div>
     </footer>
