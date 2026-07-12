@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, unique, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, unique, primaryKey, index } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 // チェーン店テーブル
@@ -55,6 +55,27 @@ export const menus = sqliteTable("menus", {
   createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
   updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP"),
 });
+
+// 価格履歴テーブル（価格改定の時系列記録。seed実行時に価格変化を検知して追記）
+export const priceHistory = sqliteTable(
+  "price_history",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    menuId: text("menu_id").notNull(),
+    chainId: text("chain_id").notNull(),
+    oldPrice: integer("old_price"), // 新規メニューはnull
+    newPrice: integer("new_price").notNull(),
+    source: text("source").notNull().default("seed"), // seed | scraper | manual
+    recordedAt: text("recorded_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => ({
+    menuIdx: index("idx_price_history_menu").on(table.menuId),
+    chainRecordedIdx: index("idx_price_history_chain_recorded").on(
+      table.chainId,
+      table.recordedAt
+    ),
+  })
+);
 
 // 駅マスターテーブル
 export const stations = sqliteTable("stations", {
@@ -196,3 +217,5 @@ export type UserFavoriteInsert = typeof userFavorites.$inferInsert;
 export type UserFavoriteSelect = typeof userFavorites.$inferSelect;
 export type ContactInsert = typeof contacts.$inferInsert;
 export type ContactSelect = typeof contacts.$inferSelect;
+export type PriceHistoryInsert = typeof priceHistory.$inferInsert;
+export type PriceHistorySelect = typeof priceHistory.$inferSelect;

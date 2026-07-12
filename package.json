@@ -19,6 +19,8 @@
     "seed:nakau": "npx tsx scripts/seed-nakau.ts",
     "seed:ringerhut": "npx tsx scripts/seed-ringerhut.ts",
     "seed:ootoya": "npx tsx scripts/seed-ootoya.ts",
+    "seed:mcdonalds": "npx tsx scripts/seed-mcdonalds.ts",
+    "seed:kfc": "npx tsx scripts/seed-kfc.ts",
     "scrape:ootoya": "npx tsx scripts/scrape/ootoya.ts",
     "scrape:ootoya:dry": "npx tsx scripts/scrape/ootoya.ts --dry-run",
     "scrape:matsuya": "npx tsx scripts/scrape/matsuya-prices.ts",
