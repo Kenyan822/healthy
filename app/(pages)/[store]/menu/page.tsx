@@ -7,6 +7,7 @@ import {
   getAllChains,
   countMenusByChain,
 } from "@/lib/db/queries";
+import { buildMenuItemListJsonLd, buildBreadcrumbJsonLd } from "@/lib/jsonld";
 import { formatPrice, sortCategoriesByPriority } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
@@ -67,8 +68,26 @@ export default async function StoreMenuListPage({ params }: Props) {
 
   const categories = sortCategoriesByPriority(store, Object.keys(menusByCategory));
 
+  const itemListJsonLd = buildMenuItemListJsonLd(
+    `${chain.chainName}のメニュー一覧`,
+    menus
+  );
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "ホーム", path: "" },
+    { name: chain.chainName, path: `/${store}` },
+    { name: "メニュー一覧" },
+  ]);
+
   return (
     <main className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* ヒーローセクション */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
         <div className="container mx-auto px-4">

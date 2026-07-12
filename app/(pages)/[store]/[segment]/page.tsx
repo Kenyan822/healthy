@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   getChainById,
   getAllChains,
+  getMenusByChain,
   getMenusBySeoPurpose,
   getMenusByNutritionFilter,
   getMenusByPriceFilter,
@@ -25,6 +26,7 @@ import {
   allTimingFilterIds,
 } from "@/lib/filters";
 import { resolveSegment, generateSegmentMetadata } from "@/lib/segment-resolver";
+import { buildMenuItemListJsonLd, buildBreadcrumbJsonLd } from "@/lib/jsonld";
 import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 
@@ -161,6 +163,13 @@ async function PurposeView({
 
   return (
     <main className="min-h-screen bg-background">
+      <SegmentJsonLd
+        store={store}
+        chainName={chain.chainName}
+        pageName={purpose.name}
+        listName={`${chain.chainName}の${purpose.name}メニュー`}
+        menus={menus}
+      />
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
         <div className="container mx-auto px-4">
           <Breadcrumb store={store} chainName={chain.chainName} current={purpose.name} />
@@ -198,6 +207,13 @@ async function NutritionView({
 
   return (
     <main className="min-h-screen bg-background">
+      <SegmentJsonLd
+        store={store}
+        chainName={chain.chainName}
+        pageName={filter.label}
+        listName={`${chain.chainName}の${filter.label}メニュー`}
+        menus={menus}
+      />
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
         <div className="container mx-auto px-4">
           <Breadcrumb store={store} chainName={chain.chainName} current={filter.label} />
@@ -236,6 +252,13 @@ async function PriceView({
 
   return (
     <main className="min-h-screen bg-background">
+      <SegmentJsonLd
+        store={store}
+        chainName={chain.chainName}
+        pageName={filter.label}
+        listName={`${chain.chainName}の${filter.label}メニュー`}
+        menus={menus}
+      />
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
         <div className="container mx-auto px-4">
           <Breadcrumb store={store} chainName={chain.chainName} current={filter.label} />
@@ -274,6 +297,13 @@ async function TimingView({
 
   return (
     <main className="min-h-screen bg-background">
+      <SegmentJsonLd
+        store={store}
+        chainName={chain.chainName}
+        pageName={filter.label}
+        listName={`${chain.chainName}の${filter.label}`}
+        menus={menus}
+      />
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 py-12">
         <div className="container mx-auto px-4">
           <Breadcrumb store={store} chainName={chain.chainName} current={filter.label} />
@@ -296,6 +326,40 @@ async function TimingView({
 // ============================
 // 共通コンポーネント
 // ============================
+function SegmentJsonLd({
+  store,
+  chainName,
+  pageName,
+  listName,
+  menus,
+}: {
+  store: string;
+  chainName: string;
+  pageName: string;
+  listName: string;
+  menus: MenuSelect[];
+}) {
+  const itemListJsonLd = buildMenuItemListJsonLd(listName, menus);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "ホーム", path: "" },
+    { name: chainName, path: `/${store}` },
+    { name: pageName },
+  ]);
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+    </>
+  );
+}
+
 function Breadcrumb({
   store,
   chainName,
@@ -480,19 +544,83 @@ function MenuTable({
   );
 }
 
-function RelatedLinks({
+async function RelatedLinks({
   store,
   currentSegment,
 }: {
   store: string;
   currentSegment: string;
 }) {
-  const relatedPurposes = allPurposeIds.filter((id) => id !== currentSegment).slice(0, 3);
+  // チェーンの全メニューを1クエリで取得し、3件以上該当するフィルターだけリンクする
+  // （リンク先がnoindex（3件未満）になる組み合わせを内部リンクから除外するため）
+  const menus = await getMenusByChain(store);
+
+  const qualifiedNutrition = allNutritionFilterIds.filter((id) => {
+    const filter = nutritionFilters[id];
+    const count = menus.filter((menu) =>
+      "min" in filter
+        ? menu[filter.type] >= filter.min
+        : menu[filter.type] <= filter.max
+    ).length;
+    return count >= 3;
+  });
+
+  const qualifiedPrice = allPriceFilterIds.filter((id) => {
+    const filter = priceFilters[id];
+    const count = menus.filter(
+      (menu) => menu.price != null && menu.price <= filter.max
+    ).length;
+    return count >= 3;
+  });
+
+  const qualifiedTiming = allTimingFilterIds.filter((id) => {
+    const filter = timingFilters[id];
+    const count = menus.filter(
+      (menu) => menu.timing === filter.value || menu.timing === "anytime"
+    ).length;
+    return count >= 3;
+  });
+
+  const linkGroups = [
+    {
+      heading: "目的から探す",
+      links: allPurposeIds
+        .filter((id) => id !== currentSegment)
+        .map((id) => ({ href: `/${store}/${id}`, label: purposes[id].name })),
+    },
+    {
+      heading: "栄養成分から探す",
+      links: qualifiedNutrition
+        .filter((id) => id !== currentSegment)
+        .map((id) => ({
+          href: `/${store}/${id}`,
+          label: nutritionFilters[id].label,
+        })),
+    },
+    {
+      heading: "価格から探す",
+      links: qualifiedPrice
+        .filter((id) => id !== currentSegment)
+        .map((id) => ({
+          href: `/${store}/${id}`,
+          label: priceFilters[id].label,
+        })),
+    },
+    {
+      heading: "時間帯から探す",
+      links: qualifiedTiming
+        .filter((id) => id !== currentSegment)
+        .map((id) => ({
+          href: `/${store}/${id}`,
+          label: timingFilters[id].label,
+        })),
+    },
+  ].filter((group) => group.links.length > 0);
 
   return (
     <section className="mt-8 pt-8 border-t border-border">
       <h2 className="text-xl font-bold mb-4">関連ページ</h2>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 mb-6">
         <Link
           href={`/${store}`}
           className="px-4 py-2 bg-card-bg rounded-lg border border-border hover:border-primary transition-colors text-sm"
@@ -511,16 +639,25 @@ function RelatedLinks({
         >
           ランキング
         </Link>
-        {relatedPurposes.map((purposeId) => (
-          <Link
-            key={purposeId}
-            href={`/${store}/${purposeId}`}
-            className="px-4 py-2 bg-card-bg rounded-lg border border-border hover:border-primary transition-colors text-sm"
-          >
-            {purposes[purposeId].name}
-          </Link>
-        ))}
       </div>
+      {linkGroups.map((group) => (
+        <div key={group.heading} className="mb-4">
+          <h3 className="text-sm font-medium text-foreground/60 mb-2">
+            {group.heading}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {group.links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="px-4 py-2 bg-card-bg rounded-lg border border-border hover:border-primary transition-colors text-sm"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </section>
   );
 }

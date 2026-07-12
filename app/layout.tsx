@@ -4,6 +4,7 @@ import { Providers } from "@/components/Providers";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { buildWebSiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -64,6 +65,12 @@ export default function RootLayout({
       <body
         className={`${notoSansJP.variable} ${zenMaruGothic.variable} antialiased bg-[#faf9f6] text-[#433422]`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildWebSiteJsonLd()),
+          }}
+        />
         <Providers>
           <Header />
           <main className="min-h-screen">{children}</main>
