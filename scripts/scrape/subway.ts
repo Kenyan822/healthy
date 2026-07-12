@@ -4,6 +4,11 @@
  * 公式サイトからメニューデータを取得し、scripts/data/subway-menus.ts を生成する。
  * DB投入は seed:subway で別途実行。
  *
+ * 2026-07: サイト全面リニューアル対応（subway.co.jp / microCMS構成）
+ * - 一覧: /menu/category/{slug}/ の div.card
+ * - 詳細: /menu/{slug}/ の table.data-table（栄養は単一値、サイズ別は価格のみ）
+ * - menu_id は既存データファイルと menu_name で突合して維持する（URL資産保護）
+ *
  * 実行: npx tsx scripts/scrape/subway.ts [--dry-run]
  *   --dry-run: 詳細ページ5件のみ取得してレポート表示（ファイル生成なし）
  */
@@ -13,10 +18,10 @@ import * as path from "path";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import * as readline from "readline";
+import { subwayMenuData as existingMenuData } from "../data/subway-menus";
 
 // scripts/はtsconfig excludeのためcheerio型をローカル定義
 type CheerioDoc = ReturnType<typeof cheerio.load>;
-type CheerioEl = ReturnType<CheerioDoc["root"]>;
 
 // ============================
 // 設定
@@ -24,7 +29,7 @@ type CheerioEl = ReturnType<CheerioDoc["root"]>;
 
 const CONFIG = {
   chainId: "subway",
-  baseUrl: "https://www.subway.co.jp",
+  baseUrl: "https://subway.co.jp",
   rateLimit: 1000, // 1秒間隔
   batchSize: 10,
   batchDelay: 5000, // バッチ間5秒
@@ -32,14 +37,16 @@ const CONFIG = {
   timeout: 30000,
 };
 
-// 一覧ページのカテゴリ設定
+// 一覧ページのカテゴリ設定（partytrayは複数人向けのため除外）
 const MENU_PAGES = [
-  { url: "/menu/sandwich/", category: "サンドイッチ", slug: "sandwich" },
-  { url: "/menu/salad/", category: "サラダ", slug: "salad" },
-  { url: "/menu/sidemenu/", category: "サイドメニュー", slug: "side" },
-  { url: "/menu/drink/", category: "ドリンク", slug: "drink" },
-  { url: "/menu/morning/", category: "モーニング", slug: "morning" },
-  { url: "/menu/kids/", category: "キッズ", slug: "kids" },
+  { url: "/menu/category/sandwich/", category: "サンドイッチ", slug: "sandwich" },
+  { url: "/menu/category/snacksand/", category: "スナックサンド", slug: "snacksand" },
+  { url: "/menu/category/salad/", category: "サラダ", slug: "salad" },
+  { url: "/menu/category/sidemenu/", category: "サイドメニュー", slug: "side" },
+  { url: "/menu/category/drink/", category: "ドリンク", slug: "drink" },
+  { url: "/menu/category/morning/", category: "モーニング", slug: "morning" },
+  { url: "/menu/category/kids/", category: "キッズ", slug: "kids" },
+  { url: "/menu/category/topping_menu/", category: "トッピング", slug: "topping" },
 ];
 
 // ============================
@@ -47,9 +54,9 @@ const MENU_PAGES = [
 // ============================
 
 interface ListItem {
-  name: string;
+  name: string; // サイズ付き表示名（例: アイスコーヒー（M））
   price: number | null;
-  size: string | null; // サイズ情報 (S/M/L等)
+  size: string | null;
   detailUrl: string;
   category: string;
   categorySlug: string;
@@ -60,15 +67,10 @@ interface NutritionData {
   protein: number;
   fat: number;
   carb: number;
-  sodium: number;
+  sodium: number; // 食塩相当量(g)
 }
 
-interface ScrapedItem {
-  name: string;
-  price: number | null;
-  detailUrl: string;
-  category: string;
-  categorySlug: string;
+interface ScrapedItem extends ListItem {
   calories: number;
   protein: number;
   fat: number;
@@ -110,7 +112,7 @@ function prompt(question: string): Promise<string> {
   });
 }
 
-async function fetchPage(url: string): Promise<ReturnType<typeof cheerio.load>> {
+async function fetchPage(url: string): Promise<CheerioDoc> {
   for (let attempt = 1; attempt <= CONFIG.maxRetries; attempt++) {
     try {
       const response = await axios.get(url, {
@@ -141,9 +143,6 @@ async function fetchPage(url: string): Promise<ReturnType<typeof cheerio.load>> 
   throw new Error(`Failed to fetch ${url}`);
 }
 
-/**
- * price_yenテキストから価格を抽出
- */
 function extractPrice(text: string): number | null {
   const match = text.match(/[¥￥]([0-9,]+)/);
   if (!match) return null;
@@ -152,13 +151,20 @@ function extractPrice(text: string): number | null {
   return price;
 }
 
+// 「368kcal」「14.3g」「901mg」等から数値を抽出
+function extractNumeric(text: string): number {
+  const match = text.replace(/,/g, "").match(/([0-9.]+)/);
+  return match ? parseFloat(match[1]) : 0;
+}
+
 // ============================
 // 一覧ページスクレイピング
 // ============================
 
 /**
- * 一覧ページからメニューアイテムを抽出
- * サイズ別のものは個別エントリとして返す
+ * 一覧ページの div.card からメニューを抽出。
+ * ラベルが（S）（M）（L）のものはサイズ別エントリ、
+ * フットロングはスキップ（レギュラーを採用）。
  */
 function extractMenuItems(
   $: CheerioDoc,
@@ -167,99 +173,71 @@ function extractMenuItems(
 ): ListItem[] {
   const items: ListItem[] = [];
 
-  $("ul.productList li a").each((_index, element) => {
-    const $el = $(element);
+  $("div.card").each((_index, element) => {
+    const $card = $(element);
 
-    const menuName = $el.find("h4.product_name_ja").text().trim();
-    if (!menuName) return;
-
-    const href = $el.attr("href");
-    if (!href || !href.endsWith(".html")) return;
+    const $nameLink = $card.find("h2.name a").first();
+    const menuName = $nameLink.text().trim();
+    const href = $nameLink.attr("href") || $card.attr("data-href");
+    if (!menuName || !href) return;
 
     const detailUrl = href.startsWith("http")
       ? href
       : `${CONFIG.baseUrl}${href}`;
 
-    // price_area を全て取得
-    const priceAreas = $el.find(".price_area");
-    const sizeEntries: { size: string | null; price: number | null }[] = [];
-
-    priceAreas.each((_i, priceArea) => {
-      const $pa = $(priceArea);
-      const priceName = $pa.find(".price_name").text().trim();
-      const priceYenText = $pa.find(".price_yen").text().trim();
-
-      // 空の price_area はスキップ
-      if (!priceYenText && !priceName) return;
-
-      const price = extractPrice(priceYenText);
-
-      if (priceName === "フットロング") {
-        // フットロングはスキップ（レギュラーを採用）
-        return;
-      }
-
-      if (
-        priceName === "（S）" ||
-        priceName === "（M）" ||
-        priceName === "（L）"
-      ) {
-        // サイズ別 → 個別エントリ
-        const sizeLabel = priceName.replace(/[（）]/g, "");
-        sizeEntries.push({ size: sizeLabel, price });
-      } else if (
-        priceName === "単品" ||
-        priceName === "レギュラー" ||
-        !priceName
-      ) {
-        sizeEntries.push({ size: null, price });
-      }
+    // dt.label / dd.price のペアを順に読む
+    const entries: { label: string; price: number | null }[] = [];
+    $card.find(".prices dl.items").each((_i, dl) => {
+      const $dl = $(dl);
+      const labels: string[] = [];
+      const prices: (number | null)[] = [];
+      $dl.find("dt.label").each((_j, dt) => labels.push($(dt).text().trim()));
+      $dl.find("dd.price").each((_j, dd) =>
+        prices.push(extractPrice($(dd).text().trim()))
+      );
+      labels.forEach((label, idx) => {
+        entries.push({ label, price: prices[idx] ?? null });
+      });
     });
 
-    if (sizeEntries.length === 0) {
-      // price_areaがない or 全て空 → 価格なしで1件登録
-      items.push({
-        name: menuName,
-        price: null,
-        size: null,
-        detailUrl,
-        category,
-        categorySlug,
-      });
-    } else if (sizeEntries.some((e) => e.size !== null)) {
-      // サイズ別エントリがある場合
+    const sizeEntries = entries.filter((e) =>
+      /^（?[SML]）?$/.test(e.label)
+    );
+
+    if (sizeEntries.length > 0) {
+      // サイズ別（主にドリンク）
       for (const entry of sizeEntries) {
-        if (entry.size) {
-          items.push({
-            name: `${menuName}（${entry.size}）`,
-            price: entry.price,
-            size: entry.size,
-            detailUrl,
-            category,
-            categorySlug,
-          });
-        }
+        const size = entry.label.replace(/[（）]/g, "");
+        items.push({
+          name: `${menuName}（${size}）`,
+          price: entry.price,
+          size,
+          detailUrl,
+          category,
+          categorySlug,
+        });
       }
-    } else {
-      // サイズなし（単品/レギュラー等）→ 最初の有効な価格を採用
-      const validEntry = sizeEntries.find((e) => e.price !== null) || sizeEntries[0];
-      items.push({
-        name: menuName,
-        price: validEntry.price,
-        size: null,
-        detailUrl,
-        category,
-        categorySlug,
-      });
+      return;
     }
+
+    // レギュラー優先（フットロングはスキップ）、なければ最初の価格
+    const regular =
+      entries.find((e) => e.label === "レギュラー" || e.label === "単品") ||
+      entries.find((e) => e.label !== "フットロング");
+
+    items.push({
+      name: menuName,
+      price: regular?.price ?? null,
+      size: null,
+      detailUrl,
+      category,
+      categorySlug,
+    });
   });
 
   return items;
 }
 
-/**
- * 全一覧ページをスクレイピング
- */
 async function scrapeListPages(): Promise<ListItem[]> {
   const allItems: ListItem[] = [];
 
@@ -285,287 +263,105 @@ async function scrapeListPages(): Promise<ListItem[]> {
 }
 
 // ============================
-// パン/トッピング/ソースのリンク収集
-// ============================
-
-/**
- * サンドイッチ詳細ページからパン/トッピング/ソースのリンクを収集
- */
-async function collectCustomizeLinks(
-  sampleDetailUrl: string
-): Promise<ListItem[]> {
-  console.log("\n=== カスタマイズ素材のリンクを収集 ===");
-  console.log(`  Source: ${sampleDetailUrl}`);
-
-  const $ = await fetchPage(sampleDetailUrl);
-  const items: ListItem[] = [];
-  const seen = new Set<string>();
-
-  const linkPatterns: { pattern: string; category: string; slug: string }[] = [
-    { pattern: "/menu/bread/", category: "パン", slug: "bread" },
-    {
-      pattern: "/menu/topping_menu/",
-      category: "トッピング",
-      slug: "topping",
-    },
-    { pattern: "/menu/sauce/", category: "ソース", slug: "sauce" },
-  ];
-
-  for (const { pattern, category, slug } of linkPatterns) {
-    $(`a[href*="${pattern}"]`).each((_i, el) => {
-      const href = $(el).attr("href");
-      if (!href || !href.endsWith(".html")) return;
-
-      const fullUrl = href.startsWith("http")
-        ? href
-        : `${CONFIG.baseUrl}${href}`;
-
-      if (seen.has(fullUrl)) return;
-      seen.add(fullUrl);
-
-      items.push({
-        name: "", // 詳細ページから取得
-        price: null,
-        size: null,
-        detailUrl: fullUrl,
-        category,
-        categorySlug: slug,
-      });
-    });
-  }
-
-  console.log(
-    `  → パン: ${items.filter((i) => i.categorySlug === "bread").length}, ` +
-      `トッピング: ${items.filter((i) => i.categorySlug === "topping").length}, ` +
-      `ソース: ${items.filter((i) => i.categorySlug === "sauce").length}`
-  );
-
-  return items;
-}
-
-// ============================
 // 詳細ページスクレイピング
 // ============================
 
 /**
- * 詳細ページから栄養成分を取得
- * 複数サイズの場合、sizeに対応する栄養成分を返す
+ * 詳細ページの table.data-table（栄養情報表）を解析。
+ * th行とtd行が交互に並ぶ縦積み構造。
+ * サイズ別の栄養は公式が提供していないため単一値を返す。
  */
-function parseNutritionTable(
-  $: CheerioDoc,
-  targetSize: string | null
-): NutritionData | null {
-  const table = $("table#nutorition");
+function parseNutritionTable($: CheerioDoc): NutritionData | null {
+  const table = $('table.data-table[data-label="栄養情報表"]').first();
   if (table.length === 0) return null;
 
-  const rows = table.find("tr");
+  const pairs = new Map<string, string>();
+  let pendingHeaders: string[] = [];
 
-  // ドリンク等の複数サイズ対応
-  const hasSizeHeaders = table.find("tr.nutorition-drink").length > 0;
+  table.find("tr").each((_i, tr) => {
+    const $tr = $(tr);
+    const ths = $tr.find("th");
+    const tds = $tr.find("td");
 
-  if (hasSizeHeaders && targetSize) {
-    // サイズ別のテーブル: 対象サイズのセクションを探す
-    let foundTarget = false;
-    let headerRow: string[] = [];
-
-    for (let i = 0; i < rows.length; i++) {
-      const $row = $(rows[i]);
-
-      if ($row.hasClass("nutorition-drink")) {
-        const sizeLabel = $row.find("th").text().trim();
-        foundTarget = sizeLabel === targetSize;
-        continue;
-      }
-
-      if (foundTarget) {
-        const ths = $row.find("th");
-        if (ths.length > 0) {
-          headerRow = [];
-          ths.each((_j, th) => headerRow.push($(th).text().trim()));
-          continue;
-        }
-
-        const tds = $row.find("td");
-        if (tds.length > 0 && headerRow.length > 0) {
-          return parseNutritionRow($, headerRow, $row);
-        }
-      }
+    if (ths.length > 0) {
+      pendingHeaders = [];
+      ths.each((_j, th) => pendingHeaders.push($(th).text().trim()));
+    } else if (tds.length > 0 && pendingHeaders.length > 0) {
+      tds.each((_j, td) => {
+        const header = pendingHeaders[_j];
+        if (header) pairs.set(header, $(td).text().trim());
+      });
     }
-    return null;
-  }
-
-  // 単一サイズ: 最初のヘッダ行 + データ行
-  const headerRow: string[] = [];
-  let dataRowEl: CheerioEl | null = null;
-
-  for (let i = 0; i < rows.length; i++) {
-    const $row = $(rows[i]);
-
-    if ($row.hasClass("nutorition-drink")) continue;
-
-    const ths = $row.find("th");
-    if (ths.length > 0 && headerRow.length === 0) {
-      ths.each((_j, th) => headerRow.push($(th).text().trim()));
-      continue;
-    }
-
-    const tds = $row.find("td");
-    if (tds.length > 0 && headerRow.length > 0) {
-      dataRowEl = $row;
-      break;
-    }
-  }
-
-  if (!dataRowEl || headerRow.length === 0) return null;
-  return parseNutritionRow($, headerRow, dataRowEl);
-}
-
-function parseNutritionRow(
-  $: CheerioDoc,
-  headers: string[],
-  $row: CheerioEl
-): NutritionData | null {
-  const values: number[] = [];
-  $row.find("td").each((_j, td) => {
-    values.push(parseFloat($(td).text().trim()) || 0);
   });
+
+  if (pairs.size === 0) return null;
 
   const result: NutritionData = {
-    calories: 0,
-    protein: 0,
-    fat: 0,
-    carb: 0,
-    sodium: 0,
+    calories: extractNumeric(pairs.get("エネルギー") ?? ""),
+    protein: extractNumeric(pairs.get("たんぱく質") ?? ""),
+    fat: extractNumeric(pairs.get("脂質") ?? ""),
+    carb: extractNumeric(pairs.get("炭水化物") ?? ""),
+    sodium: extractNumeric(pairs.get("食塩相当量") ?? ""),
   };
 
-  headers.forEach((header, idx) => {
-    const value = values[idx];
-    if (value === undefined || isNaN(value)) return;
-
-    if (header.includes("エネルギー")) result.calories = value;
-    else if (header.includes("たんぱく質")) result.protein = value;
-    else if (header.includes("脂質")) result.fat = value;
-    else if (header.includes("炭水化物")) result.carb = value;
-    else if (header.includes("ナトリウム")) result.sodium = value;
-  });
-
+  if (result.calories === 0 && result.protein === 0) return null;
   return result;
 }
 
 /**
- * 詳細ページからメニュー名と価格を取得（パン/トッピング/ソース用）
- */
-function parseDetailPageInfo(
-  $: CheerioDoc
-): { name: string; price: number | null } {
-  // メニュー名: <h3>メニュー名 <span>英語名</span></h3>
-  const h3 = $("#menu-detail-right h3");
-  let name = "";
-  if (h3.length > 0) {
-    // span を除外してテキスト取得
-    const clone = h3.clone();
-    clone.find("span").remove();
-    name = clone.text().trim();
-    // 全角スペース等の正規化
-    name = name.replace(/\s+/g, " ").trim();
-  }
-
-  // 価格: .price-regular から取得
-  let price: number | null = null;
-  const priceEl = $(".detail-text-title .price-regular");
-  if (priceEl.length > 0) {
-    price = extractPrice(priceEl.text().trim());
-  }
-
-  return { name, price };
-}
-
-/**
- * 全詳細ページをスクレイピングして栄養成分を取得
+ * 詳細ページから栄養成分を取得（同一URLはキャッシュしてリクエストを節約）
  */
 async function scrapeDetailPages(
   items: ListItem[],
   dryRun: boolean
 ): Promise<ScrapedItem[]> {
   const results: ScrapedItem[] = [];
+  const nutritionCache = new Map<string, NutritionData | null>();
 
-  // dryRunの場合は最大5件に制限
   const toScrape = dryRun ? items.slice(0, 5) : items;
 
   console.log(`\n=== 詳細ページから栄養成分を取得 ===`);
-  console.log(`Scraping ${toScrape.length} pages...\n`);
+  console.log(`Target ${toScrape.length} items...\n`);
 
-  let batchCount = 0;
+  let fetchCount = 0;
 
   for (let i = 0; i < toScrape.length; i++) {
     const item = toScrape[i];
-    const displayName = (item.name || item.detailUrl.split("/").pop() || "")
-      .slice(0, 25)
-      .padEnd(25);
     process.stdout.write(
-      `\r[${i + 1}/${toScrape.length}] ${displayName}`
+      `\r[${i + 1}/${toScrape.length}] ${item.name.slice(0, 25).padEnd(25)}`
     );
 
-    try {
-      const $ = await fetchPage(item.detailUrl);
-
-      // パン/トッピング/ソースの場合、詳細ページから名前と価格を取得
-      let name = item.name;
-      let price = item.price;
-      if (!name) {
-        const info = parseDetailPageInfo($);
-        name = info.name;
-        if (price === null) price = info.price;
+    let nutrition = nutritionCache.get(item.detailUrl);
+    if (nutrition === undefined) {
+      try {
+        const $ = await fetchPage(item.detailUrl);
+        nutrition = parseNutritionTable($);
+      } catch {
+        console.warn(`\n  Failed: ${item.detailUrl}`);
+        nutrition = null;
       }
+      nutritionCache.set(item.detailUrl, nutrition);
 
-      if (!name) {
-        console.warn(`\n  Skip: no name found for ${item.detailUrl}`);
-        continue;
-      }
-
-      // 栄養成分取得
-      const nutrition = parseNutritionTable($, item.size);
-
-      if (nutrition) {
-        results.push({
-          name,
-          price,
-          detailUrl: item.detailUrl,
-          category: item.category,
-          categorySlug: item.categorySlug,
-          calories: nutrition.calories,
-          protein: nutrition.protein,
-          fat: nutrition.fat,
-          carb: nutrition.carb,
-          sodium: nutrition.sodium,
-        });
+      fetchCount++;
+      if (fetchCount % CONFIG.batchSize === 0) {
+        await sleep(CONFIG.batchDelay);
       } else {
-        console.warn(`\n  No nutrition data: ${name}`);
-        // 栄養データがなくても登録（0で埋める）
-        results.push({
-          name,
-          price,
-          detailUrl: item.detailUrl,
-          category: item.category,
-          categorySlug: item.categorySlug,
-          calories: 0,
-          protein: 0,
-          fat: 0,
-          carb: 0,
-          sodium: 0,
-        });
+        await sleep(CONFIG.rateLimit);
       }
-    } catch (error) {
-      console.warn(`\n  Failed: ${item.detailUrl}`);
     }
 
-    batchCount++;
-    if (batchCount >= CONFIG.batchSize) {
-      await sleep(CONFIG.batchDelay);
-      batchCount = 0;
-    } else {
-      await sleep(CONFIG.rateLimit);
+    if (!nutrition) {
+      console.warn(`\n  No nutrition data: ${item.name}`);
     }
+
+    results.push({
+      ...item,
+      calories: nutrition?.calories ?? 0,
+      protein: nutrition?.protein ?? 0,
+      fat: nutrition?.fat ?? 0,
+      carb: nutrition?.carb ?? 0,
+      sodium: nutrition?.sodium ?? 0,
+    });
   }
 
   console.log(
@@ -576,16 +372,59 @@ async function scrapeDetailPages(
 }
 
 // ============================
-// データファイル生成
+// menu_id 割り当て（既存ID維持）
 // ============================
 
-function generateMenuId(categorySlug: string, index: number, size: string | null): string {
-  const num = String(index).padStart(3, "0");
-  if (size) {
-    return `subway-${categorySlug}-${num}-${size.toLowerCase()}`;
+/**
+ * 既存データファイルと menu_name で突合して menu_id を維持する。
+ * 新規メニューにはカテゴリ内の既存最大連番+1から採番。
+ */
+function assignMenuIds(items: ScrapedItem[]): SubwayMenuItem[] {
+  const existingByName = new Map(
+    existingMenuData.map((m) => [m.menu_name, m.menu_id])
+  );
+
+  // カテゴリスラッグごとの既存最大連番
+  const maxCounter = new Map<string, number>();
+  for (const m of existingMenuData) {
+    const match = m.menu_id.match(/^subway-([a-z_]+)-(\d+)/);
+    if (match) {
+      const slug = match[1];
+      const num = parseInt(match[2], 10);
+      maxCounter.set(slug, Math.max(maxCounter.get(slug) ?? 0, num));
+    }
   }
-  return `subway-${categorySlug}-${num}`;
+
+  return items.map((item) => {
+    let menuId = existingByName.get(item.name);
+
+    if (!menuId) {
+      const next = (maxCounter.get(item.categorySlug) ?? 0) + 1;
+      maxCounter.set(item.categorySlug, next);
+      const num = String(next).padStart(3, "0");
+      menuId = item.size
+        ? `subway-${item.categorySlug}-${num}-${item.size.toLowerCase()}`
+        : `subway-${item.categorySlug}-${num}`;
+    }
+
+    return {
+      menu_id: menuId,
+      menu_name: item.name,
+      price: item.price,
+      category: item.category,
+      calories: item.calories,
+      protein: item.protein,
+      fat: item.fat,
+      carb: item.carb,
+      sodium: item.sodium,
+      allergens: [],
+    };
+  });
 }
+
+// ============================
+// データファイル生成
+// ============================
 
 function generateDataFile(items: SubwayMenuItem[]): string {
   const lines: string[] = [];
@@ -594,6 +433,7 @@ function generateDataFile(items: SubwayMenuItem[]): string {
   lines.push(`/**`);
   lines.push(` * サブウェイメニューデータ（${date} 公式サイトより自動生成）`);
   lines.push(` * 自動生成ファイル - scripts/scrape/subway.ts で生成`);
+  lines.push(` * sodiumは食塩相当量(g)。ドリンクの栄養値は公式掲載の単一値（サイズ別未公表）`);
   lines.push(` */`);
   lines.push(``);
   lines.push(`export interface SubwayMenuItem {`);
@@ -611,18 +451,7 @@ function generateDataFile(items: SubwayMenuItem[]): string {
   lines.push(``);
   lines.push(`export const subwayMenuData: SubwayMenuItem[] = [`);
 
-  // カテゴリ順にソート
-  const categoryOrder = [
-    "サンドイッチ",
-    "サラダ",
-    "サイドメニュー",
-    "ドリンク",
-    "モーニング",
-    "キッズ",
-    "パン",
-    "トッピング",
-    "ソース",
-  ];
+  const categoryOrder = MENU_PAGES.map((p) => p.category);
 
   const sorted = [...items].sort((a, b) => {
     const ai = categoryOrder.indexOf(a.category);
@@ -665,14 +494,11 @@ function printReport(items: ScrapedItem[]): void {
   console.log("========================================\n");
 
   console.log(`Total items: ${items.length}`);
-  console.log(
-    `With price: ${items.filter((i) => i.price !== null).length}`
-  );
+  console.log(`With price: ${items.filter((i) => i.price !== null).length}`);
   console.log(
     `With nutrition: ${items.filter((i) => i.calories > 0).length}`
   );
 
-  // カテゴリ別集計
   const categories = new Map<string, { total: number; withPrice: number }>();
   for (const item of items) {
     const cat = categories.get(item.category) || { total: 0, withPrice: 0 };
@@ -688,19 +514,13 @@ function printReport(items: ScrapedItem[]): void {
     );
   }
 
-  // 価格なしのアイテムを表示
   const noPriceItems = items.filter(
-    (i) =>
-      i.price === null &&
-      !["パン", "ソース"].includes(i.category)
+    (i) => i.price === null && i.category !== "トッピング"
   );
   if (noPriceItems.length > 0) {
-    console.log(`\nItems without price (excluding bread/sauce):`);
+    console.log(`\nItems without price (excluding toppings):`);
     for (const item of noPriceItems.slice(0, 20)) {
       console.log(`  - ${item.name} [${item.category}]`);
-    }
-    if (noPriceItems.length > 20) {
-      console.log(`  ... and ${noPriceItems.length - 20} more`);
     }
   }
 
@@ -716,9 +536,7 @@ async function main() {
   const dryRun = args.includes("--dry-run");
 
   if (dryRun) {
-    console.log(
-      "[DRY RUN] 詳細ページ5件のみ取得してレポート表示します\n"
-    );
+    console.log("[DRY RUN] 詳細ページ5件のみ取得してレポート表示します\n");
   }
 
   // 1. 一覧ページからメニュー情報を取得
@@ -729,38 +547,21 @@ async function main() {
     process.exit(1);
   }
 
-  // 2. パン/トッピング/ソースのリンクを収集
-  const sandwichItem = listItems.find(
-    (i) => i.categorySlug === "sandwich" && i.detailUrl.endsWith(".html")
-  );
-
-  let customizeItems: ListItem[] = [];
-  if (sandwichItem) {
-    customizeItems = await collectCustomizeLinks(sandwichItem.detailUrl);
-    await sleep(CONFIG.rateLimit);
-  }
-
-  // 3. 全アイテムを統合（重複排除）
-  const allItems = [...listItems, ...customizeItems];
+  // 2. 重複排除（name+size+category）
   const seen = new Set<string>();
-  const uniqueItems = allItems.filter((item) => {
-    // name+size+categoryで重複判定（パン等は名前空なのでURLで）
-    const key = item.name
-      ? `${item.name}|${item.size || ""}|${item.category}`
-      : item.detailUrl;
+  const uniqueItems = listItems.filter((item) => {
+    const key = `${item.name}|${item.category}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
-  console.log(
-    `\nTotal unique items: ${uniqueItems.length} (list: ${listItems.length}, customize: ${customizeItems.length})`
-  );
+  console.log(`\nTotal unique items: ${uniqueItems.length}`);
 
-  // 4. 詳細ページから栄養成分を取得
+  // 3. 詳細ページから栄養成分を取得
   const scrapedItems = await scrapeDetailPages(uniqueItems, dryRun);
 
-  // 5. レポート出力
+  // 4. レポート出力
   printReport(scrapedItems);
 
   if (dryRun) {
@@ -768,31 +569,16 @@ async function main() {
     return;
   }
 
-  // 6. menu_id を付与してデータファイル用のオブジェクトに変換
-  const categoryCounters = new Map<string, number>();
-  const menuItems: SubwayMenuItem[] = scrapedItems.map((item) => {
-    const count = (categoryCounters.get(item.categorySlug) || 0) + 1;
-    categoryCounters.set(item.categorySlug, count);
+  // 5. menu_id 割り当て（既存ID維持）
+  const menuItems = assignMenuIds(scrapedItems);
+  const preserved = menuItems.filter((m) =>
+    existingMenuData.some((e) => e.menu_id === m.menu_id)
+  ).length;
+  console.log(
+    `menu_id: 既存維持 ${preserved}件 / 新規採番 ${menuItems.length - preserved}件`
+  );
 
-    // サイズ情報を名前から抽出
-    const sizeMatch = item.name.match(/（([SML])）$/);
-    const size = sizeMatch ? sizeMatch[1] : null;
-
-    return {
-      menu_id: generateMenuId(item.categorySlug, count, size),
-      menu_name: item.name,
-      price: item.price,
-      category: item.category,
-      calories: item.calories,
-      protein: item.protein,
-      fat: item.fat,
-      carb: item.carb,
-      sodium: item.sodium,
-      allergens: [],
-    };
-  });
-
-  // 7. 承認を求める
+  // 6. 承認を求める
   const answer = await prompt(
     `\n${menuItems.length} 件のデータファイルを生成しますか？ (y/n): `
   );
@@ -802,13 +588,13 @@ async function main() {
     return;
   }
 
-  // 8. データファイル生成
+  // 7. データファイル生成
   const content = generateDataFile(menuItems);
   const filePath = path.join(__dirname, "../data/subway-menus.ts");
   fs.writeFileSync(filePath, content, "utf-8");
 
   console.log(`\n${menuItems.length} 件を ${filePath} に生成しました`);
-  console.log("DBに反映するには npx tsx scripts/seed-subway.ts を実行してください");
+  console.log("DBに反映するには npm run seed:subway を実行してください");
 }
 
 main().catch((error) => {
