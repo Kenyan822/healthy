@@ -719,6 +719,21 @@ async function main() {
     "data",
     "ootoya-menus.ts"
   );
+
+  // 安全ガード: 取得件数が既存データの半分未満なら上書きを中止する
+  // (サイト構造変更で一部ページしか取れていない場合のデータ消失防止)
+  {
+    const existing = fs.readFileSync(dataFilePath, "utf-8");
+    const existingCount = (existing.match(/menu_id/g) || []).length;
+    if (entries.length < existingCount / 2) {
+      console.error(
+        `\n⛔ 中止: 取得${entries.length}件は既存${existingCount}件の半分未満です。` +
+          "サイト構造変更の可能性があるためデータファイルを上書きしません。"
+      );
+      process.exit(1);
+    }
+  }
+
   const fileContent = generateDataFile(entries);
   fs.writeFileSync(dataFilePath, fileContent, "utf-8");
 

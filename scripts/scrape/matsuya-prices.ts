@@ -237,8 +237,9 @@ function updateDataFile(matches: PriceUpdateReport["matched"]): number {
     if (match.confidence < 0.8) continue;
 
     const escaped = match.menuId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // データファイルはJSON形式（"menu_id": ...）と旧インライン形式の両方がありうる
     const regex = new RegExp(
-      `(menu_id: "${escaped}",[^}]*?price:) (?:null|\\d+)`
+      `("?menu_id"?: "${escaped}",[^}]*?"?price"?:) (?:null|\\d+)`
     );
     const newContent = content.replace(regex, `$1 ${match.price}`);
     if (newContent !== content) {

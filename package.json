@@ -19,6 +19,7 @@
     "seed:nakau": "npx tsx scripts/seed-nakau.ts",
     "seed:ringerhut": "npx tsx scripts/seed-ringerhut.ts",
     "seed:ootoya": "npx tsx scripts/seed-ootoya.ts",
+    "seed:marugame": "npx tsx scripts/seed-marugame.ts",
     "seed:mcdonalds": "npx tsx scripts/seed-mcdonalds.ts",
     "seed:kfc": "npx tsx scripts/seed-kfc.ts",
     "sync:turso": "npx tsx scripts/sync-to-turso.ts",
