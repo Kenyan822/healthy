@@ -41,6 +41,8 @@ export interface ChainInfo {
 export interface SeedOptions {
   // メニューごとの price_source（省略時 "scraper"）
   priceSource?: (item: SeedMenuItem) => string;
+  // メニューごとの販売中フラグ（省略時 true。販売終了品の明示用）
+  isAvailable?: (item: SeedMenuItem) => boolean;
   // 履歴の記録元ラベル（省略時 "seed"）
   historySource?: string;
 }
@@ -131,7 +133,7 @@ export function seedChainMenus(
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?, NULL, ?,
       ?, ?,
-      ?, ?, 1, ?,
+      ?, ?, ?, ?,
       datetime('now'), datetime('now')
     )
     ON CONFLICT(menu_id) DO UPDATE SET
@@ -163,6 +165,7 @@ export function seedChainMenus(
 
   const runAll = db.transaction(() => {
     for (const item of items) {
+      const available = options.isAvailable ? options.isAvailable(item) : true;
       upsertStmt.run(
         item.menu_id,
         chainId,
@@ -178,9 +181,11 @@ export function seedChainMenus(
         item.timing ?? "anytime",
         item.is_seasonal ? 1 : 0,
         item.is_limited ? 1 : 0,
+        available ? 1 : 0,
         options.priceSource ? options.priceSource(item) : "scraper"
       );
 
+      if (!available) continue; // 販売終了品の価格変化は履歴に残さない
       if (item.price == null) continue;
       if (!currentPrices.has(item.menu_id)) {
         historyStmt.run(item.menu_id, chainId, null, item.price, historySource);
