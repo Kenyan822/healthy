@@ -122,6 +122,37 @@ export const nutritionFilters = {
     label: "脂質40g以下",
     seoTitle: "脂質40g以下のメニュー",
   },
+  // カロリー（400〜800kcal）
+  "calorie-under-400": {
+    type: "calories" as const,
+    max: 400,
+    label: "400kcal以下",
+    seoTitle: "400kcal以下のメニュー",
+  },
+  "calorie-under-500": {
+    type: "calories" as const,
+    max: 500,
+    label: "500kcal以下",
+    seoTitle: "500kcal以下のメニュー",
+  },
+  "calorie-under-600": {
+    type: "calories" as const,
+    max: 600,
+    label: "600kcal以下",
+    seoTitle: "600kcal以下のメニュー",
+  },
+  "calorie-under-700": {
+    type: "calories" as const,
+    max: 700,
+    label: "700kcal以下",
+    seoTitle: "700kcal以下のメニュー",
+  },
+  "calorie-under-800": {
+    type: "calories" as const,
+    max: 800,
+    label: "800kcal以下",
+    seoTitle: "800kcal以下のメニュー",
+  },
   // 糖質/炭水化物（20g〜100g）
   "carb-under-20g": {
     type: "carb" as const,

@@ -242,6 +242,43 @@ export async function getTopMenusByPurpose(purposeId: PurposeId, limit = 10) {
     .all();
 }
 
+/**
+ * 栄養フィルターで全チェーン横断のメニューを取得（/nutrition/[filterId] 用）
+ * min系フィルター（protein-over等）は対象値の降順、
+ * max系フィルター（calorie-under等）は制約内で高タンパク順に並べる。
+ */
+export async function getTopMenusByNutritionFilterAllChains(
+  filterId: NutritionFilterId,
+  limit = 50
+) {
+  const filter = nutritionFilters[filterId];
+  const enabledIds = [...ENABLED_CHAINS];
+  const conditions = [
+    inArray(menus.chainId, enabledIds),
+    eq(menus.isAvailable, true),
+  ];
+
+  if ("min" in filter) {
+    conditions.push(gte(menus[filter.type], filter.min));
+  } else {
+    conditions.push(lte(menus[filter.type], filter.max));
+  }
+
+  return db
+    .select({
+      menu: menus,
+      chain: chains,
+    })
+    .from(menus)
+    .innerJoin(chains, eq(menus.chainId, chains.chainId))
+    .where(and(...conditions))
+    .orderBy(
+      "min" in filter ? desc(menus[filter.type]) : desc(menus.protein)
+    )
+    .limit(limit)
+    .all();
+}
+
 // 静的生成用：全チェーン店×目的の組み合わせを取得
 export async function getAllChainPurposeCombinations() {
   const allChains = await getAllChains();

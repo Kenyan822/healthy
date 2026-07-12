@@ -172,6 +172,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // ============================
+  // 栄養フィルター横断ページ (/nutrition/[filterId])
+  // ============================
+  const nutritionCrossPages: MetadataRoute.Sitemap = allNutritionFilterIds.map(
+    (filterId) => ({
+      url: `${BASE_URL}/nutrition/${filterId}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    })
+  );
+
+  // ============================
   // 目的別ランキング (/ranking/[purpose])
   // ============================
   const purposeRankingPages: MetadataRoute.Sitemap = allPurposeIds.map(
@@ -224,6 +236,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...storeNutritionPages,
     ...storePricePages,
     ...storeTimingPages,
+    ...nutritionCrossPages,
     ...purposeRankingPages,
     ...chainRankingPages,
     ...menuDetailPages,

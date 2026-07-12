@@ -24,11 +24,13 @@ import {
   allNutritionFilterIds,
   allPriceFilterIds,
   allTimingFilterIds,
+  isNutritionFilterId,
 } from "@/lib/filters";
 import { resolveSegment, generateSegmentMetadata } from "@/lib/segment-resolver";
 import { buildMenuItemListJsonLd, buildBreadcrumbJsonLd } from "@/lib/jsonld";
 import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
 
 type Props = {
   params: Promise<{ store: string; segment: string }>;
@@ -183,6 +185,7 @@ async function PurposeView({
       <div className="container mx-auto px-4 py-8">
         <PageIntroSection chainName={chain.chainName} purposeId={purpose.id} menuCount={menus.length} />
         <MenuTable menus={menus} />
+        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
         <RelatedLinks store={store} currentSegment={purpose.id} />
       </div>
     </main>
@@ -228,6 +231,7 @@ async function NutritionView({
 
       <div className="container mx-auto px-4 py-8">
         <MenuTable menus={menus} highlightField={filter.type} />
+        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -273,6 +277,7 @@ async function PriceView({
 
       <div className="container mx-auto px-4 py-8">
         <MenuTable menus={menus} highlightField="price" />
+        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -317,6 +322,7 @@ async function TimingView({
       <div className="container mx-auto px-4 py-8">
         <TimingIntroSection chainName={chain.chainName} timingId={filterId} menuCount={menus.length} />
         <MenuTable menus={menus} />
+        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -450,13 +456,14 @@ function MenuTable({
   highlightField,
 }: {
   menus: MenuSelect[];
-  highlightField?: "protein" | "fat" | "carb" | "price";
+  highlightField?: "protein" | "fat" | "carb" | "calories" | "price";
 }) {
   const getHighlightValue = (menu: MenuSelect) => {
     switch (highlightField) {
       case "protein": return { value: `${menu.protein}g`, label: "タンパク質" };
       case "fat": return { value: `${menu.fat}g`, label: "脂質" };
       case "carb": return { value: `${menu.carb}g`, label: "炭水化物" };
+      case "calories": return { value: `${menu.calories}kcal`, label: "カロリー" };
       case "price": return { value: menu.price ? formatPrice(menu.price) : "-", label: "価格" };
       default: return null;
     }
@@ -639,6 +646,14 @@ async function RelatedLinks({
         >
           ランキング
         </Link>
+        {isNutritionFilterId(currentSegment) && (
+          <Link
+            href={`/nutrition/${currentSegment}`}
+            className="px-4 py-2 bg-primary/10 text-primary rounded-lg border border-primary/30 hover:border-primary transition-colors text-sm font-medium"
+          >
+            全チェーンの{nutritionFilters[currentSegment].label}を見る
+          </Link>
+        )}
       </div>
       {linkGroups.map((group) => (
         <div key={group.heading} className="mb-4">
