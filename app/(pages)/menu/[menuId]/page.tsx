@@ -11,6 +11,7 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { ViewCounter } from "@/components/menu/ViewCounter";
+import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
 
 type Props = {
   params: Promise<{ menuId: string }>;
@@ -348,6 +349,15 @@ export default async function MenuDetailPage({ params }: Props) {
                 </ul>
               </div>
             </section>
+
+            {/* 宅配弁当アフィリエイト枠（高カロリー・高脂質メニューのみ、env未設定時は非表示） */}
+            {(menu.calories >= 800 || menu.fat >= 30) && (
+              <MealKitPromo
+                variant="menu-detail"
+                calories={menu.calories}
+                fat={menu.fat}
+              />
+            )}
 
             {/* 同チェーン店の類似メニュー */}
             {similarMenus.length > 0 && (
