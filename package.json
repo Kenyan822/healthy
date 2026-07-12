@@ -21,6 +21,8 @@
     "seed:ootoya": "npx tsx scripts/seed-ootoya.ts",
     "seed:mcdonalds": "npx tsx scripts/seed-mcdonalds.ts",
     "seed:kfc": "npx tsx scripts/seed-kfc.ts",
+    "sync:turso": "npx tsx scripts/sync-to-turso.ts",
+    "sync:turso:dry": "npx tsx scripts/sync-to-turso.ts --dry-run",
     "scrape:ootoya": "npx tsx scripts/scrape/ootoya.ts",
     "scrape:ootoya:dry": "npx tsx scripts/scrape/ootoya.ts --dry-run",
     "scrape:matsuya": "npx tsx scripts/scrape/matsuya-prices.ts",

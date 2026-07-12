@@ -23,6 +23,8 @@ export const ENABLED_CHAINS: ReadonlySet<string> = new Set([
   "mos",         // モスバーガー
   "subway",      // サブウェイ
   "ikinari",     // いきなり！ステーキ
+  "mcdonalds",   // マクドナルド（本番はTurso同期後に表示される）
+  // "kfc",        // ケンタッキー（栄養PDF対応後に有効化）
 ]);
 
 /** チェーンが有効かどうかを判定 */
