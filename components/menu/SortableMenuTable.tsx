@@ -22,7 +22,35 @@ interface MenuItem {
 interface SortableMenuTableProps {
   menus: MenuItem[];
   scoreField: string;
-  purposeName: string;
+}
+
+// テーブルヘッダのソートボタン（render中の再定義を避けるためトップレベルに定義）
+function SortButton({
+  label,
+  sortKeyValue,
+  defaultOrder = "desc",
+  activeKey,
+  activeOrder,
+  onSort,
+}: {
+  label: string;
+  sortKeyValue: SortKey;
+  defaultOrder?: SortOrder;
+  activeKey: SortKey;
+  activeOrder: SortOrder;
+  onSort: (key: SortKey, defaultOrder: SortOrder) => void;
+}) {
+  return (
+    <button
+      onClick={() => onSort(sortKeyValue, defaultOrder)}
+      className={`flex items-center gap-1 hover:text-primary transition-colors ${activeKey === sortKeyValue ? "text-primary font-bold" : ""}`}
+    >
+      {label}
+      {activeKey === sortKeyValue && (
+        <span className="text-xs">{activeOrder === "desc" ? "▼" : "▲"}</span>
+      )}
+    </button>
+  );
 }
 
 // スコアに応じた色を返す
@@ -33,7 +61,7 @@ function getScoreColor(score: number): string {
   return "text-orange-600 bg-orange-100";
 }
 
-export function SortableMenuTable({ menus, scoreField, purposeName }: SortableMenuTableProps) {
+export function SortableMenuTable({ menus, scoreField }: SortableMenuTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
@@ -105,18 +133,6 @@ export function SortableMenuTable({ menus, scoreField, purposeName }: SortableMe
     }
   };
 
-  const SortButton = ({ label, sortKeyValue, defaultOrder = "desc" }: { label: string; sortKeyValue: SortKey; defaultOrder?: SortOrder }) => (
-    <button
-      onClick={() => handleSort(sortKeyValue, defaultOrder)}
-      className={`flex items-center gap-1 hover:text-primary transition-colors ${sortKey === sortKeyValue ? "text-primary font-bold" : ""}`}
-    >
-      {label}
-      {sortKey === sortKeyValue && (
-        <span className="text-xs">{sortOrder === "desc" ? "▼" : "▲"}</span>
-      )}
-    </button>
-  );
-
   const sortOptions: { key: SortKey; label: string; desc: string }[] = [
     { key: "score", label: "スコア順", desc: "高い順" },
     { key: "calories", label: "カロリー", desc: "低い順" },
@@ -163,25 +179,25 @@ export function SortableMenuTable({ menus, scoreField, purposeName }: SortableMe
                   メニュー名
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70">
-                  <SortButton label="スコア" sortKeyValue="score" />
+                  <SortButton activeKey={sortKey} activeOrder={sortOrder} onSort={handleSort} label="スコア" sortKeyValue="score" />
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                  <SortButton label="カロリー" sortKeyValue="calories" defaultOrder="asc" />
+                  <SortButton activeKey={sortKey} activeOrder={sortOrder} onSort={handleSort} label="カロリー" sortKeyValue="calories" defaultOrder="asc" />
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                  <SortButton label="P" sortKeyValue="protein" />
+                  <SortButton activeKey={sortKey} activeOrder={sortOrder} onSort={handleSort} label="P" sortKeyValue="protein" />
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                  <SortButton label="F" sortKeyValue="fat" defaultOrder="asc" />
+                  <SortButton activeKey={sortKey} activeOrder={sortOrder} onSort={handleSort} label="F" sortKeyValue="fat" defaultOrder="asc" />
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                  <SortButton label="C" sortKeyValue="carb" defaultOrder="asc" />
+                  <SortButton activeKey={sortKey} activeOrder={sortOrder} onSort={handleSort} label="C" sortKeyValue="carb" defaultOrder="asc" />
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
                   価格
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-foreground/70">
-                  <SortButton label="P/¥" sortKeyValue="costProtein" />
+                  <SortButton activeKey={sortKey} activeOrder={sortOrder} onSort={handleSort} label="P/¥" sortKeyValue="costProtein" />
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-foreground/70 w-12">
                 </th>

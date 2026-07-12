@@ -6,31 +6,32 @@ import Link from "next/link";
 
 const CONSENT_KEY = "chenmeshi_cookie_consent";
 
-type ConsentStatus = "granted" | "denied" | null;
+// "loading"=SSR/初回描画（バナー非表示）、null=未回答（バナー表示）
+type ConsentStatus = "granted" | "denied" | "loading" | null;
 
 export function CookieConsent() {
-  const [consentStatus, setConsentStatus] = useState<ConsentStatus>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [consentStatus, setConsentStatus] = useState<ConsentStatus>("loading");
 
   useEffect(() => {
-    const stored = localStorage.getItem(CONSENT_KEY) as ConsentStatus;
-    if (stored === "granted" || stored === "denied") {
-      setConsentStatus(stored);
-    } else {
-      setIsVisible(true);
-    }
+    // localStorageはSSRで読めないため、マウント後の1回だけ同期する必要がある
+    // (初期レンダは"loading"でバナー非表示のまま。再レンダは1回のみ)
+    const stored = localStorage.getItem(CONSENT_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setConsentStatus(
+      stored === "granted" || stored === "denied" ? stored : null
+    );
   }, []);
+
+  const isVisible = consentStatus === null;
 
   const handleAcceptAll = () => {
     localStorage.setItem(CONSENT_KEY, "granted");
     setConsentStatus("granted");
-    setIsVisible(false);
   };
 
   const handleDenyNonEssential = () => {
     localStorage.setItem(CONSENT_KEY, "denied");
     setConsentStatus("denied");
-    setIsVisible(false);
   };
 
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;

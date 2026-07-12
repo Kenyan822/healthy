@@ -193,7 +193,7 @@ async function scrapeCategory(
             : allPrices[0]; // 単一価格
 
       // 商品名（価格・サイズ表記・期間限定タグを除去）
-      let name = text
+      const name = text
         .replace(/[SML]\s*¥\d+/g, "")
         .replace(/¥\d+/g, "")
         .replace(/期間限定/g, "")

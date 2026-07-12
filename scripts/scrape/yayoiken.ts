@@ -9,6 +9,7 @@
 
 import axios, { AxiosError } from "axios";
 import { load, type CheerioAPI } from "cheerio";
+import type { Element } from "domhandler";
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
@@ -229,7 +230,7 @@ async function scrapeMenuList(): Promise<
 // 詳細ページスクレイピング
 // ============================
 
-function parseNutritionPanel($: CheerioAPI, panel: any): NutritionData | null {
+function parseNutritionPanel($: CheerioAPI, panel: Element): NutritionData | null {
   const container = $(panel).find(".c-table__type01");
   if (container.length === 0) return null;
 
@@ -242,7 +243,7 @@ function parseNutritionPanel($: CheerioAPI, panel: any): NutritionData | null {
     sodium: 0,
   };
 
-  container.find("dl.c-table__item").each((_i: number, dl: any) => {
+  container.find("dl.c-table__item").each((_i: number, dl: Element) => {
     const label = $(dl).find("dt.c-table__head").text().trim();
     const valueText = $(dl).find("dd.c-table__body").text().trim();
     const value = parseFloat(valueText.replace(/,/g, ""));
@@ -275,7 +276,7 @@ async function scrapeDetailPage(url: string): Promise<{
 
   // アレルゲン
   const allergens: string[] = [];
-  $("li.c-label__allergy").each((_i: number, el: any) => {
+  $("li.c-label__allergy").each((_i: number, el: Element) => {
     const text = $(el).text().trim();
     if (text) allergens.push(text);
   });
@@ -292,7 +293,7 @@ async function scrapeDetailPage(url: string): Promise<{
   const tabNames: string[] = [];
   nutritionSection
     .find(".c-tab__list-secondary li.c-tab__item")
-    .each((_i: number, el: any) => {
+    .each((_i: number, el: Element) => {
       // <br> を除去してテキスト取得
       const text = $(el)
         .find("span")
