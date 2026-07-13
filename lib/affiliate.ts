@@ -15,6 +15,13 @@ export type PromoContext = "diet" | "bulk" | "balanced" | "default";
 interface Offer {
   id: string;
   name: string;
+  banner?: {
+    href: string;
+    img: string;
+    beacon: string;
+    width: number;
+    height: number;
+  };
   // 文脈別のリンク先（なければdefaultにフォールバック）
   urls: Partial<Record<PromoContext, string>> & { default: string };
   menuDetailCopy: string;
@@ -31,6 +38,14 @@ export const OFFERS: Offer[] = [
       diet: "https://px.a8.net/svt/ejp?a8mat=4B7ZH2+9IXPZU+4CPY+5Z6WY", // LEAN(減量用)LP
       balanced: "https://px.a8.net/svt/ejp?a8mat=4B7ZH2+9IXPZU+4CPY+5ZEMQ", // MAINTAIN(維持用)LP
       bulk: "https://px.a8.net/svt/ejp?a8mat=4B7ZH2+9IXPZU+4CPY+5ZMCI", // GAIN(増量用)LP
+    },
+    // サイドバー用バナー(素材020: 300×250、EPC 23.65)。impビーコンはA8の表示計測用
+    banner: {
+      href: "https://px.a8.net/svt/ejp?a8mat=4B7ZH2+9IXPZU+4CPY+62MDD",
+      img: "https://www27.a8.net/svt/bgt?aid=260713046576&wid=002&eno=01&mid=s00000020311001020000&mc=1",
+      beacon: "https://www15.a8.net/0.gif?a8mat=4B7ZH2+9IXPZU+4CPY+62MDD",
+      width: 300,
+      height: 250,
     },
     menuDetailCopy:
       "外食が続く週は、1食だけ置き換える選択肢も。マッスルデリは管理栄養士が監修した高タンパクの冷凍宅配食で、減量用・維持用・増量用からPFC設計済みのメニューを選べます。",

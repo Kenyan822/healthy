@@ -12,6 +12,7 @@ import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { ViewCounter } from "@/components/menu/ViewCounter";
 import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
+import { SidebarBanner } from "@/components/affiliate/SidebarBanner";
 
 type Props = {
   params: Promise<{ menuId: string }>;
@@ -387,6 +388,7 @@ export default async function MenuDetailPage({ params }: Props) {
 
           {/* サイドバー */}
           <aside className="space-y-6">
+            <SidebarBanner />
             {/* チェーン店情報 */}
             <div className="bg-card-bg rounded-xl border border-border p-6">
               <h3 className="font-bold mb-4">{chain.chainName}</h3>
