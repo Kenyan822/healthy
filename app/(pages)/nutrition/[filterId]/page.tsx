@@ -12,6 +12,8 @@ import {
   type NutritionFilterId,
 } from "@/lib/filters";
 import { buildMenuItemListJsonLd, buildBreadcrumbJsonLd } from "@/lib/jsonld";
+import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
+import { promoContextForSegment } from "@/lib/affiliate";
 import { formatPrice } from "@/lib/utils";
 
 type Props = {
@@ -190,6 +192,11 @@ export default async function NutritionFilterPage({ params }: Props) {
             </div>
           </div>
         </section>
+
+        <MealKitPromo
+          variant="menu-detail"
+          context={promoContextForSegment(filterId)}
+        />
 
         {/* チェーン店別で探す */}
         <section className="mt-12">

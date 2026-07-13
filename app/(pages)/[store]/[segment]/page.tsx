@@ -205,12 +205,10 @@ async function PurposeView({
       <div className="container mx-auto px-4 py-8">
         <PageIntroSection chainName={chain.chainName} purposeId={purpose.id} menuCount={menus.length} />
         <MenuTable menus={menus} />
-        {menus.length < 5 && (
-          <MealKitPromo
-            variant="empty-results"
-            context={promoContextForSegment(purpose.id)}
-          />
-        )}
+        <MealKitPromo
+          variant={menus.length < 5 ? "empty-results" : "menu-detail"}
+          context={promoContextForSegment(purpose.id)}
+        />
         <RelatedLinks store={store} currentSegment={purpose.id} />
       </div>
     </main>
@@ -256,12 +254,10 @@ async function NutritionView({
 
       <div className="container mx-auto px-4 py-8">
         <MenuTable menus={menus} highlightField={filter.type} />
-        {menus.length < 5 && (
-          <MealKitPromo
-            variant="empty-results"
-            context={promoContextForSegment(filterId)}
-          />
-        )}
+        <MealKitPromo
+          variant={menus.length < 5 ? "empty-results" : "menu-detail"}
+          context={promoContextForSegment(filterId)}
+        />
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -307,12 +303,10 @@ async function PriceView({
 
       <div className="container mx-auto px-4 py-8">
         <MenuTable menus={menus} highlightField="price" />
-        {menus.length < 5 && (
-          <MealKitPromo
-            variant="empty-results"
-            context={promoContextForSegment(filterId)}
-          />
-        )}
+        <MealKitPromo
+          variant={menus.length < 5 ? "empty-results" : "menu-detail"}
+          context={promoContextForSegment(filterId)}
+        />
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -357,12 +351,10 @@ async function TimingView({
       <div className="container mx-auto px-4 py-8">
         <TimingIntroSection chainName={chain.chainName} timingId={filterId} menuCount={menus.length} />
         <MenuTable menus={menus} />
-        {menus.length < 5 && (
-          <MealKitPromo
-            variant="empty-results"
-            context={promoContextForSegment(filterId)}
-          />
-        )}
+        <MealKitPromo
+          variant={menus.length < 5 ? "empty-results" : "menu-detail"}
+          context={promoContextForSegment(filterId)}
+        />
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>

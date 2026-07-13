@@ -31,6 +31,10 @@ function getSortExpression(sortField: string) {
       return menus.protein;
     case "calories":
       return menus.calories;
+    case "fat":
+      return menus.fat;
+    case "carb":
+      return menus.carb;
     case "proteinDensity":
       // タンパク質密度: protein / calories * 100
       return sql`${menus.protein} * 100.0 / NULLIF(${menus.calories}, 0)`;
@@ -60,6 +64,29 @@ function getSortExpression(sortField: string) {
   }
 }
 
+// 目的別クエリの共通条件（絞り込み・除外）。
+// low-fat/low-carbは絶対量でcap(20g/40g)し、飲料や超少量品が上位を占めないよう
+// 100kcal未満とドリンクを除外する（「低脂質メニュー」に揚げ物BOXが並ぶ問題の修正）
+function purposeExtraConditions(purpose: (typeof purposes)[PurposeId]) {
+  const conditions = [];
+  if ("cap" in purpose) {
+    conditions.push(lte(menus[purpose.cap.field], purpose.cap.max));
+  }
+  if (purpose.sortField === "costPerformance") {
+    conditions.push(gt(menus.price, 0));
+    conditions.push(gt(menus.protein, 0));
+  }
+  if (
+    purpose.sortField === "fat" ||
+    purpose.sortField === "carb" ||
+    purpose.sortField === "calories"
+  ) {
+    conditions.push(gte(menus.calories, 100));
+    conditions.push(not(like(menus.category, "%ドリンク%")));
+  }
+  return conditions;
+}
+
 // チェーン店×目的でメニューを取得（事実ベース指標順）
 export async function getMenusByChainAndPurpose(
   chainId: string,
@@ -71,20 +98,7 @@ export async function getMenusByChainAndPurpose(
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true), gt(menus.calories, 0)];
-  if (purpose.sortField === "costPerformance") {
-    conditions.push(gt(menus.price, 0));
-    conditions.push(gt(menus.protein, 0));
-  }
-  if (purpose.sortField === "fatRatio") {
-    conditions.push(gt(menus.fat, 0));
-  }
-  if (purpose.sortField === "carbRatio") {
-    conditions.push(gt(menus.carb, 0));
-  }
-  if (purpose.sortField === "calories") {
-    conditions.push(gte(menus.calories, 100));
-    conditions.push(not(like(menus.category, "%ドリンク%")));
-  }
+  conditions.push(...purposeExtraConditions(purpose));
 
   return db
     .select()
@@ -880,20 +894,7 @@ export async function getMenusBySeoPurpose(
   const orderFn = purpose.sortOrder === "desc" ? desc : asc;
 
   const conditions = [eq(menus.chainId, chainId), eq(menus.isAvailable, true), gt(menus.calories, 0)];
-  if (purpose.sortField === "costPerformance") {
-    conditions.push(gt(menus.price, 0));
-    conditions.push(gt(menus.protein, 0));
-  }
-  if (purpose.sortField === "fatRatio") {
-    conditions.push(gt(menus.fat, 0));
-  }
-  if (purpose.sortField === "carbRatio") {
-    conditions.push(gt(menus.carb, 0));
-  }
-  if (purpose.sortField === "calories") {
-    conditions.push(gte(menus.calories, 100));
-    conditions.push(not(like(menus.category, "%ドリンク%")));
-  }
+  conditions.push(...purposeExtraConditions(purpose));
 
   return db
     .select()
@@ -978,20 +979,7 @@ export async function getGlobalRankingByPurpose(purposeId: SeoPurposeId, limit =
   const enabledIds = [...ENABLED_CHAINS];
 
   const conditions = [inArray(menus.chainId, enabledIds), eq(menus.isAvailable, true), gt(menus.calories, 0)];
-  if (purpose.sortField === "costPerformance") {
-    conditions.push(gt(menus.price, 0));
-    conditions.push(gt(menus.protein, 0));
-  }
-  if (purpose.sortField === "fatRatio") {
-    conditions.push(gt(menus.fat, 0));
-  }
-  if (purpose.sortField === "carbRatio") {
-    conditions.push(gt(menus.carb, 0));
-  }
-  if (purpose.sortField === "calories") {
-    conditions.push(gte(menus.calories, 100));
-    conditions.push(not(like(menus.category, "%ドリンク%")));
-  }
+  conditions.push(...purposeExtraConditions(purpose));
 
   return db
     .select({

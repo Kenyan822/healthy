@@ -351,15 +351,13 @@ export default async function MenuDetailPage({ params }: Props) {
               </div>
             </section>
 
-            {/* 宅配弁当アフィリエイト枠（高カロリー・高脂質メニューのみ、env未設定時は非表示） */}
-            {(menu.calories >= 800 || menu.fat >= 30) && (
-              <MealKitPromo
-                variant="menu-detail"
-                context="diet"
-                calories={menu.calories}
-                fat={menu.fat}
-              />
-            )}
+            {/* 宅配食アフィリエイト枠（高カロリー品は数値つきリードで訴求を強める） */}
+            <MealKitPromo
+              variant="menu-detail"
+              context="diet"
+              calories={menu.calories >= 700 ? menu.calories : undefined}
+              fat={menu.calories >= 700 ? menu.fat : undefined}
+            />
 
             {/* 同チェーン店の類似メニュー */}
             {similarMenus.length > 0 && (
