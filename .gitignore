@@ -51,3 +51,4 @@ next-env.d.ts
 data/chain_restaurant.db
 data/healthy.db
 .playwright-mcp/
+data/db.sqlite
