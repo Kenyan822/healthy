@@ -3,10 +3,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   getStationById,
-  getChainsByStation,
-  getStationStats,
   getAllStationIds,
   getAllStations,
+  getAllChains,
 } from "@/lib/db/queries";
 import { purposes, allPurposeIds } from "@/lib/filters";
 
@@ -85,8 +84,9 @@ export default async function StationPage({ params }: Props) {
     notFound();
   }
 
-  const stationChains = await getChainsByStation(station);
-  const stats = await getStationStats(station);
+  // Places APIのキャッシュデータは規約上30日でリフレッシュが必要なため表示に使わない。
+  // 店舗の実在確認はGoogleマップへの検索リンクに委ねる(維持費・規約リスクゼロ)
+  const allChains = await getAllChains();
   const allStations = await getAllStations(200);
 
   // 同じ都道府県の他の駅
@@ -132,17 +132,6 @@ export default async function StationPage({ params }: Props) {
             {stationData.prefecture}｜{stationData.line || ""}
           </p>
 
-          {/* 統計サマリー */}
-          {stats.totalChains > 0 && (
-            <div className="mt-6 flex flex-wrap gap-4">
-              <div className="bg-white/80 dark:bg-zinc-800/80 rounded-lg px-4 py-2">
-                <span className="text-2xl font-bold text-primary">
-                  {stats.totalChains}
-                </span>
-                <span className="text-sm text-foreground/70 ml-1">店舗</span>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -164,71 +153,43 @@ export default async function StationPage({ params }: Props) {
           </section>
         )}
 
-        {/* 周辺チェーン店一覧 */}
-        {stationChains.length > 0 ? (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">
-              {stationData.stationName}駅から徒歩圏内のチェーン店
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stationChains.map(({ stationChain, chain }) => (
-                <div
-                  key={stationChain.id}
-                  className="bg-card-bg rounded-xl border border-border p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-bold text-lg text-foreground">
-                        {chain.chainName}
-                      </p>
-                      <p className="text-sm text-foreground/60 mt-1">
-                        {stationChain.placeName}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="inline-block bg-primary/10 text-primary px-2 py-1 rounded text-sm font-bold">
-                        {formatDistance(stationChain.distanceMeters)}
-                      </span>
-                    </div>
-                  </div>
-                  {stationChain.placeAddress && (
-                    <p className="text-xs text-foreground/50 mt-2 truncate">
-                      {stationChain.placeAddress}
-                    </p>
-                  )}
-                  {/* アクションボタン */}
-                  <div className="flex gap-2 mt-3 pt-3 border-t border-border">
-                    <Link
-                      href={`/${chain.chainId}`}
-                      className="flex-1 text-center text-sm py-2 px-3 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                    >
-                      メニューを見る
-                    </Link>
-                    {stationChain.placeId && (
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stationChain.placeName ?? '')}&query_place_id=${stationChain.placeId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 text-center text-sm py-2 px-3 bg-zinc-100 dark:bg-zinc-800 text-foreground/70 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                      >
-                        Googleマップ →
-                      </a>
-                    )}
-                  </div>
+        {/* チェーン×マップ検索 */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">
+            {stationData.stationName}駅周辺でチェーン店を探す
+          </h2>
+          <p className="text-sm text-foreground/60 mb-4">
+            「マップで探す」をタップすると、Googleマップで{stationData.stationName}駅周辺の店舗を検索します。
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {allChains.map((chain) => (
+              <div
+                key={chain.chainId}
+                className="bg-card-bg rounded-xl border border-border p-4"
+              >
+                <p className="font-bold text-lg text-foreground">
+                  {chain.chainName}
+                </p>
+                <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+                  <Link
+                    href={`/${chain.chainId}`}
+                    className="flex-1 text-center text-sm py-2 px-3 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                  >
+                    メニューを見る
+                  </Link>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${chain.chainName} ${stationData.stationName}駅`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-center text-sm py-2 px-3 bg-zinc-100 dark:bg-zinc-800 text-foreground/70 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    マップで探す →
+                  </a>
                 </div>
-              ))}
-            </div>
-          </section>
-        ) : (
-          <section className="mb-12 p-8 bg-card-bg rounded-xl border border-border text-center">
-            <p className="text-xl font-bold text-foreground mb-2">
-              周辺店舗データを取得中です
-            </p>
-            <p className="text-foreground/70">
-              {stationData.stationName}駅周辺の店舗情報は順次更新予定です。
-            </p>
-          </section>
-        )}
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* 目的別リンク */}
         <section className="mb-12">
@@ -251,28 +212,6 @@ export default async function StationPage({ params }: Props) {
             })}
           </div>
         </section>
-
-        {/* チェーン店別リンク */}
-        {stationChains.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">チェーン店のメニューを見る</h2>
-            <div className="flex flex-wrap gap-2">
-              {Array.from(
-                new Map(
-                  stationChains.map(({ chain }) => [chain.chainId, chain])
-                ).values()
-              ).map((chain) => (
-                <Link
-                  key={chain.chainId}
-                  href={`/${chain.chainId}`}
-                  className="px-4 py-2 bg-card-bg rounded-lg border border-border hover:border-primary transition-colors text-sm"
-                >
-                  {chain.chainName}
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* 同じ都道府県の駅 */}
         {samePrefeStations.length > 0 && (
