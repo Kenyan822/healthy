@@ -100,6 +100,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 function prompt(question: string): Promise<string> {
+  // バッチ実行用: --yes で承認プロンプトをスキップ
+  if (process.argv.includes("--yes")) return Promise.resolve("y");
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -589,6 +591,13 @@ async function main() {
   }
 
   // 7. データファイル生成
+  // 安全ガード: 取得件数が既存の半分未満なら上書き中止（サイト構造変更による消失防止）
+  if (menuItems.length < existingMenuData.length / 2) {
+    console.error(
+      `⛔ 中止: 取得${menuItems.length}件は既存${existingMenuData.length}件の半分未満です。サイト構造変更の可能性があります。`
+    );
+    process.exit(1);
+  }
   const content = generateDataFile(menuItems);
   const filePath = path.join(__dirname, "../data/subway-menus.ts");
   fs.writeFileSync(filePath, content, "utf-8");

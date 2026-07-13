@@ -68,6 +68,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 function prompt(question: string): Promise<string> {
+  // バッチ実行用: --yes で承認プロンプトをスキップ
+  if (process.argv.includes("--yes")) return Promise.resolve("y");
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -322,6 +324,18 @@ async function main() {
   }
 
   const filePath = path.join(__dirname, "../data/mcdonalds-menus.ts");
+  // 安全ガード: 取得件数が既存の半分未満なら上書き中止（サイト構造変更による消失防止）
+  if (fs.existsSync(filePath)) {
+    const existingCount = (
+      fs.readFileSync(filePath, "utf-8").match(/"menu_id"/g) || []
+    ).length;
+    if (items.length < existingCount / 2) {
+      console.error(
+        `⛔ 中止: 取得${items.length}件は既存${existingCount}件の半分未満です。サイト構造変更の可能性があります。`
+      );
+      process.exit(1);
+    }
+  }
   fs.writeFileSync(filePath, generateDataFile(items), "utf-8");
   console.log(`\n${items.length} 件を ${filePath} に生成しました`);
   console.log("DBに反映するには npm run seed:mcdonalds を実行してください");

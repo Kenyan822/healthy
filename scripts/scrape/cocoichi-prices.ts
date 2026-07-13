@@ -292,6 +292,8 @@ function printReport(report: PriceUpdateReport): void {
  * stdinから1行読み取る
  */
 function prompt(message: string): Promise<string> {
+  // バッチ実行用: --yes で承認プロンプトをスキップ
+  if (process.argv.includes("--yes")) return Promise.resolve("y");
   return new Promise((resolve) => {
     process.stdout.write(message);
     process.stdin.setEncoding("utf8");

@@ -123,6 +123,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 function prompt(question: string): Promise<string> {
+  // バッチ実行用: --yes で承認プロンプトをスキップ
+  if (process.argv.includes("--yes")) return Promise.resolve("y");
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
