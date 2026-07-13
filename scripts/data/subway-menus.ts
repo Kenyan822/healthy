@@ -1,5 +1,5 @@
 /**
- * サブウェイメニューデータ（2026-07-12 公式サイトより自動生成）
+ * サブウェイメニューデータ（2026-07-13 公式サイトより自動生成）
  * 自動生成ファイル - scripts/scrape/subway.ts で生成
  * sodiumは食塩相当量(g)。ドリンクの栄養値は公式掲載の単一値（サイズ別未公表）
  */
@@ -30,9 +30,9 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-topping-011", menu_name: "サラダチキン", price: 550, category: "サンドイッチ", calories: 281, protein: 21.2, fat: 2.8, carb: 44.1, sodium: 2.2, allergens: [] },
   { menu_id: "subway-topping-013", menu_name: "チリチキン", price: 550, category: "サンドイッチ", calories: 273, protein: 20.5, fat: 4.1, carb: 39.7, sodium: 2.6, allergens: [] },
   { menu_id: "subway-salad-008", menu_name: "BLT", price: 560, category: "サンドイッチ", calories: 335, protein: 11.3, fat: 14.2, carb: 41.9, sodium: 1.9, allergens: [] },
-  { menu_id: "subway-sandwich-024", menu_name: "てり焼きチキン", price: 580, category: "サンドイッチ", calories: 346, protein: 19.7, fat: 9.9, carb: 45.5, sodium: 2.7, allergens: [] },
+  { menu_id: "subway-topping-016", menu_name: "てり焼きチキン", price: 580, category: "サンドイッチ", calories: 346, protein: 19.7, fat: 9.9, carb: 45.5, sodium: 2.7, allergens: [] },
   { menu_id: "subway-salad-010", menu_name: "えびたま", price: 570, category: "サンドイッチ", calories: 321, protein: 13.1, fat: 12.8, carb: 39.3, sodium: 1.9, allergens: [] },
-  { menu_id: "subway-sandwich-025", menu_name: "生ハムマスカルポーネ", price: 630, category: "サンドイッチ", calories: 326, protein: 15.5, fat: 11.2, carb: 42.3, sodium: 2.5, allergens: [] },
+  { menu_id: "subway-salad-017", menu_name: "生ハムマスカルポーネ", price: 630, category: "サンドイッチ", calories: 326, protein: 15.5, fat: 11.2, carb: 42.3, sodium: 2.5, allergens: [] },
   { menu_id: "subway-salad-011", menu_name: "えびアボカド", price: 630, category: "サンドイッチ", calories: 319, protein: 11.9, fat: 12.2, carb: 41.1, sodium: 1.7, allergens: [] },
   { menu_id: "subway-salad-013", menu_name: "アボカドチキン", price: 650, category: "サンドイッチ", calories: 373, protein: 21.7, fat: 12.6, carb: 44.3, sodium: 2.3, allergens: [] },
   { menu_id: "subway-sandwich-017", menu_name: "贅沢てりたま", price: 690, category: "サンドイッチ", calories: 449, protein: 19.9, fat: 20.4, carb: 46.8, sodium: 3.2, allergens: [] },
@@ -51,7 +51,7 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-topping-011", menu_name: "サラダチキン", price: 880, category: "サラダ", calories: 93, protein: 14.7, fat: 0.8, carb: 8.3, sodium: 0.8, allergens: [] },
   { menu_id: "subway-topping-013", menu_name: "チリチキン", price: 880, category: "サラダ", calories: 104, protein: 14.9, fat: 0.9, carb: 10.5, sodium: 1.4, allergens: [] },
   { menu_id: "subway-salad-008", menu_name: "BLT", price: 890, category: "サラダ", calories: 101, protein: 3.8, fat: 8.4, carb: 3.1, sodium: 0.6, allergens: [] },
-  { menu_id: "subway-salad-016", menu_name: "てり焼きチキン", price: 910, category: "サラダ", calories: 177, protein: 14.1, fat: 6.8, carb: 16.4, sodium: 1.5, allergens: [] },
+  { menu_id: "subway-topping-016", menu_name: "てり焼きチキン", price: 910, category: "サラダ", calories: 177, protein: 14.1, fat: 6.8, carb: 16.4, sodium: 1.5, allergens: [] },
   { menu_id: "subway-salad-010", menu_name: "えびたま", price: 900, category: "サラダ", calories: 113, protein: 7.3, fat: 5.7, carb: 9.4, sodium: 0.6, allergens: [] },
   { menu_id: "subway-salad-011", menu_name: "えびアボカド", price: 960, category: "サラダ", calories: 103, protein: 5.5, fat: 4.8, carb: 10.6, sodium: 0.3, allergens: [] },
   { menu_id: "subway-salad-017", menu_name: "生ハムマスカルポーネ", price: 960, category: "サラダ", calories: 129, protein: 9.1, fat: 7, carb: 9, sodium: 1.4, allergens: [] },
