@@ -1,13 +1,10 @@
 import { MetadataRoute } from "next";
+import { getAllChains, getAllMenus } from "@/lib/db/queries";
+import type { MenuSelect } from "@/lib/db/schema";
 import {
-  getAllChains,
-  getAllMenuSlugs,
-  countMenusByChain,
-  countMenusByNutritionFilter,
-  countMenusByPriceFilter,
-  countMenusByTiming,
-} from "@/lib/db/queries";
-import {
+  nutritionFilters,
+  priceFilters,
+  timingFilters,
   allPurposeIds,
   allNutritionFilterIds,
   allPriceFilterIds,
@@ -22,21 +19,50 @@ const BASE_URL =
 // 最低メニュー数（品質管理）
 const MIN_MENU_COUNT = 3;
 
+// フィルタ該当判定（DBのcount系クエリと同じ条件をJSで評価する。
+// チェーン×フィルタごとに逐次クエリするとVercelの60秒制限を超えるため、
+// 全メニューを一括取得してメモリ上で集計する）
+function matchesNutrition(
+  menu: MenuSelect,
+  filterId: (typeof allNutritionFilterIds)[number]
+): boolean {
+  const filter = nutritionFilters[filterId];
+  return "min" in filter
+    ? menu[filter.type] >= filter.min
+    : menu[filter.type] <= filter.max;
+}
+
+function matchesPrice(
+  menu: MenuSelect,
+  filterId: (typeof allPriceFilterIds)[number]
+): boolean {
+  const filter = priceFilters[filterId];
+  return menu.price != null && menu.price <= filter.max;
+}
+
+function matchesTiming(
+  menu: MenuSelect,
+  filterId: (typeof allTimingFilterIds)[number]
+): boolean {
+  const filter = timingFilters[filterId];
+  return menu.timing === filter.value || menu.timing === "anytime";
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // クエリは2回だけ（チェーン一覧・全メニュー）
   const chains = await getAllChains();
-  const menuSlugs = await getAllMenuSlugs();
+  const allMenus = await getAllMenus();
   const now = new Date().toISOString();
 
-  // チェーンごとのメニュー数を事前に取得
-  const chainMenuCounts = new Map<string, number>();
-  for (const chain of chains) {
-    const count = await countMenusByChain(chain.chainId);
-    chainMenuCounts.set(chain.chainId, count);
+  const menusByChain = new Map<string, MenuSelect[]>();
+  for (const menu of allMenus) {
+    const list = menusByChain.get(menu.chainId) ?? [];
+    list.push(menu);
+    menusByChain.set(menu.chainId, list);
   }
 
-  // メニュー数が基準を満たすチェーンをフィルタ
   const qualifiedChains = chains.filter(
-    (chain) => (chainMenuCounts.get(chain.chainId) ?? 0) >= MIN_MENU_COUNT
+    (chain) => (menusByChain.get(chain.chainId)?.length ?? 0) >= MIN_MENU_COUNT
   );
 
   // ============================
@@ -76,7 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // ============================
-  // 店トップページ (/[store])
+  // 店トップ / メニュー一覧 / ランキング
   // ============================
   const storeTopPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
     url: `${BASE_URL}/${chain.chainId}`,
@@ -85,9 +111,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  // ============================
-  // 店メニュー一覧 (/[store]/menu)
-  // ============================
   const storeMenuPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
     url: `${BASE_URL}/${chain.chainId}/menu`,
     lastModified: now,
@@ -95,9 +118,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // ============================
-  // 店ランキング (/[store]/ranking)
-  // ============================
   const storeRankingPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
     url: `${BASE_URL}/${chain.chainId}/ranking`,
     lastModified: now,
@@ -106,7 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // ============================
-  // 店×目的 (/[store]/[purpose])
+  // 店×目的 / 店×フィルタ（JS集計で3件以上のみ）
   // ============================
   const storePurposePages: MetadataRoute.Sitemap = qualifiedChains.flatMap((chain) =>
     allPurposeIds.map((purposeId) => ({
@@ -117,15 +137,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  // ============================
-  // 店×栄養フィルター (/[store]/protein-over-30g など)
-  // ============================
-  const storeNutritionPages: MetadataRoute.Sitemap = [];
+  const storeFilterPages: MetadataRoute.Sitemap = [];
   for (const chain of chains) {
+    const menus = menusByChain.get(chain.chainId) ?? [];
+
     for (const filterId of allNutritionFilterIds) {
-      const count = await countMenusByNutritionFilter(chain.chainId, filterId);
-      if (count >= MIN_MENU_COUNT) {
-        storeNutritionPages.push({
+      if (menus.filter((m) => matchesNutrition(m, filterId)).length >= MIN_MENU_COUNT) {
+        storeFilterPages.push({
           url: `${BASE_URL}/${chain.chainId}/${filterId}`,
           lastModified: now,
           changeFrequency: "weekly" as const,
@@ -133,17 +151,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
     }
-  }
 
-  // ============================
-  // 店×価格フィルター (/[store]/under-500yen など)
-  // ============================
-  const storePricePages: MetadataRoute.Sitemap = [];
-  for (const chain of chains) {
     for (const filterId of allPriceFilterIds) {
-      const count = await countMenusByPriceFilter(chain.chainId, filterId);
-      if (count >= MIN_MENU_COUNT) {
-        storePricePages.push({
+      if (menus.filter((m) => matchesPrice(m, filterId)).length >= MIN_MENU_COUNT) {
+        storeFilterPages.push({
           url: `${BASE_URL}/${chain.chainId}/${filterId}`,
           lastModified: now,
           changeFrequency: "weekly" as const,
@@ -151,17 +162,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
     }
-  }
 
-  // ============================
-  // 店×時間帯 (/[store]/breakfast など)
-  // ============================
-  const storeTimingPages: MetadataRoute.Sitemap = [];
-  for (const chain of chains) {
     for (const filterId of allTimingFilterIds) {
-      const count = await countMenusByTiming(chain.chainId, filterId);
-      if (count >= MIN_MENU_COUNT) {
-        storeTimingPages.push({
+      if (menus.filter((m) => matchesTiming(m, filterId)).length >= MIN_MENU_COUNT) {
+        storeFilterPages.push({
           url: `${BASE_URL}/${chain.chainId}/${filterId}`,
           lastModified: now,
           changeFrequency: "weekly" as const,
@@ -184,7 +188,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ============================
-  // 目的別ランキング (/ranking/[purpose])
+  // 目的別ランキング / チェーン別ランキング
   // ============================
   const purposeRankingPages: MetadataRoute.Sitemap = allPurposeIds.map(
     (purposeId) => ({
@@ -195,9 +199,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   );
 
-  // ============================
-  // チェーン別ランキング (/ranking/[chainId])
-  // ============================
   const chainRankingPages: MetadataRoute.Sitemap = qualifiedChains.map((chain) => ({
     url: `${BASE_URL}/ranking/${chain.chainId}`,
     lastModified: now,
@@ -206,9 +207,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // ============================
-  // メニュー詳細 (/[store]/[menuSlug])
+  // メニュー詳細 (/[store]/[menuSlug]) — 全メニューから導出
   // ============================
-  const menuDetailPages: MetadataRoute.Sitemap = menuSlugs
+  const menuDetailPages: MetadataRoute.Sitemap = allMenus
     .filter((m) => m.menuSlug)
     .map((m) => ({
       url: `${BASE_URL}/${m.chainId}/${m.menuSlug}`,
@@ -218,13 +219,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   // ============================
-  // 駅ページ (/area/[station]) - Phase 3基盤
+  // 駅ページ (/area/[station])
   // ============================
   const stationPages: MetadataRoute.Sitemap = stationIds.map((stationId) => ({
     url: `${BASE_URL}/area/${stationId}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
-    priority: 0.5, // 準備中のため低め
+    priority: 0.5,
   }));
 
   return [
@@ -233,9 +234,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...storeMenuPages,
     ...storeRankingPages,
     ...storePurposePages,
-    ...storeNutritionPages,
-    ...storePricePages,
-    ...storeTimingPages,
+    ...storeFilterPages,
     ...nutritionCrossPages,
     ...purposeRankingPages,
     ...chainRankingPages,

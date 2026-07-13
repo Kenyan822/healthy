@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   getChainById,
   getAllChains,
+  getAllMenus,
   getMenusByChain,
   getMenusBySeoPurpose,
   getMenusByNutritionFilter,
@@ -38,13 +39,23 @@ type Props = {
 };
 
 // 静的パス生成
+// チェーン×フィルタごとの逐次countクエリはVercelビルドを著しく遅くするため、
+// 全メニューを一括取得してJSで集計する(sitemap.tsと同じ方式)
 export async function generateStaticParams() {
   const chains = await getAllChains();
+  const allMenus = await getAllMenus();
   const params: { store: string; segment: string }[] = [];
 
+  const menusByChain = new Map<string, MenuSelect[]>();
+  for (const menu of allMenus) {
+    const list = menusByChain.get(menu.chainId) ?? [];
+    list.push(menu);
+    menusByChain.set(menu.chainId, list);
+  }
+
   for (const chain of chains) {
-    const menuCount = await countMenusByChain(chain.chainId);
-    if (menuCount < 3) continue;
+    const menus = menusByChain.get(chain.chainId) ?? [];
+    if (menus.length < 3) continue;
 
     // 目的
     for (const purposeId of allPurposeIds) {
@@ -53,7 +64,10 @@ export async function generateStaticParams() {
 
     // 栄養フィルター（3件以上のみ）
     for (const filterId of allNutritionFilterIds) {
-      const count = await countMenusByNutritionFilter(chain.chainId, filterId);
+      const filter = nutritionFilters[filterId];
+      const count = menus.filter((m) =>
+        "min" in filter ? m[filter.type] >= filter.min : m[filter.type] <= filter.max
+      ).length;
       if (count >= 3) {
         params.push({ store: chain.chainId, segment: filterId });
       }
@@ -61,7 +75,9 @@ export async function generateStaticParams() {
 
     // 価格フィルター（3件以上のみ）
     for (const filterId of allPriceFilterIds) {
-      const count = await countMenusByPriceFilter(chain.chainId, filterId);
+      const count = menus.filter(
+        (m) => m.price != null && m.price <= priceFilters[filterId].max
+      ).length;
       if (count >= 3) {
         params.push({ store: chain.chainId, segment: filterId });
       }
@@ -69,7 +85,10 @@ export async function generateStaticParams() {
 
     // 時間帯フィルター（3件以上のみ）
     for (const filterId of allTimingFilterIds) {
-      const count = await countMenusByTiming(chain.chainId, filterId);
+      const filter = timingFilters[filterId];
+      const count = menus.filter(
+        (m) => m.timing === filter.value || m.timing === "anytime"
+      ).length;
       if (count >= 3) {
         params.push({ store: chain.chainId, segment: filterId });
       }
