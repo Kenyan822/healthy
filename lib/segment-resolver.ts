@@ -77,20 +77,18 @@ export function generateSegmentMetadata(
 } {
   switch (segment.type) {
     case "purpose":
+      // titleは検索ユーザーの語彙(seoTitle)に合わせる。UI表示のnameとは分離
       return {
-        title: `${chainName}の${segment.data.name}メニュー｜${segment.data.keywords.slice(0, 2).join("・")}におすすめ`,
-        description: `${chainName}で${segment.data.name}におすすめのメニューを紹介。${segment.data.description}`,
+        title: `${chainName}の${segment.data.seoTitle}`,
+        description: `${chainName}の${segment.data.description}を全メニューの栄養成分データから抽出。カロリー・タンパク質・脂質・価格つきで比較できます。`,
       };
 
     case "nutrition": {
+      // filter.labelをそのまま使う(再構築するとカロリー系フィルタで誤表記になる)
       const filter = segment.data;
-      const filterLabel =
-        "min" in filter
-          ? `${filter.type === "protein" ? "タンパク質" : ""}${filter.min}g以上`
-          : `${filter.type === "fat" ? "脂質" : "糖質"}${filter.max}g以下`;
       return {
-        title: `${chainName}の${filterLabel}メニュー一覧`,
-        description: `${chainName}で${filterLabel}のメニューを探すならこちら。栄養成分付きで比較できます。`,
+        title: `${chainName}の${filter.label}メニュー一覧｜栄養成分つき`,
+        description: `${chainName}で${filter.label}のメニューを一覧掲載。カロリー・タンパク質・脂質・炭水化物と価格で比較できます。`,
       };
     }
 
@@ -108,8 +106,8 @@ export function generateSegmentMetadata(
 
     case "menu":
       return {
-        title: `${segment.data.menu.menuName}（${chainName}）のカロリー・栄養成分`,
-        description: `${chainName}の${segment.data.menu.menuName}の栄養成分を紹介。カロリー${segment.data.menu.calories}kcal、タンパク質${segment.data.menu.protein}g。`,
+        title: `${segment.data.menu.menuName}のカロリー・タンパク質・脂質（PFC）｜${chainName}`,
+        description: `${chainName}「${segment.data.menu.menuName}」の栄養成分: カロリー${segment.data.menu.calories}kcal、タンパク質${segment.data.menu.protein}g、脂質${segment.data.menu.fat}g、炭水化物${segment.data.menu.carb}g。価格と他メニュー比較も掲載。`,
       };
 
     default:

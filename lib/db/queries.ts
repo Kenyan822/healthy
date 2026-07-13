@@ -2,60 +2,10 @@ import { db, chains, menus, stations, stationChains } from "./index";
 import { eq, desc, asc, sql, and, gt, gte, lte, inArray, not, like } from "drizzle-orm";
 import { ENABLED_CHAINS, isChainEnabled } from "@/lib/chain-config";
 
-// 目的（purpose）の定義 - 事実ベースの指標
-export const purposes = {
-  "high-protein": {
-    id: "high-protein",
-    name: "高タンパク",
-    description: "タンパク質が豊富なメニュー",
-    sortField: "protein" as const,
-    sortOrder: "desc" as const,
-  },
-  "protein-dense": {
-    id: "protein-dense",
-    name: "タンパク質効率",
-    description: "カロリーあたりのタンパク質が多いメニュー",
-    sortField: "proteinDensity" as const, // protein / calories * 100
-    sortOrder: "desc" as const,
-  },
-  "low-calorie": {
-    id: "low-calorie",
-    name: "低カロリー",
-    description: "カロリーを抑えたメニュー",
-    sortField: "calories" as const,
-    sortOrder: "asc" as const,
-  },
-  "low-carb": {
-    id: "low-carb",
-    name: "低糖質",
-    description: "糖質比率が低いメニュー",
-    sortField: "carbRatio" as const, // (carb * 4) / calories
-    sortOrder: "asc" as const,
-  },
-  "low-fat": {
-    id: "low-fat",
-    name: "低脂質",
-    description: "脂質比率が低いメニュー",
-    sortField: "fatRatio" as const, // (fat * 9) / calories
-    sortOrder: "asc" as const,
-  },
-  balanced: {
-    id: "balanced",
-    name: "バランス重視",
-    description: "PFCバランスの良いメニュー",
-    sortField: "pfcBalance" as const,
-    sortOrder: "desc" as const,
-  },
-  "cost-performance": {
-    id: "cost-performance",
-    name: "タンパク質コスパ",
-    description: "タンパク質1gあたりの価格が安いメニュー",
-    sortField: "costPerformance" as const,
-    sortOrder: "asc" as const,
-  },
-} as const;
-
-export type PurposeId = keyof typeof purposes;
+// 目的（purpose）の定義は lib/filters.ts に一本化（seoTitle等の拡張はそちらで行う）
+import { purposes, type PurposeId } from "@/lib/filters";
+export { purposes };
+export type { PurposeId };
 
 // 全チェーン店を取得（有効なチェーンのみ）
 export async function getAllChains() {

@@ -9,6 +9,7 @@ export const purposes = {
     sortField: "protein" as const,
     sortOrder: "desc" as const,
     keywords: ["高タンパク", "タンパク質", "筋トレ", "プロテイン"],
+    seoTitle: "高タンパクメニューランキング｜タンパク質が多い順",
   },
   "protein-dense": {
     id: "protein-dense",
@@ -17,6 +18,7 @@ export const purposes = {
     sortField: "proteinDensity" as const,
     sortOrder: "desc" as const,
     keywords: ["タンパク質効率", "高タンパク低カロリー", "効率"],
+    seoTitle: "タンパク質が多いメニューランキング｜カロリー効率順",
   },
   "low-calorie": {
     id: "low-calorie",
@@ -25,6 +27,7 @@ export const purposes = {
     sortField: "calories" as const,
     sortOrder: "asc" as const,
     keywords: ["低カロリー", "カロリー制限", "カロリー控えめ"],
+    seoTitle: "低カロリーメニュー一覧｜カロリーが低い順",
   },
   "low-carb": {
     id: "low-carb",
@@ -33,6 +36,7 @@ export const purposes = {
     sortField: "carbRatio" as const,
     sortOrder: "asc" as const,
     keywords: ["低糖質", "糖質制限", "ローカーボ", "ケトジェニック"],
+    seoTitle: "低糖質メニュー一覧｜糖質制限・ロカボ向け",
   },
   "low-fat": {
     id: "low-fat",
@@ -41,6 +45,7 @@ export const purposes = {
     sortField: "fatRatio" as const,
     sortOrder: "asc" as const,
     keywords: ["低脂質", "脂質制限", "ローファット"],
+    seoTitle: "低脂質メニュー一覧｜脂質が少ない順",
   },
   balanced: {
     id: "balanced",
@@ -49,6 +54,7 @@ export const purposes = {
     sortField: "pfcBalance" as const,
     sortOrder: "desc" as const,
     keywords: ["バランス", "PFC", "PFCバランス"],
+    seoTitle: "PFCバランスの良いメニュー一覧",
   },
   "cost-performance": {
     id: "cost-performance",
@@ -57,6 +63,7 @@ export const purposes = {
     sortField: "costPerformance" as const,
     sortOrder: "asc" as const,
     keywords: ["コスパ", "コストパフォーマンス", "安い", "お得"],
+    seoTitle: "タンパク質コスパランキング｜1gあたりの価格が安い順",
   },
 } as const;
 

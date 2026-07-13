@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // 目的別ランキング
   if (isPurposeId(type)) {
     const purpose = purposes[type];
-    const title = `${purpose.name}メニューランキング｜外食チェーンおすすめ`;
+    const title = `外食チェーンの${purpose.seoTitle}`;
     const description = `外食チェーン店の${purpose.name}メニューをランキング。${purpose.description}`;
     return {
       title,

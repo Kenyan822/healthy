@@ -32,8 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const menuCount = await countMenusByChain(store);
-  const title = `${chain.chainName}のメニュー｜カロリー・栄養成分一覧`;
-  const description = `${chain.chainName}のメニュー${menuCount}件の栄養成分を掲載。カロリー・タンパク質・PFCなど目的別にメニューを比較できます。`;
+  // 「〇〇 栄養成分」型クエリ対策で「栄養成分一覧」を明示(Search Console実測: いきなりステーキ 栄養成分 imp105/click0)
+  const title = `${chain.chainName}の栄養成分一覧｜全${menuCount}メニューのカロリー・PFC・価格`;
+  const description = `${chain.chainName}の全メニュー${menuCount}件の栄養成分(カロリー・タンパク質・脂質・炭水化物)と価格を一覧掲載。低脂質・高タンパクなど目的別に比較できます。`;
 
   return {
     title,

@@ -33,8 +33,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { menu, chain } = result;
-  const title = `${menu.menuName}の栄養成分・カロリー | ${chain.chainName}`;
-  const description = `${chain.chainName}の${menu.menuName}の栄養成分。カロリー${menu.calories}kcal、タンパク質${menu.protein}g、脂質${menu.fat}g、炭水化物${menu.carb}g。PFC・価格で他メニューと比較できます。`;
+  // 「〇〇 カロリー」「〇〇 pfc」型の検索クエリに合わせた語彙(Search Console実測に基づく)
+  const title = `${menu.menuName}のカロリー・タンパク質・脂質（PFC）| ${chain.chainName}`;
+  const description = `${chain.chainName}「${menu.menuName}」の栄養成分: カロリー${menu.calories}kcal、タンパク質${menu.protein}g、脂質${menu.fat}g、炭水化物${menu.carb}g。価格と類似メニュー比較も掲載。`;
 
   return {
     title,
