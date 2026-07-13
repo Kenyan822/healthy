@@ -46,3 +46,8 @@ next-env.d.ts
 # data
 /data
 /menudata
+
+# ローカルDB(Tursoが本番の正、seedで再生成可能)
+data/chain_restaurant.db
+data/healthy.db
+.playwright-mcp/
