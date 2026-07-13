@@ -1,4 +1,5 @@
 import { getActiveOffer } from "@/lib/affiliate";
+import { AffiliateTrackedLink } from "./AffiliateTrackedLink";
 
 /**
  * サイドバー用のバナー広告（デスクトップのみ表示）。
@@ -14,10 +15,11 @@ export function SidebarBanner() {
   return (
     <div className="hidden lg:block bg-card-bg rounded-xl border border-border p-4">
       <p className="text-[10px] text-foreground/50 mb-2">PR</p>
-      <a
+      <AffiliateTrackedLink
         href={href}
-        rel="nofollow sponsored"
-        target="_blank"
+        offerId={offer.id}
+        promoContext="banner"
+        placement="banner"
         className="block"
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- A8提供素材のためnext/image最適化の対象外 */}
@@ -29,7 +31,7 @@ export function SidebarBanner() {
           className="w-full h-auto rounded-lg"
           loading="lazy"
         />
-      </a>
+      </AffiliateTrackedLink>
       {/* eslint-disable-next-line @next/next/no-img-element -- A8のインプレッション計測ビーコン */}
       <img src={beacon} width={1} height={1} alt="" className="absolute" />
     </div>

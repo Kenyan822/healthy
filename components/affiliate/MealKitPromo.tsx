@@ -1,8 +1,8 @@
-import Link from "next/link";
 import {
   getActiveOffer,
   type PromoContext,
 } from "@/lib/affiliate";
+import { AffiliateTrackedLink } from "./AffiliateTrackedLink";
 
 /**
  * 宅配食アフィリエイト枠。
@@ -47,14 +47,15 @@ export function MealKitPromo({
         {lead}
         {isMenuDetail ? offer.menuDetailCopy : offer.emptyResultsCopy}
       </p>
-      <Link
+      <AffiliateTrackedLink
         href={url}
-        rel="nofollow sponsored"
-        target="_blank"
+        offerId={offer.id}
+        promoContext={context}
+        placement="text"
         className="inline-block px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
       >
         {offer.cta}
-      </Link>
+      </AffiliateTrackedLink>
     </aside>
   );
 }

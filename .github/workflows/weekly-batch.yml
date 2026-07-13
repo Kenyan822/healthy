@@ -1,0 +1,63 @@
+# 週次価格バッチ: スクレイプ → 価格履歴記録 → Turso本番同期 → データファイルをコミット
+# pushによりVercelが自動再ビルドされ、静的ページの価格も最新化される。
+# 手動実行: Actionsタブ → weekly-price-batch → Run workflow
+name: weekly-price-batch
+
+on:
+  schedule:
+    - cron: "0 22 * * 0" # 毎週日曜22:00 UTC = 月曜7:00 JST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-batch
+  cancel-in-progress: false
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 依存関係のインストール
+        run: npm ci
+
+      - name: 本番DBからローカルDBを再構築
+        run: npx tsx scripts/pull-from-turso.ts
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
+      - name: 全チェーンをスクレイプ+seed+本番同期
+        run: npm run batch:update -- --sync
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
+      - name: レポートをArtifactに保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-report-${{ github.run_id }}
+          path: data/reports/
+          retention-days: 90
+
+      - name: 更新されたデータファイルをコミット
+        run: |
+          git config user.name "chenmeshi-batch-bot"
+          git config user.email "bot@chenmeshi.com"
+          git add scripts/data
+          if git diff --cached --quiet; then
+            echo "価格変更なし: コミットをスキップ"
+          else
+            git commit -m "chore(data): 週次価格バッチによる自動更新"
+            git push
+          fi
