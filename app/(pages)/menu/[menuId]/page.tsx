@@ -355,6 +355,7 @@ export default async function MenuDetailPage({ params }: Props) {
             {(menu.calories >= 800 || menu.fat >= 30) && (
               <MealKitPromo
                 variant="menu-detail"
+                context="diet"
                 calories={menu.calories}
                 fat={menu.fat}
               />

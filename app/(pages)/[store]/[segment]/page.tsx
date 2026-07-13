@@ -31,6 +31,7 @@ import { buildMenuItemListJsonLd, buildBreadcrumbJsonLd } from "@/lib/jsonld";
 import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
+import { promoContextForSegment } from "@/lib/affiliate";
 
 type Props = {
   params: Promise<{ store: string; segment: string }>;
@@ -185,7 +186,12 @@ async function PurposeView({
       <div className="container mx-auto px-4 py-8">
         <PageIntroSection chainName={chain.chainName} purposeId={purpose.id} menuCount={menus.length} />
         <MenuTable menus={menus} />
-        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
+        {menus.length < 5 && (
+          <MealKitPromo
+            variant="empty-results"
+            context={promoContextForSegment(purpose.id)}
+          />
+        )}
         <RelatedLinks store={store} currentSegment={purpose.id} />
       </div>
     </main>
@@ -231,7 +237,12 @@ async function NutritionView({
 
       <div className="container mx-auto px-4 py-8">
         <MenuTable menus={menus} highlightField={filter.type} />
-        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
+        {menus.length < 5 && (
+          <MealKitPromo
+            variant="empty-results"
+            context={promoContextForSegment(filterId)}
+          />
+        )}
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -277,7 +288,12 @@ async function PriceView({
 
       <div className="container mx-auto px-4 py-8">
         <MenuTable menus={menus} highlightField="price" />
-        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
+        {menus.length < 5 && (
+          <MealKitPromo
+            variant="empty-results"
+            context={promoContextForSegment(filterId)}
+          />
+        )}
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
@@ -322,7 +338,12 @@ async function TimingView({
       <div className="container mx-auto px-4 py-8">
         <TimingIntroSection chainName={chain.chainName} timingId={filterId} menuCount={menus.length} />
         <MenuTable menus={menus} />
-        {menus.length < 5 && <MealKitPromo variant="empty-results" />}
+        {menus.length < 5 && (
+          <MealKitPromo
+            variant="empty-results"
+            context={promoContextForSegment(filterId)}
+          />
+        )}
         <RelatedLinks store={store} currentSegment={filterId} />
       </div>
     </main>
