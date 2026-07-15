@@ -5,14 +5,23 @@ import Script from "next/script";
 import Link from "next/link";
 
 const CONSENT_KEY = "chenmeshi_cookie_consent";
+const DEV_KEY = "chenmeshi_dev";
 
 // "loading"=SSR/初回描画（バナー非表示）、null=未回答（バナー表示）
 type ConsentStatus = "granted" | "denied" | "loading" | null;
 
 export function CookieConsent() {
   const [consentStatus, setConsentStatus] = useState<ConsentStatus>("loading");
+  const [isDev, setIsDev] = useState(false);
 
   useEffect(() => {
+    // 開発者除外: ?dev=1 を一度開いたデバイスは以後GAを読み込まない(?dev=0で解除)。
+    // IPが変動する回線や外出先からのアクセスでも運営者の閲覧を計測から外すための仕組み
+    const dev = new URLSearchParams(window.location.search).get("dev");
+    if (dev === "1") localStorage.setItem(DEV_KEY, "1");
+    if (dev === "0") localStorage.removeItem(DEV_KEY);
+    setIsDev(localStorage.getItem(DEV_KEY) === "1");
+
     // localStorageはSSRで読めないため、マウント後の1回だけ同期する必要がある
     // (初期レンダは"loading"でバナー非表示のまま。再レンダは1回のみ)
     const stored = localStorage.getItem(CONSENT_KEY);
@@ -38,7 +47,7 @@ export function CookieConsent() {
 
   return (
     <>
-      {consentStatus === "granted" && GA_ID && (
+      {consentStatus === "granted" && !isDev && GA_ID && (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
