@@ -8,6 +8,7 @@ import {
   countMenusByChain,
 } from "@/lib/db/queries";
 import { getCategoryLabel, getCategoryColor, formatPrice } from "@/lib/utils";
+import type { ChainCategory } from "@/types";
 import { purposes, allPurposeIds } from "@/lib/filters";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { NutritionFilters } from "@/components/store/NutritionFilters";
@@ -92,9 +93,9 @@ export default async function StoreTopPage({ params }: Props) {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <span
-                className={`inline-block text-xs px-2 py-0.5 rounded mb-2 ${getCategoryColor(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}`}
+                className={`inline-block text-xs px-2 py-0.5 rounded mb-2 ${getCategoryColor(chain.category as ChainCategory)}`}
               >
-                {getCategoryLabel(chain.category as "teishoku" | "gyudon" | "fastfood" | "cafe" | "famires" | "ramen" | "curry" | "udon" | "other")}
+                {getCategoryLabel(chain.category as ChainCategory)}
               </span>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                 {chain.chainName}のメニュー一覧

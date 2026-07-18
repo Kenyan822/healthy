@@ -13,9 +13,9 @@ export const ENABLED_CHAINS: ReadonlySet<string> = new Set([
   // "saizeriya",   // サイゼリヤ
   "cocoichi",    // CoCo壱番屋
   "nakau",       // なか卯
-  // "seven",       // セブン-イレブン
-  // "familymart",  // ファミリーマート
-  // "lawson",      // ローソン
+  "seven",       // セブン-イレブン
+  "familymart",  // ファミリーマート
+  "lawson",      // ローソン
   "ringerhut",   // リンガーハット
   "marugame",    // 丸亀製麺
   // "gusto",       // ガスト

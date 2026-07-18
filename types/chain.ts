@@ -8,6 +8,7 @@ export type ChainCategory =
   | "curry" // カレー
   | "udon" // うどん・そば
   | "steak" // ステーキ
+  | "conbini" // コンビニ
   | "other"; // その他
 
 export interface Chain {

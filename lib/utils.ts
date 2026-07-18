@@ -23,6 +23,7 @@ export function getCategoryLabel(category: ChainCategory): string {
     curry: "カレー",
     udon: "うどん・そば",
     steak: "ステーキ",
+    conbini: "コンビニ",
     other: "その他",
   };
   return labels[category] || category;
@@ -150,6 +151,7 @@ export function getCategoryColor(category: ChainCategory): string {
     curry: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
     udon: "bg-stone-100 text-stone-800 dark:bg-stone-900 dark:text-stone-200",
     steak: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    conbini: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200",
     other: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
   };
   return colors[category] || colors.other;

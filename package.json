@@ -22,6 +22,9 @@
     "seed:marugame": "npx tsx scripts/seed-marugame.ts",
     "seed:mcdonalds": "npx tsx scripts/seed-mcdonalds.ts",
     "seed:kfc": "npx tsx scripts/seed-kfc.ts",
+    "seed:lawson": "npx tsx scripts/seed-lawson.ts",
+    "seed:familymart": "npx tsx scripts/seed-familymart.ts",
+    "seed:seven": "npx tsx scripts/seed-seven.ts",
     "sync:turso": "npx tsx scripts/sync-to-turso.ts",
     "sync:turso:dry": "npx tsx scripts/sync-to-turso.ts --dry-run",
     "batch:update": "npx tsx scripts/batch/update-all.ts",
@@ -42,7 +45,13 @@
     "scrape:ikinari": "npx tsx scripts/scrape/ikinari-prices.ts",
     "scrape:ikinari:dry": "npx tsx scripts/scrape/ikinari-prices.ts --dry-run",
     "scrape:subway": "npx tsx scripts/scrape/subway.ts",
-    "scrape:subway:dry": "npx tsx scripts/scrape/subway.ts --dry-run"
+    "scrape:subway:dry": "npx tsx scripts/scrape/subway.ts --dry-run",
+    "scrape:lawson": "npx tsx scripts/scrape/lawson.ts",
+    "scrape:lawson:dry": "npx tsx scripts/scrape/lawson.ts --dry-run",
+    "scrape:familymart": "npx tsx scripts/scrape/familymart.ts",
+    "scrape:familymart:dry": "npx tsx scripts/scrape/familymart.ts --dry-run",
+    "scrape:seven": "npx tsx scripts/scrape/seveneleven.ts",
+    "scrape:seven:dry": "npx tsx scripts/scrape/seveneleven.ts --dry-run"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",

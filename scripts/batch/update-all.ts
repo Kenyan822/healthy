@@ -37,6 +37,9 @@ const JOBS: ChainJob[] = [
   { chain: "ootoya", scrapeScript: "ootoya.ts", seedScript: "seed-ootoya.ts" },
   { chain: "subway", scrapeScript: "subway.ts", seedScript: "seed-subway.ts" },
   { chain: "mcdonalds", scrapeScript: "mcdonalds.ts", seedScript: "seed-mcdonalds.ts" },
+  { chain: "lawson", scrapeScript: "lawson.ts", seedScript: "seed-lawson.ts" },
+  { chain: "familymart", scrapeScript: "familymart.ts", seedScript: "seed-familymart.ts" },
+  { chain: "seven", scrapeScript: "seveneleven.ts", seedScript: "seed-seven.ts" },
 ];
 
 interface JobResult {
