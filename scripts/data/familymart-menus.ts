@@ -1,4 +1,4 @@
-// ファミリーマートメニューデータ（2026-07-18 公式サイトより自動生成・ローリング型）
+// ファミリーマートメニューデータ（2026-07-19 公式サイトより自動生成・ローリング型）
 // 生成: scripts/scrape/familymart.ts / 栄養は安全・安心ページ、価格はカテゴリページ(税込)の突合
 // sodiumは食塩相当量(g)。価格が突合できなかった商品は price: null
 
@@ -1943,7 +1943,7 @@ export const familymartMenuData: FamilymartMenuItem[] = [
     "menu_id": "familymart-p0810814",
     "menu_name": "鶏の旨みがつまった冷し鶏塩うどん",
     "category": "麺類",
-    "price": 550,
+    "price": null,
     "calories": 333,
     "protein": 14.6,
     "fat": 2.7,
@@ -2003,7 +2003,7 @@ export const familymartMenuData: FamilymartMenuItem[] = [
     "menu_id": "familymart-p0810449",
     "menu_name": "6種具材の冷しぶっかけ手延素麺",
     "category": "麺類",
-    "price": 498,
+    "price": null,
     "calories": 268,
     "protein": 12.5,
     "fat": 3.4,

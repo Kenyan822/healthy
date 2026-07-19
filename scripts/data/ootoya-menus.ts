@@ -1,4 +1,4 @@
-// 大戸屋メニューデータ（2026-07-13版 公式サイトスクレイピングより）
+// 大戸屋メニューデータ（2026-07-19版 公式サイトスクレイピングより）
 // 基準店舗: 大戸屋ごはん処 池袋東口店 (store_id: 27186)
 // 自動生成ファイル - scripts/scrape/ootoya.ts で生成
 
@@ -3826,7 +3826,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
   },
   {
     "menu_id": "ootoya-other-025",
-    "menu_name": "ミニ大戸屋風チキン南蛮",
+    "menu_name": "鶏もも肉のミニチキン南蛮",
     "category": "定番のおかず",
     "price": 500,
     "calories": 477,
@@ -5225,7 +5225,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
   },
   {
     "menu_id": "ootoya-other-064",
-    "menu_name": "ミニ大戸屋風チキン南蛮",
+    "menu_name": "鶏もも肉のミニチキン南蛮",
     "category": "惣菜・その他",
     "price": 500,
     "calories": 476,

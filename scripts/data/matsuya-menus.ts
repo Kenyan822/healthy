@@ -942,7 +942,7 @@ export const matsuyaMenuData: MatsuyaMenuItem[] = [
     "menu_id": "matsuya-curry-007",
     "menu_name": "創業ビーフロースかつカレー",
     "category": "カレー",
-    "price": 1170,
+    "price": 980,
     "calories": 1211,
     "protein": 36.8,
     "fat": 59.2,
