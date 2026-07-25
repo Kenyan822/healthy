@@ -207,16 +207,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // ============================
-  // メニュー詳細 (/[store]/[menuSlug]) — 全メニューから導出
+  // メニュー詳細 (/menu/[menuId]) — 全メニューから導出
+  // menu_slug は未使用（全件空）。実ルートは /menu/{menuId} なので menuId で生成する
   // ============================
-  const menuDetailPages: MetadataRoute.Sitemap = allMenus
-    .filter((m) => m.menuSlug)
-    .map((m) => ({
-      url: `${BASE_URL}/${m.chainId}/${m.menuSlug}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    }));
+  const menuDetailPages: MetadataRoute.Sitemap = allMenus.map((m) => ({
+    url: `${BASE_URL}/menu/${m.menuId}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
 
   // ============================
   // 駅ページ (/area/[station])
