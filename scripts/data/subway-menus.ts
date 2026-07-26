@@ -1,5 +1,5 @@
 /**
- * サブウェイメニューデータ（2026-07-19 公式サイトより自動生成）
+ * サブウェイメニューデータ（2026-07-26 公式サイトより自動生成）
  * 自動生成ファイル - scripts/scrape/subway.ts で生成
  * sodiumは食塩相当量(g)。ドリンクの栄養値は公式掲載の単一値（サイズ別未公表）
  */
@@ -19,9 +19,8 @@ export interface SubwayMenuItem {
 
 export const subwayMenuData: SubwayMenuItem[] = [
   // ========== サンドイッチ ==========
-  { menu_id: "subway-sandwich-021", menu_name: "メキシカンミートタコス", price: 590, category: "サンドイッチ", calories: 368, protein: 14.3, fat: 15.5, carb: 44.9, sodium: 2.3, allergens: [] },
-  { menu_id: "subway-sandwich-022", menu_name: "ざく切りサルサタコス", price: 630, category: "サンドイッチ", calories: 280, protein: 11.2, fat: 5.9, carb: 48.1, sodium: 2.1, allergens: [] },
-  { menu_id: "subway-sandwich-023", menu_name: "濃厚チーズタコス", price: 650, category: "サンドイッチ", calories: 402, protein: 14.8, fat: 18.6, carb: 45.8, sodium: 2.7, allergens: [] },
+  { menu_id: "subway-sandwich-024", menu_name: "シラチャーグリチキチーズ", price: 650, category: "サンドイッチ", calories: 342.2, protein: 19.4, fat: 12.4, carb: 39.4, sodium: 2.21, allergens: [] },
+  { menu_id: "subway-sandwich-025", menu_name: "タンドリーチキン", price: 590, category: "サンドイッチ", calories: 315.6, protein: 17.9, fat: 9.9, carb: 39.8, sodium: 2.28, allergens: [] },
   { menu_id: "subway-salad-001", menu_name: "ベジーデライト", price: 430, category: "サンドイッチ", calories: 215, protein: 7.2, fat: 4.4, carb: 38, sodium: 1.5, allergens: [] },
   { menu_id: "subway-topping-008", menu_name: "ハム", price: 480, category: "サンドイッチ", calories: 260, protein: 12.4, fat: 6.4, carb: 40, sodium: 2.1, allergens: [] },
   { menu_id: "subway-topping-003", menu_name: "たまご", price: 500, category: "サンドイッチ", calories: 318, protein: 11.7, fat: 13, carb: 39.6, sodium: 2.5, allergens: [] },
@@ -65,7 +64,6 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-side-007", menu_name: "ゴロゴロ野菜のトマト＆クラムスープ", price: 420, category: "サイドメニュー", calories: 62, protein: 3.2, fat: 1.1, carb: 9.8, sodium: 1.6, allergens: [] },
   { menu_id: "subway-side-009", menu_name: "チョコチップ", price: 250, category: "サイドメニュー", calories: 208, protein: 1.9, fat: 9.8, carb: 29.2, sodium: 0.4, allergens: [] },
   { menu_id: "subway-side-010", menu_name: "ホワイトマカダミア", price: 250, category: "サイドメニュー", calories: 219, protein: 2.4, fat: 10.8, carb: 27, sodium: 0.4, allergens: [] },
-  { menu_id: "subway-side-016", menu_name: "ダブルチョコ", price: 250, category: "サイドメニュー", calories: 212, protein: 2.3, fat: 10.1, carb: 28.4, sodium: 0.4, allergens: [] },
   { menu_id: "subway-side-017", menu_name: "ポテトドリンクセット", price: 390, category: "サイドメニュー", calories: 0, protein: 0, fat: 0, carb: 0, sodium: 0, allergens: [] },
   { menu_id: "subway-side-018", menu_name: "スープドリンクセット", price: 490, category: "サイドメニュー", calories: 0, protein: 0, fat: 0, carb: 0, sodium: 0, allergens: [] },
   { menu_id: "subway-side-019", menu_name: "クッキードリンクセット", price: 390, category: "サイドメニュー", calories: 0, protein: 0, fat: 0, carb: 0, sodium: 0, allergens: [] },
@@ -103,8 +101,8 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-drink-033-l", menu_name: "ペプシゼロ（L）", price: 320, category: "ドリンク", calories: 0, protein: 0.1, fat: 0, carb: 0.4, sodium: 0.1, allergens: [] },
   { menu_id: "subway-drink-034-s", menu_name: "ホットコーヒー（S）", price: 220, category: "ドリンク", calories: 5, protein: 0.2, fat: 0, carb: 0.8, sodium: 0, allergens: [] },
   { menu_id: "subway-drink-035-m", menu_name: "ホットコーヒー（M）", price: 270, category: "ドリンク", calories: 5, protein: 0.2, fat: 0, carb: 0.8, sodium: 0, allergens: [] },
-  { menu_id: "subway-drink-036-s", menu_name: "ホットカフェラテ（S）", price: 270, category: "ドリンク", calories: 60, protein: 3, fat: 3.3, carb: 4.5, sodium: 0.1, allergens: [] },
-  { menu_id: "subway-drink-037-m", menu_name: "ホットカフェラテ（M）", price: 320, category: "ドリンク", calories: 60, protein: 3, fat: 3.3, carb: 4.5, sodium: 0.1, allergens: [] },
+  { menu_id: "subway-drink-036-s", menu_name: "ホットカフェラテ（S）", price: 270, category: "ドリンク", calories: 60, protein: 3, fat: 3.3, carb: 4.3, sodium: 0.1, allergens: [] },
+  { menu_id: "subway-drink-037-m", menu_name: "ホットカフェラテ（M）", price: 320, category: "ドリンク", calories: 60, protein: 3, fat: 3.3, carb: 4.3, sodium: 0.1, allergens: [] },
   { menu_id: "subway-drink-038", menu_name: "コーヒーフロート", price: 390, category: "ドリンク", calories: 93, protein: 1.9, fat: 5.2, carb: 10, sodium: 0, allergens: [] },
   { menu_id: "subway-drink-039", menu_name: "カフェオレフロート", price: 390, category: "ドリンク", calories: 151, protein: 4.7, fat: 8.7, carb: 13.5, sodium: 0.1, allergens: [] },
   { menu_id: "subway-drink-040", menu_name: "クリームソーダ", price: 390, category: "ドリンク", calories: 172, protein: 1.6, fat: 5.2, carb: 30, sodium: 0, allergens: [] },
@@ -124,16 +122,16 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-topping-001", menu_name: "ナチュラルスライスチーズ", price: 100, category: "トッピング", calories: 52, protein: 3.3, fat: 4.2, carb: 0.2, sodium: 0.2, allergens: [] },
   { menu_id: "subway-topping-002", menu_name: "クリームタイプチーズ", price: 100, category: "トッピング", calories: 64, protein: 1.7, fat: 6.1, carb: 0.6, sodium: 0.5, allergens: [] },
   { menu_id: "subway-topping-003", menu_name: "たまご", price: 100, category: "トッピング", calories: 65, protein: 2.4, fat: 5.5, carb: 1.4, sodium: 0.5, allergens: [] },
-  { menu_id: "subway-topping-004", menu_name: "ツナ", price: 100, category: "トッピング", calories: 68, protein: 3.4, fat: 5.7, carb: 0.8, sodium: 0.7, allergens: [] },
+  { menu_id: "subway-topping-004", menu_name: "ツナ", price: 100, category: "トッピング", calories: 68, protein: 3.4, fat: 5.7, carb: 0.8, sodium: 0.5, allergens: [] },
   { menu_id: "subway-topping-005", menu_name: "サラミ風セミドライソーセージ", price: 100, category: "トッピング", calories: 35, protein: 1.7, fat: 2.9, carb: 0.6, sodium: 0.3, allergens: [] },
   { menu_id: "subway-topping-006", menu_name: "ベーコン", price: 120, category: "トッピング", calories: 61, protein: 1.9, fat: 5.9, carb: 0.1, sodium: 0.3, allergens: [] },
-  { menu_id: "subway-topping-007", menu_name: "マスカルポーネチーズ", price: 100, category: "トッピング", calories: 51, protein: 0.4, fat: 5.2, carb: 0.7, sodium: 0.5, allergens: [] },
+  { menu_id: "subway-topping-007", menu_name: "マスカルポーネチーズ", price: 100, category: "トッピング", calories: 51, protein: 0.4, fat: 5.2, carb: 0.7, sodium: 0, allergens: [] },
   { menu_id: "subway-topping-008", menu_name: "ハム", price: 180, category: "トッピング", calories: 53, protein: 5.1, fat: 3.1, carb: 1.8, sodium: 1, allergens: [] },
-  { menu_id: "subway-topping-009", menu_name: "えび", price: 180, category: "トッピング", calories: 16, protein: 3.6, fat: 0.1, carb: 0, sodium: 0, allergens: [] },
+  { menu_id: "subway-topping-009", menu_name: "えび", price: 180, category: "トッピング", calories: 16, protein: 3.6, fat: 0.1, carb: 0, sodium: 0.1, allergens: [] },
   { menu_id: "subway-topping-010", menu_name: "アボカド", price: 150, category: "トッピング", calories: 53, protein: 0.6, fat: 4.5, carb: 2.6, sodium: 0.2, allergens: [] },
   { menu_id: "subway-topping-011", menu_name: "サラダチキン", price: 250, category: "トッピング", calories: 60, protein: 13.3, fat: 0.6, carb: 0.3, sodium: 0.8, allergens: [] },
-  { menu_id: "subway-topping-012", menu_name: "生ハム", price: 200, category: "トッピング", calories: 44, protein: 7.3, fat: 1.5, carb: 0.4, sodium: 0, allergens: [] },
+  { menu_id: "subway-topping-012", menu_name: "生ハム", price: 200, category: "トッピング", calories: 44, protein: 7.3, fat: 1.5, carb: 0.4, sodium: 1.4, allergens: [] },
   { menu_id: "subway-topping-013", menu_name: "チリチキン", price: 250, category: "トッピング", calories: 70, protein: 13.5, fat: 0.7, carb: 2.6, sodium: 1.4, allergens: [] },
-  { menu_id: "subway-topping-016", menu_name: "てり焼きチキン", price: 300, category: "トッピング", calories: 130, protein: 8.4, fat: 6.8, carb: 8, sodium: 1, allergens: [] },
+  { menu_id: "subway-topping-016", menu_name: "てり焼きチキン", price: 300, category: "トッピング", calories: 130, protein: 8.4, fat: 6.8, carb: 8, sodium: 1.5, allergens: [] },
   { menu_id: "subway-topping-015", menu_name: "ローストビーフ", price: 400, category: "トッピング", calories: 58, protein: 8.1, fat: 3, carb: 0, sodium: 0.5, allergens: [] },
 ];

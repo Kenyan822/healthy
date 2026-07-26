@@ -57,11 +57,11 @@ export const nakauMenuData: NakauMenuItem[] = [
   { menu_id: "nakau-torikara-5", menu_name: "マヨ鶏から丼（並盛）", price: 700, category: "鶏から丼", calories: 1039, protein: 33.1, fat: 43.7, carb: 130.2, sodium: 4200, allergens: [] },
 
   // 【カレー】
-  { menu_id: "nakau-curry-1", menu_name: "和風カレー（並盛）", price: 540, category: "カレー", calories: 572, protein: 11.7, fat: 12.6, carb: 107.4, sodium: 3900, allergens: [] },
-  { menu_id: "nakau-curry-2", menu_name: "和風カツカレー（並盛）", price: 760, category: "カレー", calories: 1003, protein: 25.6, fat: 43.1, carb: 130.4, sodium: 4900, allergens: [] },
-  { menu_id: "nakau-curry-3", menu_name: "和風チーズカレー（並盛）", price: 700, category: "カレー", calories: 693, protein: 19.9, fat: 22.2, carb: 108.3, sodium: 4500, allergens: [] },
-  { menu_id: "nakau-curry-4", menu_name: "和風こだわり卵カレー（並盛）", price: 630, category: "カレー", calories: 666, protein: 19.4, fat: 19.0, carb: 107.6, sodium: 4900, allergens: [] },
-  { menu_id: "nakau-curry-5", menu_name: "和風牛あいがけカレー（並盛）", price: 870, category: "カレー", calories: 750, protein: 18.2, fat: 24.2, carb: 117.5, sodium: 5800, allergens: [] },
+  { menu_id: "nakau-curry-1", menu_name: "和風カレー（並盛）", price: 550, category: "カレー", calories: 572, protein: 11.7, fat: 12.6, carb: 107.4, sodium: 3900, allergens: [] },
+  { menu_id: "nakau-curry-2", menu_name: "和風カツカレー（並盛）", price: 770, category: "カレー", calories: 1003, protein: 25.6, fat: 43.1, carb: 130.4, sodium: 4900, allergens: [] },
+  { menu_id: "nakau-curry-3", menu_name: "和風チーズカレー（並盛）", price: 710, category: "カレー", calories: 693, protein: 19.9, fat: 22.2, carb: 108.3, sodium: 4500, allergens: [] },
+  { menu_id: "nakau-curry-4", menu_name: "和風こだわり卵カレー（並盛）", price: 640, category: "カレー", calories: 666, protein: 19.4, fat: 19.0, carb: 107.6, sodium: 4900, allergens: [] },
+  { menu_id: "nakau-curry-5", menu_name: "和風牛あいがけカレー（並盛）", price: 880, category: "カレー", calories: 750, protein: 18.2, fat: 24.2, carb: 117.5, sodium: 5800, allergens: [] },
 
   // 【雑炊】
   { menu_id: "nakau-zosui-1", menu_name: "親子雑炊", price: null, category: "雑炊", calories: 471, protein: 28.4, fat: 17.7, carb: 48.8, sodium: 3800, allergens: [] },
@@ -144,7 +144,7 @@ export const nakauMenuData: NakauMenuItem[] = [
   { menu_id: "nakau-okazu-17", menu_name: "牛カルビ（単品）", price: null, category: "おかず", calories: 533, protein: 16.5, fat: 38.9, carb: 27.0, sodium: 2300, allergens: [] },
   { menu_id: "nakau-okazu-18", menu_name: "豚しょうが焼き（単品）", price: null, category: "おかず", calories: 554, protein: 18.6, fat: 45.4, carb: 19.5, sodium: 3400, allergens: [] },
   { menu_id: "nakau-okazu-19", menu_name: "とろろ（単品）", price: 150, category: "おかず", calories: 48, protein: 1.4, fat: 0.0, carb: 10.6, sodium: 100, allergens: [] },
-  { menu_id: "nakau-okazu-20", menu_name: "納豆（単品）", price: 70, category: "おかず", calories: 82, protein: 6.7, fat: 4.0, carb: 6.4, sodium: 500, allergens: [] },
+  { menu_id: "nakau-okazu-20", menu_name: "納豆（単品）", price: 100, category: "おかず", calories: 82, protein: 6.7, fat: 4.0, carb: 6.4, sodium: 500, allergens: [] },
   { menu_id: "nakau-okazu-21", menu_name: "銀鮭（単品）", price: 220, category: "おかず", calories: 127, protein: 11.6, fat: 8.8, carb: 0.6, sodium: 1100, allergens: [] },
   { menu_id: "nakau-okazu-22", menu_name: "のり（単品）", price: 50, category: "おかず", calories: 4, protein: 0.8, fat: 0.1, carb: 0.9, sodium: 100, allergens: [] },
   { menu_id: "nakau-okazu-23", menu_name: "牛すき皿", price: 550, category: "おかず", calories: 250, protein: 9.0, fat: 15.8, carb: 15.7, sodium: 2900, allergens: [] },
