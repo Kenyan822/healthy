@@ -1,4 +1,4 @@
-// やよい軒メニューデータ（2026-07-26版 公式サイトスクレイピングより）
+// やよい軒メニューデータ（2026-08-02版 公式サイトスクレイピングより）
 // 基準地域: 東京 (ken_id: 13)
 // 自動生成ファイル - scripts/scrape/yayoiken.ts で生成
 
@@ -567,75 +567,6 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
   },
   {
     "menu_id": "yayoiken-teishoku-010a",
-    "menu_name": "大分とり天定食（白米）",
-    "category": "定食",
-    "price": 960,
-    "calories": 793,
-    "protein": 33.7,
-    "fat": 37,
-    "carb": 84.9,
-    "fiber": 6.1,
-    "sodium": 6,
-    "sugar": 78.8,
-    "allergens": [
-      "小麦",
-      "卵",
-      "ごま",
-      "大豆",
-      "鶏肉"
-    ],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "yayoiken-teishoku-010b",
-    "menu_name": "大分とり天定食（もち⻨ごはん普通盛）",
-    "category": "定食",
-    "price": 960,
-    "calories": 809,
-    "protein": 34.2,
-    "fat": 37,
-    "carb": 89,
-    "fiber": 7.3,
-    "sodium": 6,
-    "sugar": 81.7,
-    "allergens": [
-      "小麦",
-      "卵",
-      "ごま",
-      "大豆",
-      "鶏肉"
-    ],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "yayoiken-teishoku-010c",
-    "menu_name": "大分とり天定食（もち⻨ごはん大盛）",
-    "category": "定食",
-    "price": 960,
-    "calories": 947,
-    "protein": 36.7,
-    "fat": 37.3,
-    "carb": 121.4,
-    "fiber": 9.4,
-    "sodium": 6,
-    "sugar": 112,
-    "allergens": [
-      "小麦",
-      "卵",
-      "ごま",
-      "大豆",
-      "鶏肉"
-    ],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "yayoiken-teishoku-011a",
     "menu_name": "しょうが焼定食（白米）",
     "category": "定食",
     "price": 890,
@@ -660,7 +591,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-011b",
+    "menu_id": "yayoiken-teishoku-010b",
     "menu_name": "しょうが焼定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 890,
@@ -685,7 +616,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-011c",
+    "menu_id": "yayoiken-teishoku-010c",
     "menu_name": "しょうが焼定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 890,
@@ -710,7 +641,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-012a",
+    "menu_id": "yayoiken-teishoku-011a",
     "menu_name": "肉野菜炒め定食（白米）",
     "category": "定食",
     "price": 990,
@@ -733,7 +664,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-012b",
+    "menu_id": "yayoiken-teishoku-011b",
     "menu_name": "肉野菜炒め定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 990,
@@ -756,7 +687,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-012c",
+    "menu_id": "yayoiken-teishoku-011c",
     "menu_name": "肉野菜炒め定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 990,
@@ -779,7 +710,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-013a",
+    "menu_id": "yayoiken-teishoku-012a",
     "menu_name": "チキン南蛮定食（白米）",
     "category": "定食",
     "price": 990,
@@ -807,7 +738,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-013b",
+    "menu_id": "yayoiken-teishoku-012b",
     "menu_name": "チキン南蛮定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 990,
@@ -835,7 +766,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-013c",
+    "menu_id": "yayoiken-teishoku-012c",
     "menu_name": "チキン南蛮定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 990,
@@ -863,7 +794,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-014a",
+    "menu_id": "yayoiken-teishoku-013a",
     "menu_name": "から揚げ定食（白米）",
     "category": "定食",
     "price": 930,
@@ -888,7 +819,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-014b",
+    "menu_id": "yayoiken-teishoku-013b",
     "menu_name": "から揚げ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 930,
@@ -913,7 +844,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-014c",
+    "menu_id": "yayoiken-teishoku-013c",
     "menu_name": "から揚げ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 930,
@@ -938,7 +869,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-015a",
+    "menu_id": "yayoiken-teishoku-014a",
     "menu_name": "特から揚げ定食（白米）",
     "category": "定食",
     "price": 1120,
@@ -963,7 +894,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-015b",
+    "menu_id": "yayoiken-teishoku-014b",
     "menu_name": "特から揚げ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1120,
@@ -988,7 +919,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-015c",
+    "menu_id": "yayoiken-teishoku-014c",
     "menu_name": "特から揚げ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1120,
@@ -1013,7 +944,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-016a",
+    "menu_id": "yayoiken-teishoku-015a",
     "menu_name": "から揚げ＆白身フライ定食（白米）",
     "category": "定食",
     "price": 930,
@@ -1038,7 +969,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-016b",
+    "menu_id": "yayoiken-teishoku-015b",
     "menu_name": "から揚げ＆白身フライ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 930,
@@ -1063,7 +994,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-016c",
+    "menu_id": "yayoiken-teishoku-015c",
     "menu_name": "から揚げ＆白身フライ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 930,
@@ -1088,7 +1019,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-017a",
+    "menu_id": "yayoiken-teishoku-016a",
     "menu_name": "味噌かつ煮定食（白米）",
     "category": "定食",
     "price": 990,
@@ -1115,7 +1046,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-017b",
+    "menu_id": "yayoiken-teishoku-016b",
     "menu_name": "味噌かつ煮定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 990,
@@ -1142,7 +1073,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-017c",
+    "menu_id": "yayoiken-teishoku-016c",
     "menu_name": "味噌かつ煮定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 990,
@@ -1169,7 +1100,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-018a",
+    "menu_id": "yayoiken-teishoku-017a",
     "menu_name": "コク旨ちゃんぽんとから揚げの定食（白米）",
     "category": "定食",
     "price": 1140,
@@ -1196,7 +1127,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-018b",
+    "menu_id": "yayoiken-teishoku-017b",
     "menu_name": "コク旨ちゃんぽんとから揚げの定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1140,
@@ -1223,7 +1154,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-018c",
+    "menu_id": "yayoiken-teishoku-017c",
     "menu_name": "コク旨ちゃんぽんとから揚げの定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1140,
@@ -1250,7 +1181,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-019a",
+    "menu_id": "yayoiken-teishoku-018a",
     "menu_name": "大豆ミートのしょうが焼定食（白米）",
     "category": "定食",
     "price": 860,
@@ -1274,7 +1205,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-019b",
+    "menu_id": "yayoiken-teishoku-018b",
     "menu_name": "大豆ミートのしょうが焼定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 860,
@@ -1298,7 +1229,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-019c",
+    "menu_id": "yayoiken-teishoku-018c",
     "menu_name": "大豆ミートのしょうが焼定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 860,
@@ -1322,7 +1253,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-020a",
+    "menu_id": "yayoiken-teishoku-019a",
     "menu_name": "大豆ミートの野菜炒め定食（白米）",
     "category": "定食",
     "price": 960,
@@ -1346,7 +1277,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-020b",
+    "menu_id": "yayoiken-teishoku-019b",
     "menu_name": "大豆ミートの野菜炒め定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 960,
@@ -1370,7 +1301,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-020c",
+    "menu_id": "yayoiken-teishoku-019c",
     "menu_name": "大豆ミートの野菜炒め定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 960,
@@ -1394,7 +1325,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-021a",
+    "menu_id": "yayoiken-teishoku-020a",
     "menu_name": "大豆ミートのなす味噌と焼魚の定食（白米）",
     "category": "定食",
     "price": 1170,
@@ -1419,7 +1350,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-021b",
+    "menu_id": "yayoiken-teishoku-020b",
     "menu_name": "大豆ミートのなす味噌と焼魚の定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1170,
@@ -1444,7 +1375,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-021c",
+    "menu_id": "yayoiken-teishoku-020c",
     "menu_name": "大豆ミートのなす味噌と焼魚の定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1170,
@@ -1469,7 +1400,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-022a",
+    "menu_id": "yayoiken-teishoku-021a",
     "menu_name": "和風おろしハンバーグ定食（白米）",
     "category": "定食",
     "price": 990,
@@ -1494,7 +1425,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-022b",
+    "menu_id": "yayoiken-teishoku-021b",
     "menu_name": "和風おろしハンバーグ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 990,
@@ -1519,7 +1450,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-022c",
+    "menu_id": "yayoiken-teishoku-021c",
     "menu_name": "和風おろしハンバーグ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 990,
@@ -1544,7 +1475,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-023a",
+    "menu_id": "yayoiken-teishoku-022a",
     "menu_name": "デミハンバーグ定食（白米）",
     "category": "定食",
     "price": 1070,
@@ -1571,7 +1502,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-023b",
+    "menu_id": "yayoiken-teishoku-022b",
     "menu_name": "デミハンバーグ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1070,
@@ -1598,7 +1529,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-023c",
+    "menu_id": "yayoiken-teishoku-022c",
     "menu_name": "デミハンバーグ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1070,
@@ -1625,7 +1556,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-024a",
+    "menu_id": "yayoiken-teishoku-023a",
     "menu_name": "4種のチーズハンバーグ定食（白米）",
     "category": "定食",
     "price": 1120,
@@ -1652,7 +1583,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-024b",
+    "menu_id": "yayoiken-teishoku-023b",
     "menu_name": "4種のチーズハンバーグ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1120,
@@ -1679,7 +1610,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-024c",
+    "menu_id": "yayoiken-teishoku-023c",
     "menu_name": "4種のチーズハンバーグ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1120,
@@ -1700,6 +1631,93 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
       "鶏肉",
       "豚肉",
       "りんご"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "yayoiken-teishoku-024a",
+    "menu_name": "ハンバーグとエビフライとから揚げの人気トリオ定食（白米）",
+    "category": "定食",
+    "price": 1280,
+    "calories": 1054,
+    "protein": 53.1,
+    "fat": 49.1,
+    "carb": 104.1,
+    "fiber": 9.7,
+    "sodium": 8.4,
+    "sugar": 94.4,
+    "allergens": [
+      "えび",
+      "小麦",
+      "卵",
+      "乳",
+      "牛肉",
+      "ごま",
+      "大豆",
+      "鶏肉",
+      "豚肉",
+      "りんご",
+      "ゼラチン"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "yayoiken-teishoku-024b",
+    "menu_name": "ハンバーグとエビフライとから揚げの人気トリオ定食（もち⻨ごはん普通盛）",
+    "category": "定食",
+    "price": 1280,
+    "calories": 1070,
+    "protein": 53.6,
+    "fat": 49.1,
+    "carb": 108.2,
+    "fiber": 10.9,
+    "sodium": 8.4,
+    "sugar": 97.3,
+    "allergens": [
+      "えび",
+      "小麦",
+      "卵",
+      "乳",
+      "牛肉",
+      "ごま",
+      "大豆",
+      "鶏肉",
+      "豚肉",
+      "りんご",
+      "ゼラチン"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "yayoiken-teishoku-024c",
+    "menu_name": "ハンバーグとエビフライとから揚げの人気トリオ定食（もち⻨ごはん大盛）",
+    "category": "定食",
+    "price": 1280,
+    "calories": 1208,
+    "protein": 56.1,
+    "fat": 49.4,
+    "carb": 140.6,
+    "fiber": 13,
+    "sodium": 8.4,
+    "sugar": 127.6,
+    "allergens": [
+      "えび",
+      "小麦",
+      "卵",
+      "乳",
+      "牛肉",
+      "ごま",
+      "大豆",
+      "鶏肉",
+      "豚肉",
+      "りんご",
+      "ゼラチン"
     ],
     "timing": "anytime",
     "is_seasonal": false,
@@ -1869,93 +1887,6 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
   },
   {
     "menu_id": "yayoiken-teishoku-027a",
-    "menu_name": "ハンバーグとエビフライとから揚げの人気トリオ定食（白米）",
-    "category": "定食",
-    "price": 1280,
-    "calories": 1054,
-    "protein": 53.1,
-    "fat": 49.1,
-    "carb": 104.1,
-    "fiber": 9.7,
-    "sodium": 8.4,
-    "sugar": 94.4,
-    "allergens": [
-      "えび",
-      "小麦",
-      "卵",
-      "乳",
-      "牛肉",
-      "ごま",
-      "大豆",
-      "鶏肉",
-      "豚肉",
-      "りんご",
-      "ゼラチン"
-    ],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "yayoiken-teishoku-027b",
-    "menu_name": "ハンバーグとエビフライとから揚げの人気トリオ定食（もち⻨ごはん普通盛）",
-    "category": "定食",
-    "price": 1280,
-    "calories": 1070,
-    "protein": 53.6,
-    "fat": 49.1,
-    "carb": 108.2,
-    "fiber": 10.9,
-    "sodium": 8.4,
-    "sugar": 97.3,
-    "allergens": [
-      "えび",
-      "小麦",
-      "卵",
-      "乳",
-      "牛肉",
-      "ごま",
-      "大豆",
-      "鶏肉",
-      "豚肉",
-      "りんご",
-      "ゼラチン"
-    ],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "yayoiken-teishoku-027c",
-    "menu_name": "ハンバーグとエビフライとから揚げの人気トリオ定食（もち⻨ごはん大盛）",
-    "category": "定食",
-    "price": 1280,
-    "calories": 1208,
-    "protein": 56.1,
-    "fat": 49.4,
-    "carb": 140.6,
-    "fiber": 13,
-    "sodium": 8.4,
-    "sugar": 127.6,
-    "allergens": [
-      "えび",
-      "小麦",
-      "卵",
-      "乳",
-      "牛肉",
-      "ごま",
-      "大豆",
-      "鶏肉",
-      "豚肉",
-      "りんご",
-      "ゼラチン"
-    ],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "yayoiken-teishoku-028a",
     "menu_name": "チキン南蛮とエビフライの定食（白米）",
     "category": "定食",
     "price": 1260,
@@ -1984,7 +1915,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-028b",
+    "menu_id": "yayoiken-teishoku-027b",
     "menu_name": "チキン南蛮とエビフライの定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1260,
@@ -2013,7 +1944,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-028c",
+    "menu_id": "yayoiken-teishoku-027c",
     "menu_name": "チキン南蛮とエビフライの定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1260,
@@ -2042,7 +1973,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-029a",
+    "menu_id": "yayoiken-teishoku-028a",
     "menu_name": "ロースとんかつとエビフライの定食（白米）",
     "category": "定食",
     "price": 1140,
@@ -2069,7 +2000,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-029b",
+    "menu_id": "yayoiken-teishoku-028b",
     "menu_name": "ロースとんかつとエビフライの定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1140,
@@ -2096,7 +2027,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-029c",
+    "menu_id": "yayoiken-teishoku-028c",
     "menu_name": "ロースとんかつとエビフライの定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1140,
@@ -2123,7 +2054,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-030a",
+    "menu_id": "yayoiken-teishoku-029a",
     "menu_name": "サバの塩焼定食（白米）",
     "category": "定食",
     "price": 990,
@@ -2144,7 +2075,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-030b",
+    "menu_id": "yayoiken-teishoku-029b",
     "menu_name": "サバの塩焼定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 990,
@@ -2165,7 +2096,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-030c",
+    "menu_id": "yayoiken-teishoku-029c",
     "menu_name": "サバの塩焼定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 990,
@@ -2186,7 +2117,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-031a",
+    "menu_id": "yayoiken-teishoku-030a",
     "menu_name": "サバの味噌煮定食（白米）",
     "category": "定食",
     "price": 990,
@@ -2209,7 +2140,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-031b",
+    "menu_id": "yayoiken-teishoku-030b",
     "menu_name": "サバの味噌煮定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 990,
@@ -2232,7 +2163,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-031c",
+    "menu_id": "yayoiken-teishoku-030c",
     "menu_name": "サバの味噌煮定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 990,
@@ -2255,7 +2186,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-032a",
+    "menu_id": "yayoiken-teishoku-031a",
     "menu_name": "しまほっけとサバの塩焼の定食（白米）",
     "category": "定食",
     "price": 1070,
@@ -2276,7 +2207,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-032b",
+    "menu_id": "yayoiken-teishoku-031b",
     "menu_name": "しまほっけとサバの塩焼の定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1070,
@@ -2297,7 +2228,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-032c",
+    "menu_id": "yayoiken-teishoku-031c",
     "menu_name": "しまほっけとサバの塩焼の定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1070,
@@ -2318,7 +2249,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-033a",
+    "menu_id": "yayoiken-teishoku-032a",
     "menu_name": "銀鮭の塩焼定食（白米）",
     "category": "定食",
     "price": 1110,
@@ -2339,7 +2270,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-033b",
+    "menu_id": "yayoiken-teishoku-032b",
     "menu_name": "銀鮭の塩焼定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1110,
@@ -2360,7 +2291,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-033c",
+    "menu_id": "yayoiken-teishoku-032c",
     "menu_name": "銀鮭の塩焼定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1110,
@@ -2381,7 +2312,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-034a",
+    "menu_id": "yayoiken-teishoku-033a",
     "menu_name": "しまほっけ定食（白米）",
     "category": "定食",
     "price": 1150,
@@ -2401,7 +2332,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-034b",
+    "menu_id": "yayoiken-teishoku-033b",
     "menu_name": "しまほっけ定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1150,
@@ -2421,7 +2352,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-034c",
+    "menu_id": "yayoiken-teishoku-033c",
     "menu_name": "しまほっけ定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1150,
@@ -2441,7 +2372,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-035a",
+    "menu_id": "yayoiken-teishoku-034a",
     "menu_name": "なす味噌と焼魚の定食（白米）",
     "category": "定食",
     "price": 1200,
@@ -2465,7 +2396,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-035b",
+    "menu_id": "yayoiken-teishoku-034b",
     "menu_name": "なす味噌と焼魚の定食（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1200,
@@ -2489,7 +2420,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-035c",
+    "menu_id": "yayoiken-teishoku-034c",
     "menu_name": "なす味噌と焼魚の定食（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1200,
@@ -2513,7 +2444,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-036a",
+    "menu_id": "yayoiken-teishoku-035a",
     "menu_name": "やよい御膳（白米）",
     "category": "定食",
     "price": 1140,
@@ -2540,7 +2471,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-036b",
+    "menu_id": "yayoiken-teishoku-035b",
     "menu_name": "やよい御膳（もち⻨ごはん普通盛）",
     "category": "定食",
     "price": 1140,
@@ -2567,7 +2498,7 @@ export const yayoikenMenuData: YayoikenMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "yayoiken-teishoku-036c",
+    "menu_id": "yayoiken-teishoku-035c",
     "menu_name": "やよい御膳（もち⻨ごはん大盛）",
     "category": "定食",
     "price": 1140,
