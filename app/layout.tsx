@@ -4,6 +4,7 @@ import { Providers } from "@/components/Providers";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { buildWebSiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 
@@ -76,6 +77,7 @@ export default function RootLayout({
           <main className="min-h-screen">{children}</main>
           <Footer />
           <CookieConsent />
+          <AdSenseScript />
         </Providers>
       </body>
     </html>

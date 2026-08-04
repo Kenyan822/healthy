@@ -33,6 +33,8 @@ import { formatPrice } from "@/lib/utils";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
 import { promoContextForSegment } from "@/lib/affiliate";
+import { AdUnit } from "@/components/ads/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 type Props = {
   params: Promise<{ store: string; segment: string }>;
@@ -210,6 +212,7 @@ async function PurposeView({
           context={promoContextForSegment(purpose.id)}
         />
         <RelatedLinks store={store} currentSegment={purpose.id} />
+        <AdUnit slot={AD_SLOTS.listing} />
       </div>
     </main>
   );
@@ -259,6 +262,7 @@ async function NutritionView({
           context={promoContextForSegment(filterId)}
         />
         <RelatedLinks store={store} currentSegment={filterId} />
+        <AdUnit slot={AD_SLOTS.listing} />
       </div>
     </main>
   );
@@ -308,6 +312,7 @@ async function PriceView({
           context={promoContextForSegment(filterId)}
         />
         <RelatedLinks store={store} currentSegment={filterId} />
+        <AdUnit slot={AD_SLOTS.listing} />
       </div>
     </main>
   );
@@ -356,6 +361,7 @@ async function TimingView({
           context={promoContextForSegment(filterId)}
         />
         <RelatedLinks store={store} currentSegment={filterId} />
+        <AdUnit slot={AD_SLOTS.listing} />
       </div>
     </main>
   );

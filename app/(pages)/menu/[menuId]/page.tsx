@@ -13,6 +13,8 @@ import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { ViewCounter } from "@/components/menu/ViewCounter";
 import { MealKitPromo } from "@/components/affiliate/MealKitPromo";
 import { SidebarBanner } from "@/components/affiliate/SidebarBanner";
+import { AdUnit } from "@/components/ads/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 type Props = {
   params: Promise<{ menuId: string }>;
@@ -384,6 +386,9 @@ export default async function MenuDetailPage({ params }: Props) {
                 </div>
               </section>
             )}
+
+            {/* ディスプレイ広告（本文末尾。ID未設定時は非表示） */}
+            <AdUnit slot={AD_SLOTS.menuDetail} />
           </div>
 
           {/* サイドバー */}
