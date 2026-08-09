@@ -1,5 +1,5 @@
 /**
- * サブウェイメニューデータ（2026-08-02 公式サイトより自動生成）
+ * サブウェイメニューデータ（2026-08-09 公式サイトより自動生成）
  * 自動生成ファイル - scripts/scrape/subway.ts で生成
  * sodiumは食塩相当量(g)。ドリンクの栄養値は公式掲載の単一値（サイズ別未公表）
  */
@@ -19,8 +19,9 @@ export interface SubwayMenuItem {
 
 export const subwayMenuData: SubwayMenuItem[] = [
   // ========== サンドイッチ ==========
-  { menu_id: "subway-sandwich-024", menu_name: "シラチャーグリチキチーズ", price: 650, category: "サンドイッチ", calories: 342.2, protein: 19.4, fat: 12.4, carb: 39.4, sodium: 2.21, allergens: [] },
-  { menu_id: "subway-sandwich-025", menu_name: "タンドリーチキン", price: 590, category: "サンドイッチ", calories: 315.6, protein: 17.9, fat: 9.9, carb: 39.8, sodium: 2.28, allergens: [] },
+  { menu_id: "subway-sandwich-024", menu_name: "シラチャーグリチキチーズ", price: 650, category: "サンドイッチ", calories: 342, protein: 19.4, fat: 12.4, carb: 39.4, sodium: 2.2, allergens: [] },
+  { menu_id: "subway-sandwich-025", menu_name: "タンドリーチキン", price: 590, category: "サンドイッチ", calories: 316, protein: 17.9, fat: 9.9, carb: 39.8, sodium: 2.3, allergens: [] },
+  { menu_id: "subway-sandwich-026", menu_name: "BBQハニマスチキン", price: 620, category: "サンドイッチ", calories: 308, protein: 16.1, fat: 8.2, carb: 44, sodium: 2.2, allergens: [] },
   { menu_id: "subway-salad-001", menu_name: "ベジーデライト", price: 430, category: "サンドイッチ", calories: 215, protein: 7.2, fat: 4.4, carb: 38, sodium: 1.5, allergens: [] },
   { menu_id: "subway-topping-008", menu_name: "ハム", price: 480, category: "サンドイッチ", calories: 260, protein: 12.4, fat: 6.4, carb: 40, sodium: 2.1, allergens: [] },
   { menu_id: "subway-topping-003", menu_name: "たまご", price: 500, category: "サンドイッチ", calories: 318, protein: 11.7, fat: 13, carb: 39.6, sodium: 2.5, allergens: [] },

@@ -1,4 +1,4 @@
-// マクドナルドメニューデータ（2026-08-02 公式サイトスクレイピングより）
+// マクドナルドメニューデータ（2026-08-09 公式サイトスクレイピングより）
 // 自動生成ファイル - scripts/scrape/mcdonalds.ts で生成
 // 価格は通常店舗の税込価格（特殊立地店舗・デリバリーは異なる）
 
@@ -245,21 +245,6 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "mcdonalds-morning-p2120",
-    "menu_name": "森永ミルクキャラメルパイ",
-    "category": "朝マック",
-    "price": 200,
-    "calories": 303,
-    "protein": 3.8,
-    "fat": 17,
-    "carb": 33.5,
-    "sodium": 0.5,
-    "allergens": [],
-    "timing": "breakfast",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
     "menu_id": "mcdonalds-morning-p2200",
     "menu_name": "サイドサラダ",
     "category": "朝マック",
@@ -389,6 +374,21 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 2.2,
     "carb": 5.4,
     "sodium": 0.4,
+    "allergens": [],
+    "timing": "breakfast",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "mcdonalds-morning-p2120",
+    "menu_name": "森永ミルクキャラメルパイ",
+    "category": "朝マック",
+    "price": 200,
+    "calories": 303,
+    "protein": 3.8,
+    "fat": 17,
+    "carb": 33.5,
+    "sodium": 0.5,
     "allergens": [],
     "timing": "breakfast",
     "is_seasonal": false,
@@ -1325,21 +1325,6 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "mcdonalds-dessert-p8524",
-    "menu_name": "マックシェイク® 森永ラムネ",
-    "category": "デザート・スイーツ",
-    "price": 190,
-    "calories": 234,
-    "protein": 4.2,
-    "fat": 3.6,
-    "carb": 46.3,
-    "sodium": 0.4,
-    "allergens": [],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
     "menu_id": "mcdonalds-dessert-p8521",
     "menu_name": "マックシェイク® バニラ",
     "category": "デザート・スイーツ",
@@ -1499,6 +1484,21 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 13,
     "carb": 39.7,
     "sodium": 0.3,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "mcdonalds-dessert-p8524",
+    "menu_name": "マックシェイク® 森永ラムネ",
+    "category": "デザート・スイーツ",
+    "price": 190,
+    "calories": 234,
+    "protein": 4.2,
+    "fat": 3.6,
+    "carb": 46.3,
+    "sodium": 0.4,
     "allergens": [],
     "timing": "anytime",
     "is_seasonal": false,
