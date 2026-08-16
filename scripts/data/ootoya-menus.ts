@@ -1,4 +1,4 @@
-// 大戸屋メニューデータ（2026-08-09版 公式サイトスクレイピングより）
+// 大戸屋メニューデータ（2026-08-16版 公式サイトスクレイピングより）
 // 基準店舗: 大戸屋ごはん処 池袋東口店 (store_id: 27186)
 // 自動生成ファイル - scripts/scrape/ootoya.ts で生成
 
@@ -23,6 +23,145 @@ export interface OotoyaMenuItem {
 export const ootoyaMenuData: OotoyaMenuItem[] = [
   {
     "menu_id": "ootoya-other-001a",
+    "menu_name": "塩麹豚と白菜漬けの豚しんこ（ご飯）",
+    "category": "限定メニュー",
+    "price": 1350,
+    "calories": 801,
+    "protein": 22.2,
+    "fat": 40.4,
+    "carb": 87.8,
+    "fiber": 3.5,
+    "sodium": 6.5,
+    "sugar": 84.3,
+    "allergens": [
+      "小麦",
+      "乳",
+      "ごま",
+      "大豆",
+      "豚肉"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-001b",
+    "menu_name": "塩麹豚と白菜漬けの豚しんこ（五穀ご飯）",
+    "category": "限定メニュー",
+    "price": 1350,
+    "calories": 784,
+    "protein": 23.4,
+    "fat": 41.5,
+    "carb": 82.8,
+    "fiber": 6.7,
+    "sodium": 6.5,
+    "sugar": 76.1,
+    "allergens": [
+      "小麦",
+      "乳",
+      "ごま",
+      "大豆",
+      "豚肉"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-001c",
+    "menu_name": "塩麹豚と白菜漬けの豚しんこ（単品）",
+    "category": "限定メニュー",
+    "price": 1260,
+    "calories": 471,
+    "protein": 16.2,
+    "fat": 39.3,
+    "carb": 16.4,
+    "fiber": 2.1,
+    "sodium": 4.7,
+    "sugar": 14.3,
+    "allergens": [
+      "小麦",
+      "乳",
+      "ごま",
+      "大豆",
+      "豚肉"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-002a",
+    "menu_name": "夏の和風タコライス〜すし酢付き〜（ご飯）",
+    "category": "限定メニュー",
+    "price": 1380,
+    "calories": 694,
+    "protein": 26.8,
+    "fat": 27.1,
+    "carb": 86.8,
+    "fiber": 4.6,
+    "sodium": 4.4,
+    "sugar": 82.2,
+    "allergens": [
+      "小麦",
+      "牛肉",
+      "大豆",
+      "豚肉",
+      "りんご"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-002b",
+    "menu_name": "夏の和風タコライス〜すし酢付き〜（五穀ご飯）",
+    "category": "限定メニュー",
+    "price": 1380,
+    "calories": 676,
+    "protein": 28,
+    "fat": 28.2,
+    "carb": 81.9,
+    "fiber": 7.8,
+    "sodium": 4.4,
+    "sugar": 74.1,
+    "allergens": [
+      "小麦",
+      "牛肉",
+      "大豆",
+      "豚肉",
+      "りんご",
+      "ごま"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-002c",
+    "menu_name": "夏の和風タコライス〜すし酢付き〜（単品）",
+    "category": "限定メニュー",
+    "price": 1340,
+    "calories": 666,
+    "protein": 25.3,
+    "fat": 26.6,
+    "carb": 82.4,
+    "fiber": 3.8,
+    "sodium": 2.5,
+    "sugar": 78.6,
+    "allergens": [
+      "小麦",
+      "牛肉",
+      "大豆",
+      "豚肉",
+      "りんご"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-003a",
     "menu_name": "【3万食限定】真あじの大判あじフライ（ご飯）",
     "category": "限定メニュー",
     "price": 1680,
@@ -44,7 +183,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-001b",
+    "menu_id": "ootoya-other-003b",
     "menu_name": "【3万食限定】真あじの大判あじフライ（五穀ご飯）",
     "category": "限定メニュー",
     "price": 1680,
@@ -67,7 +206,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-001c",
+    "menu_id": "ootoya-other-003c",
     "menu_name": "【3万食限定】真あじの大判あじフライ（単品）",
     "category": "限定メニュー",
     "price": 1590,
@@ -89,7 +228,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-002a",
+    "menu_id": "ootoya-other-004a",
     "menu_name": "麻辣だれのスパイス唐揚げ（ご飯）",
     "category": "限定メニュー",
     "price": 1380,
@@ -111,7 +250,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-002b",
+    "menu_id": "ootoya-other-004b",
     "menu_name": "麻辣だれのスパイス唐揚げ（五穀ご飯）",
     "category": "限定メニュー",
     "price": 1380,
@@ -133,7 +272,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-002c",
+    "menu_id": "ootoya-other-004c",
     "menu_name": "麻辣だれのスパイス唐揚げ（単品）",
     "category": "限定メニュー",
     "price": 1290,
@@ -155,7 +294,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-003a",
+    "menu_id": "ootoya-other-005a",
     "menu_name": "七椒香る豚と茄子の回鍋肉（ご飯）",
     "category": "限定メニュー",
     "price": 1380,
@@ -177,7 +316,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-003b",
+    "menu_id": "ootoya-other-005b",
     "menu_name": "七椒香る豚と茄子の回鍋肉（五穀ご飯）",
     "category": "限定メニュー",
     "price": 1380,
@@ -199,7 +338,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-003c",
+    "menu_id": "ootoya-other-005c",
     "menu_name": "七椒香る豚と茄子の回鍋肉（単品）",
     "category": "限定メニュー",
     "price": 1290,
@@ -3240,7 +3379,46 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-004",
+    "menu_id": "ootoya-other-006",
+    "menu_name": "トマトの旨みで煮込んだミニカレー小鉢",
+    "category": "限定メニュー",
+    "price": 180,
+    "calories": 41,
+    "protein": 0.9,
+    "fat": 1.7,
+    "carb": 5.6,
+    "fiber": 1.2,
+    "sodium": 0.5,
+    "sugar": 4.4,
+    "allergens": [
+      "大豆"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-007",
+    "menu_name": "鶏ももと胡瓜の梅和え",
+    "category": "限定メニュー",
+    "price": 280,
+    "calories": 115,
+    "protein": 8.5,
+    "fat": 7.3,
+    "carb": 2.6,
+    "fiber": 0.3,
+    "sodium": 1.1,
+    "sugar": 2.3,
+    "allergens": [
+      "ごま",
+      "鶏肉"
+    ],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "ootoya-other-008",
     "menu_name": "麦みそ冷や汁",
     "category": "限定メニュー",
     "price": 230,
@@ -3261,7 +3439,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-005",
+    "menu_id": "ootoya-other-009",
     "menu_name": "大戸屋節",
     "category": "ごはんのお供",
     "price": 60,
@@ -3278,7 +3456,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-006",
+    "menu_id": "ootoya-other-010",
     "menu_name": "大戸屋節と黄身のごはんがけセット",
     "category": "ごはんのお供",
     "price": 120,
@@ -3300,7 +3478,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-007",
+    "menu_id": "ootoya-other-011",
     "menu_name": "しそひじき",
     "category": "ごはんのお供",
     "price": 90,
@@ -3319,7 +3497,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-008",
+    "menu_id": "ootoya-other-012",
     "menu_name": "明太子",
     "category": "ごはんのお供",
     "price": 150,
@@ -3336,7 +3514,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-009",
+    "menu_id": "ootoya-other-013",
     "menu_name": "きみだま",
     "category": "ごはんのお供",
     "price": 100,
@@ -3357,7 +3535,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-010",
+    "menu_id": "ootoya-other-014",
     "menu_name": "生玉子",
     "category": "ごはんのお供",
     "price": 80,
@@ -3376,7 +3554,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-011",
+    "menu_id": "ootoya-other-015",
     "menu_name": "なめ茸おろし",
     "category": "ごはんのお供",
     "price": 120,
@@ -3396,7 +3574,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-012",
+    "menu_id": "ootoya-other-016",
     "menu_name": "とろろ",
     "category": "ごはんのお供",
     "price": 110,
@@ -3418,7 +3596,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-013",
+    "menu_id": "ootoya-other-017",
     "menu_name": "とろろオクラ",
     "category": "ごはんのお供",
     "price": 190,
@@ -3440,7 +3618,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-014",
+    "menu_id": "ootoya-other-018",
     "menu_name": "納豆",
     "category": "ごはんのお供",
     "price": 90,
@@ -3459,7 +3637,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-015",
+    "menu_id": "ootoya-other-019",
     "menu_name": "旨だれキムチ納豆",
     "category": "ごはんのお供",
     "price": 280,
@@ -3484,7 +3662,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-016",
+    "menu_id": "ootoya-other-020",
     "menu_name": "やみつき玉子",
     "category": "ごはんのお供",
     "price": 150,
@@ -3508,7 +3686,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-017",
+    "menu_id": "ootoya-other-021",
     "menu_name": "まぐろユッケ",
     "category": "ごはんのお供",
     "price": 380,
@@ -3760,7 +3938,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-018",
+    "menu_id": "ootoya-other-022",
     "menu_name": "ミニ鶏の黒酢あん",
     "category": "定番のおかず",
     "price": 450,
@@ -3782,7 +3960,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-019",
+    "menu_id": "ootoya-other-023",
     "menu_name": "ミニすけそう鱈の黒酢あん",
     "category": "定番のおかず",
     "price": 470,
@@ -3803,7 +3981,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-020",
+    "menu_id": "ootoya-other-024",
     "menu_name": "ミニ野菜の黒酢あん",
     "category": "定番のおかず",
     "price": 370,
@@ -3824,7 +4002,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-021",
+    "menu_id": "ootoya-other-025",
     "menu_name": "ミニ香味唐揚げ",
     "category": "定番のおかず",
     "price": 350,
@@ -3845,7 +4023,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-022",
+    "menu_id": "ootoya-other-026",
     "menu_name": "ミニ甘からだれの鶏唐揚げ",
     "category": "定番のおかず",
     "price": 380,
@@ -3867,7 +4045,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-023",
+    "menu_id": "ootoya-other-027",
     "menu_name": "ミニもろみチキンの炭火焼き",
     "category": "定番のおかず",
     "price": 400,
@@ -3888,7 +4066,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-024",
+    "menu_id": "ootoya-other-028",
     "menu_name": "ひじき入り鶏つくね 2個",
     "category": "定番のおかず",
     "price": 500,
@@ -3912,7 +4090,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-025",
+    "menu_id": "ootoya-other-029",
     "menu_name": "鶏もも肉のミニチキン南蛮",
     "category": "定番のおかず",
     "price": 500,
@@ -3936,7 +4114,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-026",
+    "menu_id": "ootoya-other-030",
     "menu_name": "鶏むね肉のミニチキン南蛮",
     "category": "定番のおかず",
     "price": 500,
@@ -3960,7 +4138,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-027",
+    "menu_id": "ootoya-other-031",
     "menu_name": "ミニ蒸し鶏のもろみ醤油香味ネギだれ",
     "category": "定番のおかず",
     "price": 450,
@@ -3982,7 +4160,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-028",
+    "menu_id": "ootoya-other-032",
     "menu_name": "三元豚のミニヒレかつ",
     "category": "定番のおかず",
     "price": 470,
@@ -4005,7 +4183,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-029",
+    "menu_id": "ootoya-other-033",
     "menu_name": "牛肉じゃが",
     "category": "定番のおかず",
     "price": 390,
@@ -4027,7 +4205,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-030",
+    "menu_id": "ootoya-other-034",
     "menu_name": "かぼちゃコロッケ",
     "category": "定番のおかず",
     "price": 300,
@@ -4049,7 +4227,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-031",
+    "menu_id": "ootoya-other-035",
     "menu_name": "とうもろこしクリームコロッケ",
     "category": "定番のおかず",
     "price": 190,
@@ -4073,7 +4251,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-032",
+    "menu_id": "ootoya-other-036",
     "menu_name": "ミニしまほっけの炭火焼き",
     "category": "定番のおかず",
     "price": 470,
@@ -4090,7 +4268,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-033",
+    "menu_id": "ootoya-other-037",
     "menu_name": "ミニメヌケ西京漬け炭火焼き",
     "category": "定番のおかず",
     "price": 450,
@@ -4110,7 +4288,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-034",
+    "menu_id": "ootoya-other-038",
     "menu_name": "海老フライ 1尾",
     "category": "定番のおかず",
     "price": 320,
@@ -4133,7 +4311,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-035",
+    "menu_id": "ootoya-other-039",
     "menu_name": "千切りキャベツ(大)",
     "category": "定番のおかず",
     "price": 300,
@@ -4153,7 +4331,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-036",
+    "menu_id": "ootoya-other-040",
     "menu_name": "千切りキャベツ(小)",
     "category": "定番のおかず",
     "price": 200,
@@ -4173,7 +4351,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-037",
+    "menu_id": "ootoya-other-041",
     "menu_name": "ミニサラダ",
     "category": "定番のおかず",
     "price": 190,
@@ -4193,7 +4371,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-038",
+    "menu_id": "ootoya-other-042",
     "menu_name": "ひんやり豆腐サラダ",
     "category": "定番のおかず",
     "price": 360,
@@ -4214,7 +4392,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-039",
+    "menu_id": "ootoya-other-043",
     "menu_name": "ご飯 普通盛り(180g)",
     "category": "ごはん・味噌汁",
     "price": 200,
@@ -4231,7 +4409,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-040",
+    "menu_id": "ootoya-other-044",
     "menu_name": "ご飯 少なめ(100g)",
     "category": "ごはん・味噌汁",
     "price": 180,
@@ -4248,7 +4426,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-041",
+    "menu_id": "ootoya-other-045",
     "menu_name": "ご飯 大盛り(300g)",
     "category": "ごはん・味噌汁",
     "price": 260,
@@ -4265,7 +4443,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-042",
+    "menu_id": "ootoya-other-046",
     "menu_name": "ご飯 特盛り(500g)",
     "category": "ごはん・味噌汁",
     "price": 380,
@@ -4282,7 +4460,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-043",
+    "menu_id": "ootoya-other-047",
     "menu_name": "五穀ご飯 普通盛り(180g)",
     "category": "ごはん・味噌汁",
     "price": 200,
@@ -4301,7 +4479,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-044",
+    "menu_id": "ootoya-other-048",
     "menu_name": "五穀ご飯 少なめ(100g)",
     "category": "ごはん・味噌汁",
     "price": 180,
@@ -4320,7 +4498,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-045",
+    "menu_id": "ootoya-other-049",
     "menu_name": "五穀ご飯 大盛り(300g)",
     "category": "ごはん・味噌汁",
     "price": 260,
@@ -4339,7 +4517,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-046",
+    "menu_id": "ootoya-other-050",
     "menu_name": "五穀ご飯 特盛り(500g)",
     "category": "ごはん・味噌汁",
     "price": 380,
@@ -4358,7 +4536,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-047",
+    "menu_id": "ootoya-other-051",
     "menu_name": "たっぷり野菜の麦みそ汁",
     "category": "ごはん・味噌汁",
     "price": 270,
@@ -4378,7 +4556,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-048",
+    "menu_id": "ootoya-other-052",
     "menu_name": "味噌汁",
     "category": "ごはん・味噌汁",
     "price": 50,
@@ -4878,7 +5056,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-049a",
+    "menu_id": "ootoya-other-053a",
     "menu_name": "麻辣だれのスパイス唐揚げ（ご飯）",
     "category": "限定メニュー",
     "price": 1400,
@@ -4900,7 +5078,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-049b",
+    "menu_id": "ootoya-other-053b",
     "menu_name": "麻辣だれのスパイス唐揚げ（五穀ご飯）",
     "category": "限定メニュー",
     "price": 1400,
@@ -4922,7 +5100,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-049c",
+    "menu_id": "ootoya-other-053c",
     "menu_name": "麻辣だれのスパイス唐揚げ（単品）",
     "category": "限定メニュー",
     "price": 1310,
@@ -4944,7 +5122,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-050a",
+    "menu_id": "ootoya-other-054a",
     "menu_name": "七椒香る豚と茄子の回鍋肉（ご飯）",
     "category": "限定メニュー",
     "price": 1400,
@@ -4966,7 +5144,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-050b",
+    "menu_id": "ootoya-other-054b",
     "menu_name": "七椒香る豚と茄子の回鍋肉（五穀ご飯）",
     "category": "限定メニュー",
     "price": 1400,
@@ -4988,7 +5166,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-050c",
+    "menu_id": "ootoya-other-054c",
     "menu_name": "七椒香る豚と茄子の回鍋肉（単品）",
     "category": "限定メニュー",
     "price": 1310,
@@ -5010,7 +5188,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-051",
+    "menu_id": "ootoya-other-055",
     "menu_name": "めかぶ",
     "category": "惣菜・その他",
     "price": 190,
@@ -5030,7 +5208,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-052",
+    "menu_id": "ootoya-other-056",
     "menu_name": "ひじきの煮物",
     "category": "惣菜・その他",
     "price": 150,
@@ -5050,7 +5228,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-053",
+    "menu_id": "ootoya-other-057",
     "menu_name": "金平ごぼう",
     "category": "惣菜・その他",
     "price": 150,
@@ -5071,7 +5249,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-054",
+    "menu_id": "ootoya-other-058",
     "menu_name": "ほうれん草の胡麻和え",
     "category": "惣菜・その他",
     "price": 150,
@@ -5092,7 +5270,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-055",
+    "menu_id": "ootoya-other-059",
     "menu_name": "ほっけ竜田のおろし和え 柚香だれ",
     "category": "惣菜・その他",
     "price": 380,
@@ -5113,7 +5291,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-056",
+    "menu_id": "ootoya-other-060",
     "menu_name": "ミニ野菜の黒酢あん",
     "category": "惣菜・その他",
     "price": 370,
@@ -5134,7 +5312,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-057",
+    "menu_id": "ootoya-other-061",
     "menu_name": "ミニ鶏の黒酢あん",
     "category": "惣菜・その他",
     "price": 450,
@@ -5156,7 +5334,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-058",
+    "menu_id": "ootoya-other-062",
     "menu_name": "ミニすけそう鱈の黒酢あん",
     "category": "惣菜・その他",
     "price": 470,
@@ -5177,7 +5355,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-059",
+    "menu_id": "ootoya-other-063",
     "menu_name": "牛肉じゃが",
     "category": "惣菜・その他",
     "price": 390,
@@ -5199,7 +5377,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-060",
+    "menu_id": "ootoya-other-064",
     "menu_name": "かぼちゃコロッケ",
     "category": "惣菜・その他",
     "price": 300,
@@ -5222,7 +5400,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-061",
+    "menu_id": "ootoya-other-065",
     "menu_name": "とうもろこしクリームコロッケ",
     "category": "惣菜・その他",
     "price": 190,
@@ -5247,7 +5425,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-062",
+    "menu_id": "ootoya-other-066",
     "menu_name": "ミニ香味唐揚げ",
     "category": "惣菜・その他",
     "price": 350,
@@ -5268,7 +5446,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-063",
+    "menu_id": "ootoya-other-067",
     "menu_name": "ミニ甘からだれの鶏唐揚げ",
     "category": "惣菜・その他",
     "price": 380,
@@ -5290,7 +5468,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-064",
+    "menu_id": "ootoya-other-068",
     "menu_name": "海老フライ 1尾",
     "category": "惣菜・その他",
     "price": 320,
@@ -5314,7 +5492,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-065",
+    "menu_id": "ootoya-other-069",
     "menu_name": "ミニしまほっけの炭火焼き",
     "category": "惣菜・その他",
     "price": 470,
@@ -5334,7 +5512,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-066",
+    "menu_id": "ootoya-other-070",
     "menu_name": "ミニメヌケ西京漬け炭火焼き",
     "category": "惣菜・その他",
     "price": 450,
@@ -5354,7 +5532,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-067",
+    "menu_id": "ootoya-other-071",
     "menu_name": "ミニもろみチキンの炭火焼き",
     "category": "惣菜・その他",
     "price": 400,
@@ -5375,7 +5553,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-068",
+    "menu_id": "ootoya-other-072",
     "menu_name": "鶏もも肉のミニチキン南蛮",
     "category": "惣菜・その他",
     "price": 500,
@@ -5399,7 +5577,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-069",
+    "menu_id": "ootoya-other-073",
     "menu_name": "鶏むね肉のミニチキン南蛮",
     "category": "惣菜・その他",
     "price": 500,
@@ -5423,7 +5601,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-070",
+    "menu_id": "ootoya-other-074",
     "menu_name": "ミニ蒸し鶏のもろみ醤油香味ネギだれ",
     "category": "惣菜・その他",
     "price": 450,
@@ -5445,7 +5623,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-071",
+    "menu_id": "ootoya-other-075",
     "menu_name": "ひじき入り鶏つくね 2個",
     "category": "惣菜・その他",
     "price": 500,
@@ -5469,7 +5647,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-072",
+    "menu_id": "ootoya-other-076",
     "menu_name": "三元豚のミニヒレかつ",
     "category": "惣菜・その他",
     "price": 470,
@@ -5493,7 +5671,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-073",
+    "menu_id": "ootoya-other-077",
     "menu_name": "きみだま",
     "category": "惣菜・その他",
     "price": 100,
@@ -5514,7 +5692,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-074",
+    "menu_id": "ootoya-other-078",
     "menu_name": "味噌汁",
     "category": "惣菜・その他",
     "price": 100,
@@ -5533,7 +5711,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-075",
+    "menu_id": "ootoya-other-079",
     "menu_name": "カップ味噌汁",
     "category": "惣菜・その他",
     "price": 150,
@@ -5553,7 +5731,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-076",
+    "menu_id": "ootoya-other-080",
     "menu_name": "オードブル松(大)",
     "category": "オードブル",
     "price": 7660,
@@ -5581,7 +5759,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-077",
+    "menu_id": "ootoya-other-081",
     "menu_name": "オードブル竹(中)",
     "category": "オードブル",
     "price": 5860,
@@ -5608,7 +5786,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-078",
+    "menu_id": "ootoya-other-082",
     "menu_name": "オードブル梅(小)",
     "category": "オードブル",
     "price": 3360,
@@ -5635,7 +5813,7 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "ootoya-other-079",
+    "menu_id": "ootoya-other-083",
     "menu_name": "大戸屋御膳 弁当",
     "category": "オードブル",
     "price": 1820,
