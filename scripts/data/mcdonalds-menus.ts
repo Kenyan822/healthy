@@ -1,4 +1,4 @@
-// マクドナルドメニューデータ（2026-08-16 公式サイトスクレイピングより）
+// マクドナルドメニューデータ（2026-08-23 公式サイトスクレイピングより）
 // 自動生成ファイル - scripts/scrape/mcdonalds.ts で生成
 // 価格は通常店舗の税込価格（特殊立地店舗・デリバリーは異なる）
 
@@ -380,6 +380,21 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
+    "menu_id": "mcdonalds-burger-p4740",
+    "menu_name": "炙り醤油風 たまごベーコンダブル肉厚ビーフ",
+    "category": "バーガー",
+    "price": 840,
+    "calories": 685,
+    "protein": 43.6,
+    "fat": 39.9,
+    "carb": 37.3,
+    "sodium": 3.6,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
     "menu_id": "mcdonalds-burger-p6430",
     "menu_name": "タルタルデミ倍肉厚ビーフ",
     "category": "バーガー",
@@ -605,6 +620,36 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
+    "menu_id": "mcdonalds-burger-p1260",
+    "menu_name": "炙り醤油風 たまごベーコン肉厚ビーフ",
+    "category": "バーガー",
+    "price": 580,
+    "calories": 517,
+    "protein": 30.8,
+    "fat": 27,
+    "carb": 37.3,
+    "sodium": 3.2,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "mcdonalds-burger-p1220",
+    "menu_name": "炙り醤油風 ダブル肉厚ビーフ",
+    "category": "バーガー",
+    "price": 590,
+    "calories": 633,
+    "protein": 38,
+    "fat": 37.1,
+    "carb": 37.2,
+    "sodium": 3.5,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
     "menu_id": "mcdonalds-burger-p6400",
     "menu_name": "タルタルデミ肉厚ビーフ",
     "category": "バーガー",
@@ -644,36 +689,6 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 28,
     "carb": 42,
     "sodium": 2.7,
-    "allergens": [],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "mcdonalds-burger-p1220",
-    "menu_name": "炙り醤油風 ダブル肉厚ビーフ",
-    "category": "バーガー",
-    "price": 590,
-    "calories": 633,
-    "protein": 38,
-    "fat": 37.1,
-    "carb": 37.2,
-    "sodium": 3.5,
-    "allergens": [],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "mcdonalds-burger-p1260",
-    "menu_name": "炙り醤油風 たまごベーコン肉厚ビーフ",
-    "category": "バーガー",
-    "price": 580,
-    "calories": 517,
-    "protein": 30.8,
-    "fat": 27,
-    "carb": 37.3,
-    "sodium": 3.2,
     "allergens": [],
     "timing": "anytime",
     "is_seasonal": false,
