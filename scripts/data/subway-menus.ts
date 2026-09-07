@@ -1,5 +1,5 @@
 /**
- * サブウェイメニューデータ（2026-08-31 公式サイトより自動生成）
+ * サブウェイメニューデータ（2026-09-06 公式サイトより自動生成）
  * 自動生成ファイル - scripts/scrape/subway.ts で生成
  * sodiumは食塩相当量(g)。ドリンクの栄養値は公式掲載の単一値（サイズ別未公表）
  */
@@ -40,7 +40,8 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-sandwich-019", menu_name: "アメリカンクラブハウス", price: 710, category: "サンドイッチ", calories: 349, protein: 21, fat: 11.3, carb: 42.8, sodium: 3.1, allergens: [] },
   { menu_id: "subway-topping-015", menu_name: "ローストビーフ", price: 790, category: "サンドイッチ", calories: 263, protein: 15.4, fat: 5, carb: 40.9, sodium: 1.9, allergens: [] },
   // ========== スナックサンド ==========
-  { menu_id: "subway-snacksand-001", menu_name: "あんこ＆マスカルポーネ", price: 250, category: "スナックサンド", calories: 196, protein: 5.5, fat: 5, carb: 32.6, sodium: 0.7, allergens: [] },
+  { menu_id: "subway-snacksand-003", menu_name: "あんこ＆マスカルポーネ（抹茶）", price: 250, category: "スナックサンド", calories: 210, protein: 5.5, fat: 5, carb: 36.4, sodium: 0.7, allergens: [] },
+  { menu_id: "subway-snacksand-004", menu_name: "あんこ＆マスカルポーネ（プレーン）", price: 250, category: "スナックサンド", calories: 196, protein: 5.5, fat: 5, carb: 32.6, sodium: 0.7, allergens: [] },
   { menu_id: "subway-snacksand-002", menu_name: "つぶあん", price: 250, category: "スナックサンド", calories: 170, protein: 5.3, fat: 2.4, carb: 32.2, sodium: 0.6, allergens: [] },
   // ========== サラダ ==========
   { menu_id: "subway-salad-001", menu_name: "ベジーデライト", price: 760, category: "サラダ", calories: 33, protein: 1.4, fat: 0.2, carb: 8, sodium: 0, allergens: [] },

@@ -1,4 +1,4 @@
-// 大戸屋メニューデータ（2026-08-31版 公式サイトスクレイピングより）
+// 大戸屋メニューデータ（2026-09-07版 公式サイトスクレイピングより）
 // 基準店舗: 大戸屋ごはん処 池袋東口店 (store_id: 27186)
 // 自動生成ファイル - scripts/scrape/ootoya.ts で生成
 
@@ -3352,19 +3352,17 @@ export const ootoyaMenuData: OotoyaMenuItem[] = [
   },
   {
     "menu_id": "ootoya-other-007",
-    "menu_name": "麦みそ冷や汁",
+    "menu_name": "いろいろ茸となめこ汁",
     "category": "限定メニュー",
     "price": 230,
-    "calories": 159,
-    "protein": 8.7,
-    "fat": 6.5,
-    "carb": 16.7,
-    "fiber": 2.4,
-    "sodium": 2.1,
-    "sugar": 14.3,
+    "calories": 51,
+    "protein": 4.4,
+    "fat": 1.8,
+    "carb": 6.1,
+    "fiber": 2.2,
+    "sodium": 1.7,
+    "sugar": 3.9,
     "allergens": [
-      "ごま",
-      "さば",
       "大豆"
     ],
     "timing": "anytime",
