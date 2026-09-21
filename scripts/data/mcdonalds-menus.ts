@@ -1,4 +1,4 @@
-// マクドナルドメニューデータ（2026-09-06 公式サイトスクレイピングより）
+// マクドナルドメニューデータ（2026-09-21 公式サイトスクレイピングより）
 // 自動生成ファイル - scripts/scrape/mcdonalds.ts で生成
 // 価格は通常店舗の税込価格（特殊立地店舗・デリバリーは異なる）
 
@@ -194,6 +194,21 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 49.3,
     "carb": 31.2,
     "sodium": 3.1,
+    "allergens": [],
+    "timing": "breakfast",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "mcdonalds-morning-p2500",
+    "menu_name": "プリプリエビプリオ 5ピース",
+    "category": "朝マック",
+    "price": 290,
+    "calories": 164,
+    "protein": 5.4,
+    "fat": 7.2,
+    "carb": 20,
+    "sodium": 1.1,
     "allergens": [],
     "timing": "breakfast",
     "is_seasonal": false,
@@ -590,21 +605,6 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
-    "menu_id": "mcdonalds-burger-p6920",
-    "menu_name": "炙り牛すき焼き風月見",
-    "category": "バーガー",
-    "price": 570,
-    "calories": 506,
-    "protein": 25.9,
-    "fat": 29.6,
-    "carb": 33.5,
-    "sodium": 3.1,
-    "allergens": [],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
     "menu_id": "mcdonalds-burger-p6910",
     "menu_name": "チーズ月見",
     "category": "バーガー",
@@ -854,6 +854,21 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 13.5,
     "carb": 31,
     "sodium": 1.9,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "mcdonalds-burger-p6920",
+    "menu_name": "炙り牛すき焼き風月見",
+    "category": "バーガー",
+    "price": 570,
+    "calories": 506,
+    "protein": 25.9,
+    "fat": 29.6,
+    "carb": 33.5,
+    "sodium": 3.1,
     "allergens": [],
     "timing": "anytime",
     "is_seasonal": false,
@@ -1250,6 +1265,36 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
+    "menu_id": "mcdonalds-dessert-p8610",
+    "menu_name": "マックフルーリー® 明治アーモンドチョコレート",
+    "category": "デザート・スイーツ",
+    "price": 370,
+    "calories": 310,
+    "protein": 7,
+    "fat": 14.4,
+    "carb": 38,
+    "sodium": 0.2,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
+    "menu_id": "mcdonalds-dessert-p2810",
+    "menu_name": "マックフルーリー® 超 オレオ® クッキー",
+    "category": "デザート・スイーツ",
+    "price": 340,
+    "calories": 355,
+    "protein": 7.8,
+    "fat": 10.9,
+    "carb": 57.1,
+    "sodium": 0.7,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
     "menu_id": "mcdonalds-dessert-p6980",
     "menu_name": "月見 マックシェイク® 長野県産シャインマスカット",
     "category": "デザート・スイーツ",
@@ -1319,21 +1364,6 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 6.8,
     "carb": 37.9,
     "sodium": 0.4,
-    "allergens": [],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "mcdonalds-dessert-p2810",
-    "menu_name": "マックフルーリー® 超 オレオ® クッキー",
-    "category": "デザート・スイーツ",
-    "price": 340,
-    "calories": 355,
-    "protein": 7.8,
-    "fat": 10.9,
-    "carb": 57.1,
-    "sodium": 0.7,
     "allergens": [],
     "timing": "anytime",
     "is_seasonal": false,
