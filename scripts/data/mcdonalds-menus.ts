@@ -1,4 +1,4 @@
-// マクドナルドメニューデータ（2026-09-21 公式サイトスクレイピングより）
+// マクドナルドメニューデータ（2026-09-28 公式サイトスクレイピングより）
 // 自動生成ファイル - scripts/scrape/mcdonalds.ts で生成
 // 価格は通常店舗の税込価格（特殊立地店舗・デリバリーは異なる）
 
@@ -605,6 +605,21 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "is_limited": false
   },
   {
+    "menu_id": "mcdonalds-burger-p6930",
+    "menu_name": "北海道産じゃがペッパー月見",
+    "category": "バーガー",
+    "price": 570,
+    "calories": 490,
+    "protein": 25.3,
+    "fat": 28.6,
+    "carb": 32.4,
+    "sodium": 3,
+    "allergens": [],
+    "timing": "anytime",
+    "is_seasonal": false,
+    "is_limited": false
+  },
+  {
     "menu_id": "mcdonalds-burger-p6910",
     "menu_name": "チーズ月見",
     "category": "バーガー",
@@ -854,21 +869,6 @@ export const mcdonaldsMenuData: McdonaldsMenuItem[] = [
     "fat": 13.5,
     "carb": 31,
     "sodium": 1.9,
-    "allergens": [],
-    "timing": "anytime",
-    "is_seasonal": false,
-    "is_limited": false
-  },
-  {
-    "menu_id": "mcdonalds-burger-p6920",
-    "menu_name": "炙り牛すき焼き風月見",
-    "category": "バーガー",
-    "price": 570,
-    "calories": 506,
-    "protein": 25.9,
-    "fat": 29.6,
-    "carb": 33.5,
-    "sodium": 3.1,
     "allergens": [],
     "timing": "anytime",
     "is_seasonal": false,
