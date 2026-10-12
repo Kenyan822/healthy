@@ -2865,7 +2865,7 @@ export const matsuyaMenuData: MatsuyaMenuItem[] = [
     "menu_id": "matsuya-sidemenu-018",
     "menu_name": "牛皿（並盛）",
     "category": "サイドメニュー",
-    "price": 960,
+    "price": 370,
     "calories": 299,
     "protein": 9.8,
     "fat": 26.9,

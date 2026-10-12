@@ -19,12 +19,12 @@ export interface NakauMenuItem {
 
 export const nakauMenuData: NakauMenuItem[] = [
   // 【親子丼】
-  { menu_id: "nakau-oyako-1", menu_name: "親子丼（並盛）", price: 450, category: "親子丼", calories: 673, protein: 31.5, fat: 17.8, carb: 99.7, sodium: 3100, allergens: [] },
-  { menu_id: "nakau-oyako-2", menu_name: "とろたま親子丼（並盛）", price: 540, category: "親子丼", calories: 767, protein: 39.2, fat: 24.2, carb: 99.9, sodium: 3300, allergens: [] },
+  { menu_id: "nakau-oyako-1", menu_name: "親子丼（並盛）", price: 480, category: "親子丼", calories: 673, protein: 31.5, fat: 17.8, carb: 99.7, sodium: 3100, allergens: [] },
+  { menu_id: "nakau-oyako-2", menu_name: "とろたま親子丼（並盛）", price: 570, category: "親子丼", calories: 767, protein: 39.2, fat: 24.2, carb: 99.9, sodium: 3300, allergens: [] },
   { menu_id: "nakau-oyako-3", menu_name: "チーズ親子丼（並盛）", price: 610, category: "親子丼", calories: 795, protein: 39.7, fat: 27.4, carb: 100.7, sodium: 3700, allergens: [] },
-  { menu_id: "nakau-oyako-4", menu_name: "とろたまねぎラー親子丼（並盛）", price: 700, category: "親子丼", calories: 972, protein: 41.7, fat: 41.3, carb: 110.7, sodium: 4000, allergens: [] },
-  { menu_id: "nakau-oyako-5", menu_name: "ねぎラー親子丼（並盛）", price: 610, category: "親子丼", calories: 878, protein: 34.0, fat: 34.8, carb: 110.5, sodium: 3800, allergens: [] },
-  { menu_id: "nakau-oyako-6", menu_name: "牛あいがけ親子丼（並盛）", price: 780, category: "親子丼", calories: 851, protein: 38.0, fat: 29.4, carb: 109.9, sodium: 5000, allergens: [] },
+  { menu_id: "nakau-oyako-4", menu_name: "とろたまねぎラー親子丼（並盛）", price: 730, category: "親子丼", calories: 972, protein: 41.7, fat: 41.3, carb: 110.7, sodium: 4000, allergens: [] },
+  { menu_id: "nakau-oyako-5", menu_name: "ねぎラー親子丼（並盛）", price: 640, category: "親子丼", calories: 878, protein: 34.0, fat: 34.8, carb: 110.5, sodium: 3800, allergens: [] },
+  { menu_id: "nakau-oyako-6", menu_name: "牛あいがけ親子丼（並盛）", price: 790, category: "親子丼", calories: 851, protein: 38.0, fat: 29.4, carb: 109.9, sodium: 5000, allergens: [] },
   { menu_id: "nakau-oyako-7", menu_name: "絶品親子重（並盛）", price: 690, category: "親子丼", calories: 705, protein: 32.3, fat: 19.7, carb: 103.1, sodium: 3400, allergens: [] },
   { menu_id: "nakau-oyako-8", menu_name: "温たま絶品親子重（並盛）", price: 800, category: "親子丼", calories: 791, protein: 39.6, fat: 26.7, carb: 103.2, sodium: 3600, allergens: [] },
 
@@ -148,7 +148,7 @@ export const nakauMenuData: NakauMenuItem[] = [
   { menu_id: "nakau-okazu-21", menu_name: "銀鮭（単品）", price: 220, category: "おかず", calories: 127, protein: 11.6, fat: 8.8, carb: 0.6, sodium: 1100, allergens: [] },
   { menu_id: "nakau-okazu-22", menu_name: "のり（単品）", price: 50, category: "おかず", calories: 4, protein: 0.8, fat: 0.1, carb: 0.9, sodium: 100, allergens: [] },
   { menu_id: "nakau-okazu-23", menu_name: "牛すき皿", price: 550, category: "おかず", calories: 250, protein: 9.0, fat: 15.8, carb: 15.7, sodium: 2900, allergens: [] },
-  { menu_id: "nakau-okazu-24", menu_name: "親子皿", price: 350, category: "おかず", calories: 293, protein: 24.8, fat: 16.4, carb: 9.8, sodium: 3100, allergens: [] },
+  { menu_id: "nakau-okazu-24", menu_name: "親子皿", price: 380, category: "おかず", calories: 293, protein: 24.8, fat: 16.4, carb: 9.8, sodium: 3100, allergens: [] },
   { menu_id: "nakau-okazu-25", menu_name: "カツとじ皿", price: 550, category: "おかず", calories: 611, protein: 26.2, fat: 39.5, carb: 33.9, sodium: 3700, allergens: [] },
   { menu_id: "nakau-okazu-26", menu_name: "牛とじ皿", price: 620, category: "おかず", calories: 415, protein: 20.8, fat: 24.8, carb: 23.1, sodium: 4700, allergens: [] },
   { menu_id: "nakau-okazu-27", menu_name: "うな皿（並盛）", price: 880, category: "おかず", calories: 261, protein: 15.8, fat: 17.9, carb: 8.9, sodium: 1400, allergens: [] },

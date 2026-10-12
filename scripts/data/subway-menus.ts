@@ -1,5 +1,5 @@
 /**
- * サブウェイメニューデータ（2026-09-28 公式サイトより自動生成）
+ * サブウェイメニューデータ（2026-10-12 公式サイトより自動生成）
  * 自動生成ファイル - scripts/scrape/subway.ts で生成
  * sodiumは食塩相当量(g)。ドリンクの栄養値は公式掲載の単一値（サイズ別未公表）
  */
@@ -19,9 +19,9 @@ export interface SubwayMenuItem {
 
 export const subwayMenuData: SubwayMenuItem[] = [
   // ========== サンドイッチ ==========
-  { menu_id: "subway-sandwich-024", menu_name: "シラチャーグリチキチーズ", price: 650, category: "サンドイッチ", calories: 342, protein: 19.4, fat: 12.4, carb: 39.4, sodium: 2.2, allergens: [] },
-  { menu_id: "subway-sandwich-025", menu_name: "タンドリーチキン", price: 590, category: "サンドイッチ", calories: 316, protein: 17.9, fat: 9.9, carb: 39.8, sodium: 2.3, allergens: [] },
-  { menu_id: "subway-sandwich-026", menu_name: "BBQハニマスチキン", price: 620, category: "サンドイッチ", calories: 308, protein: 16.1, fat: 8.2, carb: 44, sodium: 2.2, allergens: [] },
+  { menu_id: "subway-sandwich-027", menu_name: "ザクタルえびブロッコリー", price: 650, category: "サンドイッチ", calories: 304, protein: 12.4, fat: 10, carb: 42.4, sodium: 2.4, allergens: [] },
+  { menu_id: "subway-sandwich-028", menu_name: "ザクタルグリルチキン", price: 680, category: "サンドイッチ", calories: 371, protein: 19, fat: 14.2, carb: 43.1, sodium: 2.9, allergens: [] },
+  { menu_id: "subway-sandwich-029", menu_name: "ザクタルハム", price: 620, category: "サンドイッチ", calories: 337, protein: 13.4, fat: 12.9, carb: 43.4, sodium: 3.2, allergens: [] },
   { menu_id: "subway-salad-001", menu_name: "ベジーデライト", price: 430, category: "サンドイッチ", calories: 215, protein: 7.2, fat: 4.4, carb: 38, sodium: 1.5, allergens: [] },
   { menu_id: "subway-topping-008", menu_name: "ハム", price: 480, category: "サンドイッチ", calories: 260, protein: 12.4, fat: 6.4, carb: 40, sodium: 2.1, allergens: [] },
   { menu_id: "subway-topping-003", menu_name: "たまご", price: 500, category: "サンドイッチ", calories: 318, protein: 11.7, fat: 13, carb: 39.6, sodium: 2.5, allergens: [] },
@@ -70,6 +70,7 @@ export const subwayMenuData: SubwayMenuItem[] = [
   { menu_id: "subway-side-018", menu_name: "スープドリンクセット", price: 490, category: "サイドメニュー", calories: 0, protein: 0, fat: 0, carb: 0, sodium: 0, allergens: [] },
   { menu_id: "subway-side-019", menu_name: "クッキードリンクセット", price: 390, category: "サイドメニュー", calories: 0, protein: 0, fat: 0, carb: 0, sodium: 0, allergens: [] },
   // ========== ドリンク ==========
+  { menu_id: "subway-drink-041", menu_name: "金木犀烏龍ティー", price: 390, category: "ドリンク", calories: 125, protein: 0.1, fat: 0, carb: 31.2, sodium: 0, allergens: [] },
   { menu_id: "subway-drink-001-s", menu_name: "アイスコーヒー（S）", price: 270, category: "ドリンク", calories: 8, protein: 0.4, fat: 0, carb: 1.5, sodium: 0, allergens: [] },
   { menu_id: "subway-drink-002-m", menu_name: "アイスコーヒー（M）", price: 320, category: "ドリンク", calories: 8, protein: 0.4, fat: 0, carb: 1.5, sodium: 0, allergens: [] },
   { menu_id: "subway-drink-003-l", menu_name: "アイスコーヒー（L）", price: 370, category: "ドリンク", calories: 8, protein: 0.4, fat: 0, carb: 1.5, sodium: 0, allergens: [] },
